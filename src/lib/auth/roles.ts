@@ -10,13 +10,14 @@ export async function getUserRole(): Promise<Role | null> {
 
   if (!user) return null
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  return (profile?.role as Role) ?? null
+  if (profileError || !profile) return null
+  return profile.role as Role
 }
 
 export function isCoach(role: Role | null): role is 'coach' {

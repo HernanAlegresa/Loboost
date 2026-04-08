@@ -68,6 +68,54 @@ describe('getUserRole', () => {
     const role = await getUserRole()
     expect(role).toBe('client')
   })
+
+  it('returns null when profile query fails', async () => {
+    mockCreateClient.mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: 'user-789' } },
+          error: null,
+        }),
+      },
+      from: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: { message: 'row not found' },
+            }),
+          }),
+        }),
+      }),
+    } as any)
+
+    const role = await getUserRole()
+    expect(role).toBeNull()
+  })
+
+  it('returns null when profile does not exist', async () => {
+    mockCreateClient.mockResolvedValue({
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: { user: { id: 'user-000' } },
+          error: null,
+        }),
+      },
+      from: jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnValue({
+          eq: jest.fn().mockReturnValue({
+            single: jest.fn().mockResolvedValue({
+              data: null,
+              error: null,
+            }),
+          }),
+        }),
+      }),
+    } as any)
+
+    const role = await getUserRole()
+    expect(role).toBeNull()
+  })
 })
 
 describe('isCoach / isClient', () => {
