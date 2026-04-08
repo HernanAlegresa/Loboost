@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "Bash(npx create-next-app@latest --version)",
+      "Bash(git --version)",
+      "Bash(git config:*)",
+      "mcp__plugin_supabase_supabase__list_projects",
+      "Bash(ls \"C:\\\\Users\\\\herna\\\\Loboost App\"/.env*)",
+      "mcp__plugin_supabase_supabase__get_cost",
+      "mcp__plugin_supabase_supabase__confirm_cost",
+      "mcp__plugin_supabase_supabase__create_project",
+      "mcp__plugin_supabase_supabase__get_project_url",
+      "mcp__plugin_supabase_supabase__get_publishable_keys",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir --import-alias \"@/*\" --no-eslint --yes)",
+      "Bash(npx create-next-app@latest loboost-app --typescript --tailwind --app --src-dir --import-alias \"@/*\" --no-eslint --yes)",
+      "Bash(cp -r /tmp/loboost-app/src \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp -r /tmp/loboost-app/public \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp -r /tmp/loboost-app/node_modules \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp /tmp/loboost-app/package.json \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp /tmp/loboost-app/package-lock.json \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp /tmp/loboost-app/next.config.ts \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp /tmp/loboost-app/next-env.d.ts \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp /tmp/loboost-app/tsconfig.json \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp /tmp/loboost-app/postcss.config.mjs \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(cp /tmp/loboost-app/AGENTS.md \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
+      "Bash(npm install:*)",
+      "Bash(git:*)"
+    ]
+  }
+}
