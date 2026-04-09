@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import BottomNav from '@/components/ui/bottom-nav'
-import { Bell } from 'lucide-react'
+import { Bell, Search } from 'lucide-react'
 
 export default async function CoachLayout({
   children,
@@ -32,6 +32,9 @@ export default async function CoachLayout({
           <span style={{ color: '#F0F0F0' }}>ost</span>
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ cursor: 'pointer' }}>
+            <Search size={20} color="#6B7280" />
+          </div>
           <div style={{ position: 'relative', cursor: 'pointer' }}>
             <Bell size={20} color="#6B7280" />
           </div>
