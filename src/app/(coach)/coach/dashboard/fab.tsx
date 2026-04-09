@@ -57,48 +57,37 @@ export default function Fab() {
             ACTIONS.map((action, i) => (
               <motion.div
                 key={action.href}
-                initial={{ opacity: 0, y: 12, scale: 0.9 }}
+                initial={{ opacity: 0, y: 16, scale: 0.92 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 12, scale: 0.9 }}
-                transition={{ duration: 0.18, delay: (ACTIONS.length - 1 - i) * 0.05 }}
-                style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                exit={{ opacity: 0, y: 16, scale: 0.92 }}
+                transition={{ duration: 0.2, delay: (ACTIONS.length - 1 - i) * 0.06 }}
               >
-                {/* Etiqueta */}
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: '#F0F0F0',
-                    backgroundColor: '#1A1D22',
-                    border: '1px solid #1F2227',
-                    borderRadius: 8,
-                    padding: '6px 12px',
-                    whiteSpace: 'nowrap',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-                  }}
-                >
-                  {action.label}
-                </span>
-
-                {/* Mini FAB */}
                 <Link
                   href={action.href}
                   onClick={() => setOpen(false)}
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    backgroundColor: '#1A1D22',
-                    border: '1px solid #2A2D34',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    gap: 14,
+                    backgroundColor: '#111317',
+                    border: '1px solid rgba(181,242,61,0.2)',
+                    borderRadius: 16,
+                    padding: '16px 20px',
                     textDecoration: 'none',
-                    flexShrink: 0,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                    minWidth: 200,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
                   }}
                 >
-                  <action.icon size={20} color="#F0F0F0" />
+                  <action.icon size={22} color="#B5F23D" strokeWidth={2} />
+                  <span
+                    style={{
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: '#B5F23D',
+                    }}
+                  >
+                    {action.label}
+                  </span>
                 </Link>
               </motion.div>
             ))}
