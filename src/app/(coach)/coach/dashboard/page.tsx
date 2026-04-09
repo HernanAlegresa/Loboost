@@ -1,9 +1,9 @@
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from './queries'
 import KpiStrip from './kpi-strip'
 import ClientList from './client-list'
+import Fab from './fab'
 
 function getGreeting(hour: number): string {
   if (hour < 12) return 'Buenos días'
@@ -34,7 +34,7 @@ export default async function DashboardPage() {
   const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
 
   return (
-    <div style={{ paddingBottom: 24 }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Greeting */}
       <div
         style={{
@@ -90,8 +90,8 @@ export default async function DashboardPage() {
         sparklineData={dashboardData.sparklineData}
       />
 
-      {/* Client list with filter tabs */}
-      <div style={{ marginTop: 16 }}>
+      {/* Client list with filter tabs — toma el espacio restante y scrollea internamente */}
+      <div style={{ flex: 1, overflow: 'hidden', minHeight: 0, marginTop: 16 }}>
         <ClientList clients={dashboardData.clients} />
       </div>
 
@@ -109,27 +109,8 @@ export default async function DashboardPage() {
         }}
       />
 
-      {/* FAB */}
-      <Link
-        href="/coach/clients/new"
-        style={{
-          position: 'fixed',
-          bottom: 88,
-          right: 20,
-          width: 56,
-          height: 56,
-          borderRadius: 16,
-          backgroundColor: '#B5F23D',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 16px rgba(181,242,61,0.25)',
-          zIndex: 20,
-          textDecoration: 'none',
-        }}
-      >
-        <span style={{ fontSize: 26, fontWeight: 700, color: '#0A0A0A', lineHeight: 1 }}>+</span>
-      </Link>
+      {/* FAB Speed Dial */}
+      <Fab />
     </div>
   )
 }
