@@ -37,8 +37,8 @@ export default function ClientList({ clients }: ClientListProps) {
       case 'Activos':
         return (
           client.hasActivePlan &&
-          (client.daysSinceLastSession === null ||
-            client.daysSinceLastSession <= 7)
+          client.daysSinceLastSession !== null &&
+          client.daysSinceLastSession <= 7
         )
       case 'Pendientes':
         return client.alerts.includes('no_plan')
