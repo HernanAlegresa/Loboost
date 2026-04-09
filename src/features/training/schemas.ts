@@ -1,0 +1,17 @@
+import { z } from 'zod'
+
+export const startSessionSchema = z.object({
+  clientPlanDayId: z.string().uuid(),
+})
+
+export type StartSessionInput = z.infer<typeof startSessionSchema>
+
+export const completeSetSchema = z.object({
+  sessionId: z.string().uuid(),
+  clientPlanDayExerciseId: z.string().uuid(),
+  setNumber: z.coerce.number().int().min(1),
+  weightKg: z.coerce.number().min(0).optional(),
+  durationSeconds: z.coerce.number().int().min(1).optional(),
+})
+
+export type CompleteSetInput = z.infer<typeof completeSetSchema>
