@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from './queries'
@@ -109,7 +110,7 @@ export default async function DashboardPage() {
       />
 
       {/* FAB */}
-      <a
+      <Link
         href="/coach/clients/new"
         style={{
           position: 'fixed',
@@ -128,7 +129,7 @@ export default async function DashboardPage() {
         }}
       >
         <span style={{ fontSize: 26, fontWeight: 700, color: '#0A0A0A', lineHeight: 1 }}>+</span>
-      </a>
+      </Link>
     </div>
   )
 }
