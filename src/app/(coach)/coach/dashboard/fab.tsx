@@ -26,7 +26,14 @@ export default function Fab() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={() => setOpen(false)}
-            style={{ position: 'fixed', inset: 0, zIndex: 18 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 18,
+              backgroundColor: 'rgba(10, 10, 10, 0.65)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+            }}
           />
         )}
       </AnimatePresence>
