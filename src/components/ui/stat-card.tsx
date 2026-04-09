@@ -2,10 +2,11 @@ type StatCardProps = {
   label: string
   value: string | number
   valueColor?: string
+  centered?: boolean
   children?: React.ReactNode
 }
 
-export default function StatCard({ label, value, valueColor = '#F0F0F0', children }: StatCardProps) {
+export default function StatCard({ label, value, valueColor = '#F0F0F0', centered = false, children }: StatCardProps) {
   return (
     <div
       style={{
@@ -13,8 +14,9 @@ export default function StatCard({ label, value, valueColor = '#F0F0F0', childre
         backgroundColor: '#111317',
         border: '1px solid #1F2227',
         borderRadius: 14,
-        padding: '14px 16px',
+        padding: '14px 12px',
         minWidth: 0,
+        textAlign: centered ? 'center' : 'left',
       }}
     >
       <p
@@ -25,6 +27,9 @@ export default function StatCard({ label, value, valueColor = '#F0F0F0', childre
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
           marginBottom: 6,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
         {label}

@@ -13,7 +13,7 @@ export default async function CoachLayout({
   if (error || !user) redirect('/login')
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', color: '#F0F0F0' }}>
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#0A0A0A', color: '#F0F0F0' }}>
       {/* Header */}
       <header
         style={{
@@ -27,22 +27,22 @@ export default async function CoachLayout({
           justifyContent: 'space-between',
         }}
       >
-        <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.01em' }}>
+        <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
           <span style={{ color: '#B5F23D' }}>Lobo</span>
           <span style={{ color: '#F0F0F0' }}>ost</span>
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ cursor: 'pointer' }}>
-            <Search size={20} color="#6B7280" />
+            <Search size={20} color="#E5E7EB" />
           </div>
           <div style={{ position: 'relative', cursor: 'pointer' }}>
-            <Bell size={20} color="#6B7280" />
+            <Bell size={20} color="#E5E7EB" />
           </div>
         </div>
       </header>
 
-      {/* Main content padded below for fixed bottom nav */}
-      <main style={{ paddingBottom: 64 }}>
+      {/* Main content — flex: 1, solo la lista interna hace scroll */}
+      <main style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         {children}
       </main>
 
