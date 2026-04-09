@@ -2,6 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { updateClientProfileSchema } from '@/features/clients/schemas'
+import type { Database } from '@/types/database'
+
+type ClientProfileUpdate = Database['public']['Tables']['client_profiles']['Update']
 
 export async function updateClientAction(clientId: string, formData: FormData) {
   const raw = {
@@ -22,7 +25,7 @@ export async function updateClientAction(clientId: string, formData: FormData) {
 
   const supabase = await createClient()
 
-  const updates: Record<string, unknown> = {}
+  const updates: ClientProfileUpdate = {}
   if (result.data.age !== undefined) updates.age = result.data.age
   if (result.data.sex !== undefined) updates.sex = result.data.sex
   if (result.data.goal !== undefined) updates.goal = result.data.goal
@@ -36,7 +39,7 @@ export async function updateClientAction(clientId: string, formData: FormData) {
 
   const { error } = await supabase
     .from('client_profiles')
-    .update(updates as any)
+    .update(updates)
     .eq('id', clientId)
 
   if (error) return { error: 'Error al actualizar el cliente' }

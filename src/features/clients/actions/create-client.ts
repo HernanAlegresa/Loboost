@@ -25,8 +25,8 @@ export async function createClientAction(formData: FormData) {
   }
 
   const supabase = await createClient()
-  const { data: { user: coachUser } } = await supabase.auth.getUser()
-  if (!coachUser) return { error: 'No autenticado' }
+  const { data: { user: coachUser }, error: authGetError } = await supabase.auth.getUser()
+  if (authGetError || !coachUser) return { error: 'No autenticado' }
 
   // Admin client: crea el usuario sin cerrar la sesión del coach
   const supabaseAdmin = createAdminClient(
