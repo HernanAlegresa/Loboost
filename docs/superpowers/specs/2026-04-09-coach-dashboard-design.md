@@ -1,254 +1,260 @@
-# Coach Dashboard — Design Spec
+# Coach Dashboard — Design Spec (Final)
 
-> **Phase 3 — Screen 1 of N**
-> Feature: Coach dashboard (client roster overview + alert triage)
+> **Phase 3 — Screen 1**
+> Route: `/coach/dashboard`
 
 ---
 
 ## Goal
 
-Single-screen command center for the coach. From here they see the health of their full client roster, triage alerts, and navigate to any client. Fast, scannable, zero friction.
+Single-screen command center for the coach. See the full client roster at a glance, triage who needs attention, and navigate fast. Mobile-first, data-dense, premium dark aesthetic.
 
 ---
 
 ## Route & Context
 
-- Route: `/coach/dashboard` (existing placeholder)
-- Layout wrapper: `src/app/(coach)/layout.tsx` — already renders the global header (logo + sign-out)
-- Data source: Supabase via Server Component + server actions from Fase 2 backend
-- Auth: coach is already authenticated (middleware-protected route group)
+- Route: `/coach/dashboard` (existing placeholder at `src/app/(coach)/coach/dashboard/page.tsx`)
+- Layout: `src/app/(coach)/layout.tsx` — global header already rendered, will be replaced by new header
+- Auth: coach authenticated via middleware
+- Data: Supabase Server Component + analytics functions from `src/lib/analytics/`
 
 ---
 
 ## Architecture
 
-**Server Component** (`page.tsx`) fetches all data at render time — no loading states needed for the initial view. Data shape is small (single coach's client list, never more than a few hundred rows). No client-side fetching required for the initial render.
-
-Single page, three logical sections stacked vertically:
+**Server Component** (`page.tsx`) fetches all data at render time. Client list + filter state lives in a `'use client'` child component. No loading states needed for initial render.
 
 ```
-[Layout Header — already exists]
-[1] Greeting + date
-[2] KPI Strip
-[3] Alert Banner (conditional — hidden when 0 alerts)
-[4] Filter Tabs
-[5] Client List
-[6] FAB (fixed, bottom-right)
+[Header]
+[Greeting + Coach Photo]
+[KPI Strip — 3 cards]
+[Filter Tabs — 4, scrollable]
+[Client List — cards with fade at bottom]
+[FAB — fixed]
+[Bottom Nav — fixed]
 ```
 
 ---
 
-## Data Requirements
+## Data Fetching (page.tsx — Server Component)
 
-The page fetches in parallel:
-
-| Query | Purpose |
-|---|---|
-| `supabase.auth.getUser()` | Coach name for greeting |
-| `client_profiles` JOIN `client_plans(status=active)` | Client roster with plan status |
-| `sessions` (last 7 days) | Activity for "active this week" KPI |
-| `getClientAlerts(...)` per client | Alert types per client |
-
-`getClientAlerts` and `getExerciseProgress` already exist in `src/lib/analytics/`. The page uses them directly.
+Parallel fetches:
+- `supabase.auth.getUser()` → coach name + id
+- `client_profiles` JOIN `client_plans(status=active)` → full roster
+- `sessions` last 7 days (current week) + last 7 days prior week → momentum %
+- `getClientAlerts()` per client → alert type array
 
 ---
 
-## Section 1 — Greeting
+## Section 1 — Header
 
-```
-Buenos días, Hernán       ← dynamic greeting (mañana/tarde/noche based on hour)
-Miércoles, 9 de abril     ← full date, locale es-AR
-```
+Background: `#0A0A0A`, no border, padding `16px 20px`.
 
-- Typography: greeting = `display` (24px 700), date = `caption` (12px 400) `text-secondary`
-- No border, no card — floats above the content strip
-- Padding top: 24px, bottom: 20px
+**Logo:** "**Lobo**" in `#B5F23D` bold 700 18px + "**ost**" in `#F0F0F0` bold 700 18px. No space. One word: `Loboost`.
 
----
-
-## Section 2 — KPI Strip
-
-Three stat cards in a horizontal row, equal width, `gap-3`.
-
-| Stat | Value | Label |
-|---|---|---|
-| Total clientes | count of all clients | "clientes" |
-| Activos esta semana | count with session in last 7 days | "activos" |
-| Alertas | count of clients with ≥1 alert | "alertas" |
-
-**Alert stat card variant:** When alerts > 0, the value renders in `#F2994A` (warning) instead of `text-primary`. Otherwise renders normally.
-
-Card anatomy (Stat Card from DESIGN.md):
-```
-bg: #111317 | border: 1px solid #1F2227 | radius: 14px | padding: 14px 16px
-value: 28px 700 text-primary
-label: 11px 600 text-secondary uppercase letter-spacing (overline scale)
-```
+**Right icons (left to right):**
+- Search icon `#6B7280` 20px — placeholder tap target, search deferred to Phase 4
+- Bell icon `#6B7280` 20px — orange dot badge `8px #F2994A` when unread notifications exist
 
 ---
 
-## Section 3 — Alert Banner (conditional)
+## Section 2 — Greeting
 
-Shown only when at least one client has an alert. Hidden entirely when alerts = 0.
+Padding: `20px 20px 16px`. Two-column layout: text left, coach photo right.
 
-**Header row:**
-```
-⚠  Clientes que necesitan atención     [N alertas]
-```
-- Left icon: `#F2994A` warning color
-- Label: `body` 15px 600 `text-primary`
-- Right badge: `warning-dim` bg, `#F2994A` text, `caption` 12px 600, `radius: full`, `padding: 3px 8px`
+**Left:**
+- "Buenos días," — 16px 400 `#F0F0F0`
+- "**Hernán**" — 24px 700 `#F0F0F0`, line below
+- "MIÉRCOLES, 9 DE ABRIL" — 11px 600 `#6B7280` uppercase letter-spacing
 
-**Alert rows** (one per client with alert, max 3 shown, "+N más" if overflow):
-```
-[Avatar]  [Name]                    [Alert badge]
-          Last session: hace 6 días
-```
-- Avatar: 28px (sm), initials from fullName, `bg: #1A1D22`, `text: #B5F23D`
-- Name: `label` 13px 500 `text-primary`
-- Last session line: `caption` 12px `text-secondary`
-- Alert badge variants:
-  - `inactive` → "Sin actividad" · `warning-dim` bg · `#F2994A` text
-  - `low_compliance` → "Bajo cumplimiento" · `warning-dim` bg · `#F2994A` text  
-  - `no_plan` → "Sin plan" · `error-dim` bg · `#F25252` text
-- Entire row is tappable → navigates to `/coach/clients/[id]`
-- Left border accent: `3px solid #F2994A` (Alert Card variant from DESIGN.md)
+**Right:**
+- Coach profile photo: 56px circle, `border: 2px solid #B5F23D`
+- Phase 3: static placeholder image or initials fallback (`bg: #1A1D22`, initials `#B5F23D` semibold)
+- Phase 4: real photo from Supabase Storage
 
-Container: card with `border-left: 3px solid #F2994A`, `padding: 14px 16px`, `gap-3` between rows.
+---
+
+## Section 3 — KPI Strip
+
+Three equal-width cards in a row. Gap: `12px`. Padding: `0 20px`.
+
+Card base: `bg: #111317 | border: 1px solid #1F2227 | radius: 14px | padding: 14px 16px`
+
+**Card 1 — Clientes:**
+- Label: "CLIENTES" — 11px 600 `#6B7280` uppercase
+- Value: total client count — 28px 700 `#F0F0F0`
+
+**Card 2 — Activos:**
+- Label: "ACTIVOS" — same style
+- Value: clients with active plan — 28px 700 `#B5F23D` (lime, active deserves the accent)
+
+**Card 3 — Semana (Momentum):**
+- Label: "SEMANA" — same style
+- Trend badge: "↑ 23%" or "↓ 5%" — 11px 500, green if positive `#B5F23D`, orange if negative `#F2994A`
+- Sparkline: 7 vertical bars (Mon–Sun), `3px wide`, `4px gap`
+  - Bar filled: `#B5F23D` if sessions that day > 0
+  - Bar empty: `#1A1D22`
+  - Heights proportional to session count that day (min 4px, max 24px)
+- Calculation: `Math.round(((currentWeekSessions - prevWeekSessions) / prevWeekSessions) * 100)`
 
 ---
 
 ## Section 4 — Filter Tabs
 
-Three tabs: **Todos** / **Activos** / **Sin plan**
+Padding: `16px 20px 8px`. Horizontal scroll row, `gap: 8px`, no visible scrollbar.
 
-Filter logic (client-side state, `useState`):
+Four tabs: **Todos** / **Activos** / **Pendientes** / **Inactividad**
+
+- Active: `bg: #B5F23D | text: #0A0A0A 600 | radius: 999px | padding: 6px 14px | font: 13px`
+- Inactive: `bg: transparent | text: #6B7280 | same radius/padding`
+
+Filter logic (client-side `useState`):
 - `Todos` — all clients
-- `Activos` — clients with `status: active` plan
-- `Sin plan` — clients with no active plan
-
-Tab anatomy (Filter Tab from DESIGN.md):
-- Active: `bg: #B5F23D` | `text: #0A0A0A 600` | `radius: full` | `padding: 6px 14px`
-- Inactive: `bg: transparent` | `text: #6B7280` | same radius/padding
-
-Tabs row: `flex flex-row gap-2`, scroll horizontally on overflow (rare, 3 tabs always fit).
+- `Activos` — clients with `status: active` plan AND session in last 7 days
+- `Pendientes` — clients where coach has a pending action (no plan assigned, unread alert)
+- `Inactividad` — clients with active plan but no session in last 7 days
 
 ---
 
 ## Section 5 — Client List
 
-One card per client, vertically stacked, `gap-3`. Each card is fully tappable → `/coach/clients/[id]`.
+Padding: `0 20px`. Gap: `12px`. Vertically scrollable. Each card tappable → `/coach/clients/[id]`.
 
-**Client Card anatomy:**
+### Bottom Fade Effect
+
+A fixed gradient overlay sits above the list at the bottom, covering the FAB zone:
+```css
+background: linear-gradient(to bottom, transparent, #0A0A0A);
+height: 120px;
+position: fixed;
+bottom: 64px; /* above bottom nav */
+left: 0; right: 0;
+pointer-events: none;
 ```
-[Status dot]  [Avatar md]  [Name · Goal]          [Compliance badge]
-                           [Last activity caption]
+This ensures the FAB always floats cleanly above content. Cards that scroll into this zone appear to fade out.
+
+### Client Card
+
+```
+bg: #111317
+border: 1px solid #1F2227
+border-left: 3px solid [status-color]
+border-radius: 14px
+padding: 14px 16px
 ```
 
-Detailed layout:
+**Left status border color:**
+- `#B5F23D` — session in last 3 days (active)
+- `#F2994A` — last session 4–7 days ago (warning)
+- `#F25252` — no session >7 days OR no plan OR alert (critical)
+
+**Card layout — single row, vertically centered:**
+
 ```
-┌─────────────────────────────────────────────────────┐
-│ ● [AV]  Sofía Torres          [87%]                │
-│         Pérdida de peso  ·  hace 2 días             │
-└─────────────────────────────────────────────────────┘
+[Avatar 40px]  [Name · Info]           [Compliance]
+               [Goal · Last activity]
 ```
 
-- **Status dot** (4px circle, absolute left of avatar):
-  - Green `#B5F23D` — session in last 3 days
-  - Orange `#F2994A` — last session 4-7 days ago
-  - Gray `#3D3F45` — no session or >7 days
-- **Avatar (md):** 40px circle, `bg: #1A1D22`, initials `#B5F23D semibold`
-- **Name:** `label` 13px 500 `text-primary`
-- **Goal:** `caption` 12px `text-secondary` — inline after `·` separator
-- **Last activity:** `caption` 12px `text-secondary` — "hace N días" / "hoy" / "Sin actividad"
-- **Compliance badge:** from DESIGN.md badge spec — ≥70% accent, 40-69% warning, <40% error. Shows percentage. Hidden if no active plan (replaced by "Sin plan" badge using `error-dim`).
-- Card: `bg: #111317 | border: 1px solid #1F2227 | radius: 14px | padding: 14px 16px`
+- **Avatar:** 40px circle, `bg: #1A1D22`, initials `#B5F23D` semibold 13px
+  - Initials: first letter of first name + first letter of last name (e.g. "Sofía Torres" → "ST")
+  - Phase 4: replaced by actual photo if uploaded
+- **Name:** 13px 500 `#F0F0F0`
+- **Goal + activity:** 12px `#6B7280` — "Pérdida de peso · hoy" / "hace N días" / "Sin actividad"
+- **Compliance badge:** right-aligned, rounded pill, 12px 600, padding `3px 8px`
+  - ≥70%: `bg: rgba(181,242,61,0.12)` text `#B5F23D`
+  - 40–69%: `bg: rgba(242,153,74,0.12)` text `#F2994A`
+  - <40%: `bg: rgba(242,82,82,0.12)` text `#F25252`
+  - No plan: `bg: rgba(242,82,82,0.12)` text `#F25252` label "Sin plan"
 
-**Empty state** (when filter shows 0 clients):
+**Empty state per filter:**
 ```
 No hay clientes en esta categoría.
 ```
-Centered, `caption` `text-secondary`.
+Centered, `caption` `#6B7280`.
 
-**Zero clients total** (brand new coach):
+**Zero clients total:**
 ```
 [plus icon]
 Agregá tu primer cliente
 [Button Primary: "+ Nuevo cliente"]
 ```
-Centered vertically in remaining space.
 
 ---
 
-## Section 6 — FAB (Floating Action Button)
+## Section 6 — FAB
 
-Fixed position, bottom-right corner. Opens new client creation flow.
+Fixed, bottom-right. Position: `bottom: 80px` (above bottom nav), `right: 20px`.
 
 ```
-[+]
+width: 56px
+height: 56px
+border-radius: 16px  ← rounded rectangle, not circle
+bg: #B5F23D
+icon: "+" #0A0A0A bold 24px
+box-shadow: 0 4px 16px rgba(181,242,61,0.25)
 ```
-- `bg: #B5F23D` | `text: #0A0A0A` | `width/height: 56px` | `radius: full`
-- `position: fixed; bottom: 24px; right: 20px`
-- `shadow: 0 4px 16px rgba(181,242,61,0.25)` — subtle lime glow
-- Hover: `scale(1.05)` 150ms
-- On tap: navigate to `/coach/clients/new` (or open sheet — TBD in next screen spec)
+
+Tap action: navigate to `/coach/clients/new` (create client — most contextual action from dashboard).
+Hover/press: `scale(1.05)` 150ms.
 
 ---
 
-## Animations
+## Section 7 — Bottom Navigation
 
-Using `framer-motion` (Fase 3 install):
+Fixed at bottom. `bg: #0A0A0A | border-top: 1px solid #1F2227 | padding: 12px 0 | height: 64px`
+
+Four tabs: **Inicio** / **Clientes** / **Librería** / **Ajustes**
+
+Icons (outline, 22px): house / people / book-open / gear
+
+- Active (Inicio on this screen): icon + label `#B5F23D`, 10px 500 + lime underline dot indicator
+- Inactive: icon + label `#6B7280`, 10px
+
+---
+
+## Animations (framer-motion)
 
 | Element | Animation |
 |---|---|
 | Page enter | opacity 0→1, 150ms ease |
 | KPI cards | opacity 0→1 + translateY 6px→0, 200ms, stagger 40ms |
 | Client cards | opacity 0→1 + translateY 6px→0, 200ms, stagger 40ms per card |
-| Tab switch | opacity transition 150ms on list |
-| FAB | scale(1.05) on hover, 150ms |
+| Tab switch | opacity 150ms on list re-render |
+| FAB | scale(1.05) on hover/press, 150ms |
 
----
-
-## Mobile Layout
-
-Primary target: 390px (iPhone 14).
-
-- Page padding: `px-5` mobile, `px-6` desktop
-- KPI strip: 3 columns `grid-cols-3`, each card equal width
-- Client list: single column, full width cards
-- Alert banner: full width, max 3 clients shown
-- FAB: fixed, always visible above scroll
-
-Desktop (md+): max-width container centered, layout stays single-column (this is a mobile-first dashboard, not a data grid).
+Install: `npm install framer-motion`
 
 ---
 
 ## Component Files
 
-| File | Responsibility |
-|---|---|
-| `src/app/(coach)/coach/dashboard/page.tsx` | Server Component, data fetching, layout |
-| `src/app/(coach)/coach/dashboard/client-list.tsx` | `'use client'` — filter state + client cards render |
-| `src/components/ui/stat-card.tsx` | KPI stat card primitive |
-| `src/components/ui/avatar.tsx` | Initials avatar (sm/md/lg) |
-| `src/components/ui/compliance-badge.tsx` | Compliance % badge |
-| `src/components/ui/alert-card.tsx` | Left-accent alert card wrapper |
+| File | Type | Responsibility |
+|---|---|---|
+| `src/app/(coach)/coach/dashboard/page.tsx` | Server Component | Data fetching, layout shell |
+| `src/app/(coach)/coach/dashboard/client-list.tsx` | Client Component | Filter state + card render |
+| `src/app/(coach)/coach/dashboard/kpi-strip.tsx` | Client Component | 3 KPI cards + sparkline |
+| `src/components/ui/stat-card.tsx` | UI primitive | KPI card |
+| `src/components/ui/avatar.tsx` | UI primitive | Initials avatar (sm/md/lg) |
+| `src/components/ui/compliance-badge.tsx` | UI primitive | % badge with color thresholds |
+| `src/components/ui/bottom-nav.tsx` | UI primitive | Fixed bottom navigation |
+| `src/components/ui/filter-tabs.tsx` | UI primitive | Scrollable pill tabs |
 
 ---
 
 ## Testing
 
-- `stat-card.test.tsx` — renders value + label, warning color variant when alerts > 0
-- `compliance-badge.test.tsx` — accent/warning/error thresholds (70%, 69%, 40%)
-- `avatar.test.tsx` — initials extraction (first+last name, single name, empty)
-- No e2e for this screen in Phase 3 (defer to Playwright phase)
+- `avatar.test.tsx` — initials extraction: "Sofía Torres" → "ST", single name → "S", empty → "?"
+- `compliance-badge.test.tsx` — color thresholds: 70 → accent, 69 → warning, 40 → warning, 39 → error, no plan → error
+- `stat-card.test.tsx` — renders value + label, accent variant for Activos card
+- `kpi-strip.test.tsx` — momentum % calculation: positive/negative/zero/no prior week data
 
 ---
 
-## Non-goals (deferred)
+## Deferred to Phase 4
 
-- Search/filter by name (Phase 4)
-- Sort by last activity / compliance (Phase 4)
-- Bulk actions (Phase 4)
-- Push notifications (Phase 5)
-- Pull-to-refresh (Phase 4)
+- Coach profile photo (Supabase Storage upload)
+- Client photos (upload + fallback)
+- Global search (clients + exercises + plans)
+- Advanced filters panel
+- Notifications system (bell backend)
+- Sort by last activity / compliance
