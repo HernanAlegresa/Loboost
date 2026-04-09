@@ -20,10 +20,13 @@ export default function KpiStrip({
   const trendPositive = momentumPercent >= 0
   const trendLabel =
     momentumPercent === 0
-      ? '= igual'
+      ? '='
       : trendPositive
       ? `↑ ${momentumPercent}%`
       : `↓ ${Math.abs(momentumPercent)}%`
+
+  // sparklineData[0]=Lun … [6]=Dom — siempre fijo
+  const BAR_DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
   return (
     <div style={{ display: 'flex', gap: 10, padding: '0 20px', alignItems: 'stretch' }}>
@@ -54,34 +57,39 @@ export default function KpiStrip({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2, delay: 0.08 }}
       >
-        <StatCard label="Esta semana" value="">
-          <div style={{ width: '100%' }}>
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: trendPositive ? '#B5F23D' : '#F2994A',
-                marginBottom: 8,
-              }}
-            >
+        <StatCard
+          label="Esta semana"
+          value=""
+          labelRight={
+            <span style={{ fontSize: 11, fontWeight: 600, color: trendPositive ? '#B5F23D' : '#F2994A' }}>
               {trendLabel}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 28, width: '100%' }}>
-              {sparklineData.map((count, i) => {
-                const height = Math.max(4, Math.round((count / maxSessions) * 28))
-                return (
-                  <div
-                    key={i}
-                    style={{
-                      flex: 1,
-                      height,
-                      borderRadius: 3,
-                      backgroundColor: count > 0 ? '#B5F23D' : '#1A1D22',
-                    }}
-                  />
-                )
-              })}
-            </div>
+            </span>
+          }
+        >
+          {/* Barras + letras de días */}
+          <div style={{ display: 'flex', gap: 3, width: '100%' }}>
+            {sparklineData.map((count, i) => {
+              const barH = Math.max(4, Math.round((count / maxSessions) * 28))
+              return (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  {/* Barra */}
+                  <div style={{ height: 28, display: 'flex', alignItems: 'flex-end', width: '100%' }}>
+                    <div
+                      style={{
+                        width: '100%',
+                        height: barH,
+                        borderRadius: 3,
+                        backgroundColor: count > 0 ? '#B5F23D' : '#1A1D22',
+                      }}
+                    />
+                  </div>
+                  {/* Letra del día */}
+                  <span style={{ fontSize: 9, fontWeight: 500, color: '#6B7280' }}>
+                    {BAR_DAYS[i]}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </StatCard>
       </motion.div>

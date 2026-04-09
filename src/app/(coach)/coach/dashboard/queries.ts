@@ -79,18 +79,27 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
   const sevenDaysAgo = now - sevenDaysMs
   const allSessions = sessionsResult.data ?? []
 
+  // Inicio de la semana actual (lunes a las 00:00)
+  const todayDate = new Date(now)
+  const daysSinceMonday = (todayDate.getDay() + 6) % 7 // Dom=0→6, Lun=0, ..., Sab=6
+  const startOfWeek = new Date(todayDate)
+  startOfWeek.setHours(0, 0, 0, 0)
+  startOfWeek.setDate(startOfWeek.getDate() - daysSinceMonday)
+
+  // sparklineData[0]=Lun, [1]=Mar, [2]=Mié, [3]=Jue, [4]=Vie, [5]=Sáb, [6]=Dom
   const sparklineData: number[] = Array(7).fill(0)
   let currentWeekCount = 0
   let prevWeekCount = 0
 
   for (const session of allSessions) {
     if (!session.completed_at) continue
-    const sessionTime = new Date(session.completed_at).getTime()
-    const daysAgo = Math.floor((now - sessionTime) / (1000 * 60 * 60 * 24))
-    if (daysAgo < 7) {
+    const sessionDate = new Date(session.completed_at)
+    const sessionTime = sessionDate.getTime()
+    if (sessionTime >= startOfWeek.getTime()) {
       currentWeekCount++
-      if (daysAgo >= 0) sparklineData[6 - daysAgo]++
-    } else {
+      const isoDay = (sessionDate.getDay() + 6) % 7 // Lun=0 … Dom=6
+      sparklineData[isoDay]++
+    } else if (sessionTime >= sevenDaysAgo) {
       prevWeekCount++
     }
   }
