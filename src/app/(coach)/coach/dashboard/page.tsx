@@ -38,7 +38,7 @@ export default async function DashboardPage() {
       {/* Greeting */}
       <div
         style={{
-          padding: '20px 20px 16px',
+          padding: '20px 20px 24px',
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
       />
 
       {/* Client list with filter tabs — toma el espacio restante y scrollea internamente */}
-      <div style={{ flex: 1, overflow: 'hidden', minHeight: 0, marginTop: 16 }}>
+      <div style={{ flex: 1, overflow: 'hidden', minHeight: 0, marginTop: 24 }}>
         <ClientList clients={dashboardData.clients} />
       </div>
 
