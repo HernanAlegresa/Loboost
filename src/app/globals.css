@@ -12,6 +12,9 @@
   --color-accent: #B5F23D;
   --color-warning: #F2994A;
   --color-error: #F25252;
+  --color-accent-dim: rgba(181, 242, 61, 0.12);
+  --color-warning-dim: rgba(242, 153, 74, 0.12);
+  --color-error-dim: rgba(242, 82, 82, 0.12);
   --font-sans: Inter, sans-serif;
 }
 
