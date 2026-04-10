@@ -16,22 +16,22 @@ export default function TodayCard({ today }: { today: TodayDayData | null }) {
           backgroundColor: '#111317',
           border: '1px solid #1F2227',
           borderRadius: 14,
-          padding: 24,
+          padding: 28,
           textAlign: 'center',
         }}
       >
-        <p style={{ fontSize: 22, marginBottom: 8 }}>💤</p>
-        <p style={{ fontSize: 14, color: '#4B5563' }}>Día de descanso</p>
+        <p style={{ fontSize: 28, marginBottom: 10 }}>💤</p>
+        <p style={{ fontSize: 15, fontWeight: 600, color: '#4B5563' }}>
+          Hoy es día de descanso
+        </p>
         <p style={{ fontSize: 12, color: '#374151', marginTop: 4 }}>
-          Descansá, mañana volvemos.
+          Recuperate bien. Mañana volvemos.
         </p>
       </div>
     )
   }
 
-  // Capture as non-null local — TypeScript doesn't narrow props inside closures
   const day = today
-
   const isCompleted = day.sessionStatus === 'completed'
   const isInProgress = day.sessionStatus === 'in_progress'
 
@@ -52,88 +52,130 @@ export default function TodayCard({ today }: { today: TodayDayData | null }) {
     }
   }
 
+  const exerciseCount = day.exercises.length
+
   return (
     <div
       style={{
         backgroundColor: '#111317',
-        border: '1px solid #1F2227',
+        border: `1px solid ${
+          isCompleted
+            ? 'rgba(181,242,61,0.3)'
+            : isInProgress
+              ? 'rgba(242,153,74,0.3)'
+              : '#1F2227'
+        }`,
         borderRadius: 14,
         overflow: 'hidden',
       }}
     >
-      {/* Status banner */}
+      {isInProgress && (
+        <div
+          style={{
+            backgroundColor: 'rgba(242,153,74,0.15)',
+            padding: '10px 16px',
+            borderBottom: '1px solid rgba(242,153,74,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#F2994A' }}>
+              Tenés un entrenamiento en curso
+            </p>
+            <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
+              Retomá desde donde dejaste
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleResume}
+            style={{
+              padding: '7px 14px',
+              backgroundColor: '#F2994A',
+              color: '#0A0A0A',
+              fontWeight: 700,
+              fontSize: 12,
+              borderRadius: 8,
+              border: 'none',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            Retomar
+          </button>
+        </div>
+      )}
+
       {isCompleted && (
         <div
           style={{
             backgroundColor: 'rgba(181,242,61,0.1)',
-            padding: '8px 16px',
-            borderBottom: '1px solid #1F2227',
+            padding: '10px 16px',
+            borderBottom: '1px solid rgba(181,242,61,0.15)',
           }}
         >
-          <p style={{ fontSize: 12, fontWeight: 600, color: '#B5F23D' }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#B5F23D' }}>
             ✓ Entrenamiento completado
           </p>
         </div>
       )}
-      {isInProgress && (
-        <div
-          style={{
-            backgroundColor: 'rgba(242,153,74,0.1)',
-            padding: '8px 16px',
-            borderBottom: '1px solid #1F2227',
-          }}
-        >
-          <p style={{ fontSize: 12, fontWeight: 600, color: '#F2994A' }}>
-            En progreso — podés retomar
-          </p>
-        </div>
-      )}
 
-      {/* Exercise list */}
       <div style={{ padding: '14px 16px' }}>
-        {day.exercises.length === 0 ? (
+        {exerciseCount > 0 ? (
+          <>
+            <p style={{ fontSize: 13, color: '#9CA3AF', marginBottom: 12 }}>
+              {exerciseCount}{' '}
+              {exerciseCount === 1 ? 'ejercicio' : 'ejercicios'} planificados
+            </p>
+            {day.exercises.slice(0, 3).map((ex, i) => (
+              <div
+                key={ex.clientPlanDayExerciseId}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 0',
+                  borderTop: i > 0 ? '1px solid #1A1D22' : 'none',
+                }}
+              >
+                <span style={{ fontSize: 13, color: '#F0F0F0' }}>{ex.name}</span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    color: '#6B7280',
+                    flexShrink: 0,
+                    marginLeft: 8,
+                  }}
+                >
+                  {ex.plannedSets} ×{' '}
+                  {ex.plannedReps != null
+                    ? `${ex.plannedReps} reps`
+                    : ex.plannedDurationSeconds != null
+                      ? `${ex.plannedDurationSeconds}s`
+                      : '—'}
+                </span>
+              </div>
+            ))}
+            {exerciseCount > 3 && (
+              <p style={{ fontSize: 12, color: '#4B5563', marginTop: 8 }}>
+                +{exerciseCount - 3} ejercicios más
+              </p>
+            )}
+          </>
+        ) : (
           <p style={{ fontSize: 13, color: '#4B5563' }}>
             Sin ejercicios planificados para hoy.
           </p>
-        ) : (
-          day.exercises.map((ex, i) => (
-            <div
-              key={ex.clientPlanDayExerciseId}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '9px 0',
-                borderTop: i > 0 ? '1px solid #1A1D22' : 'none',
-              }}
-            >
-              <span style={{ fontSize: 13, color: '#F0F0F0' }}>{ex.name}</span>
-              <span
-                style={{
-                  fontSize: 12,
-                  color: '#6B7280',
-                  flexShrink: 0,
-                  marginLeft: 8,
-                }}
-              >
-                {ex.plannedSets} ×{' '}
-                {ex.plannedReps != null
-                  ? `${ex.plannedReps} reps`
-                  : ex.plannedDurationSeconds != null
-                  ? `${ex.plannedDurationSeconds}s`
-                  : '—'}
-              </span>
-            </div>
-          ))
         )}
       </div>
 
-      {/* CTA */}
-      {!isCompleted && day.exercises.length > 0 && (
+      {!isCompleted && !isInProgress && exerciseCount > 0 && (
         <div style={{ padding: '0 16px 16px' }}>
           <button
             type="button"
-            onClick={isInProgress ? handleResume : handleStart}
+            onClick={handleStart}
             disabled={isPending}
             style={{
               width: '100%',
@@ -147,11 +189,7 @@ export default function TodayCard({ today }: { today: TodayDayData | null }) {
               cursor: isPending ? 'not-allowed' : 'pointer',
             }}
           >
-            {isPending
-              ? 'Cargando...'
-              : isInProgress
-              ? 'Retomar entrenamiento'
-              : 'Iniciar entrenamiento'}
+            {isPending ? 'Cargando...' : 'Empezar entrenamiento'}
           </button>
         </div>
       )}

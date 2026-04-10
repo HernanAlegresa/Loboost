@@ -7,7 +7,6 @@ export async function getLiveSessionData(
 ): Promise<LiveSessionData | null> {
   const supabase = await createClient()
 
-  // Verify session belongs to this client
   const { data: session } = await supabase
     .from('sessions')
     .select('id, client_plan_day_id, status')
@@ -17,12 +16,11 @@ export async function getLiveSessionData(
 
   if (!session) return null
 
-  // Fetch exercises + logged sets in parallel
   const [exercisesResult, setsResult] = await Promise.all([
     supabase
       .from('client_plan_day_exercises')
       .select(
-        'id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, exercises(id, name, muscle_group, type)'
+        'id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, exercises(id, name, muscle_group, type, video_url)'
       )
       .eq('client_plan_day_id', session.client_plan_day_id)
       .order('order'),
@@ -35,7 +33,6 @@ export async function getLiveSessionData(
       .order('set_number'),
   ])
 
-  // Index sets by exercise id
   const setsByExId = new Map<string, SetLog[]>()
   for (const s of setsResult.data ?? []) {
     const id = s.client_plan_day_exercise_id
@@ -56,22 +53,31 @@ export async function getLiveSessionData(
     reps: number | null
     duration_seconds: number | null
     rest_seconds: number | null
-    exercises: { id: string; name: string; muscle_group: string; type: string } | null
+    exercises: {
+      id: string
+      name: string
+      muscle_group: string
+      type: string
+      video_url: string | null
+    } | null
   }
 
-  const exercises: LiveExercise[] = ((exercisesResult.data as ExRow[]) ?? []).map((ex) => ({
-    clientPlanDayExerciseId: ex.id,
-    exerciseId: ex.exercise_id,
-    name: ex.exercises?.name ?? 'Ejercicio',
-    muscleGroup: ex.exercises?.muscle_group ?? '',
-    type: (ex.exercises?.type as 'strength' | 'cardio') ?? 'strength',
-    order: ex.order,
-    plannedSets: ex.sets,
-    plannedReps: ex.reps ?? null,
-    plannedDurationSeconds: ex.duration_seconds ?? null,
-    restSeconds: ex.rest_seconds ?? null,
-    loggedSets: setsByExId.get(ex.id) ?? [],
-  }))
+  const exercises: LiveExercise[] = ((exercisesResult.data as ExRow[]) ?? []).map(
+    (ex) => ({
+      clientPlanDayExerciseId: ex.id,
+      exerciseId: ex.exercise_id,
+      name: ex.exercises?.name ?? 'Ejercicio',
+      muscleGroup: ex.exercises?.muscle_group ?? '',
+      type: (ex.exercises?.type as 'strength' | 'cardio') ?? 'strength',
+      order: ex.order,
+      plannedSets: ex.sets,
+      plannedReps: ex.reps ?? null,
+      plannedDurationSeconds: ex.duration_seconds ?? null,
+      restSeconds: ex.rest_seconds ?? null,
+      videoUrl: ex.exercises?.video_url ?? null,
+      loggedSets: setsByExId.get(ex.id) ?? [],
+    })
+  )
 
   return {
     sessionId: session.id,

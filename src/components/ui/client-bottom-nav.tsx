@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Clock } from 'lucide-react'
+import { Home, CalendarDays, Clock, Settings } from 'lucide-react'
 
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/client/dashboard', Icon: Home },
+  { label: 'Plan', href: '/client/plan', Icon: CalendarDays },
   { label: 'Historial', href: '/client/history', Icon: Clock },
+  { label: 'Ajustes', href: '/client/settings', Icon: Settings },
 ]
 
 export default function ClientBottomNav() {

@@ -1,41 +1,65 @@
 import { createClient } from '@/lib/supabase/server'
-import type { SessionHistoryItem } from '@/features/training/types'
+import { computeDayDate } from '@/features/clients/utils/training-utils'
+import type { WeekHistorySummary } from '@/features/training/types'
 
-export async function getSessionHistory(
+export async function getWeeklyHistorySummaries(
   clientId: string
-): Promise<SessionHistoryItem[]> {
+): Promise<WeekHistorySummary[]> {
   const supabase = await createClient()
 
-  const { data } = await supabase
-    .from('sessions')
-    .select(
-      `id, date, status, completed_at,
-       client_plan_days(
-         day_of_week,
-         client_plans(name)
-       )`
-    )
+  const { data: plan } = await supabase
+    .from('client_plans')
+    .select('id, weeks, start_date')
     .eq('client_id', clientId)
-    .order('date', { ascending: false })
-    .limit(50)
+    .eq('status', 'active')
+    .maybeSingle()
 
-  type Row = {
-    id: string
-    date: string
-    status: string
-    completed_at: string | null
-    client_plan_days: {
-      day_of_week: number
-      client_plans: { name: string } | null
-    } | null
+  if (!plan) return []
+
+  const [daysResult, sessionsResult] = await Promise.all([
+    supabase
+      .from('client_plan_days')
+      .select('id, week_number, day_of_week')
+      .eq('client_plan_id', plan.id)
+      .order('week_number')
+      .order('day_of_week'),
+    supabase
+      .from('sessions')
+      .select('id, client_plan_day_id, status')
+      .eq('client_id', clientId)
+      .eq('status', 'completed'),
+  ])
+
+  const completedDayIds = new Set<string>(
+    (sessionsResult.data ?? []).map((s) => s.client_plan_day_id)
+  )
+
+  const totalByWeek = new Map<number, number>()
+  const completedByWeek = new Map<number, number>()
+  for (const day of daysResult.data ?? []) {
+    totalByWeek.set(day.week_number, (totalByWeek.get(day.week_number) ?? 0) + 1)
+    if (completedDayIds.has(day.id)) {
+      completedByWeek.set(
+        day.week_number,
+        (completedByWeek.get(day.week_number) ?? 0) + 1
+      )
+    }
   }
 
-  return ((data as Row[]) ?? []).map((s) => ({
-    id: s.id,
-    date: s.date,
-    status: s.status as 'in_progress' | 'completed',
-    completedAt: s.completed_at,
-    planName: s.client_plan_days?.client_plans?.name ?? 'Entrenamiento',
-    dayOfWeek: s.client_plan_days?.day_of_week ?? 0,
-  }))
+  const result: WeekHistorySummary[] = []
+  for (let w = 1; w <= plan.weeks; w++) {
+    const completed = completedByWeek.get(w) ?? 0
+    if (completed === 0) continue
+    const total = totalByWeek.get(w) ?? 0
+    result.push({
+      weekNumber: w,
+      dateRangeStart: computeDayDate(plan.start_date, w, 1),
+      dateRangeEnd: computeDayDate(plan.start_date, w, 7),
+      completedDays: completed,
+      totalTrainingDays: total,
+      compliancePct: total > 0 ? Math.round((completed / total) * 100) : 0,
+    })
+  }
+
+  return result.sort((a, b) => b.weekNumber - a.weekNumber)
 }

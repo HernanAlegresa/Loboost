@@ -237,6 +237,38 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          client_id: string
+          coach_msgs: boolean
+          id: string
+          reminders: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          coach_msgs?: boolean
+          id?: string
+          reminders?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          coach_msgs?: boolean
+          id?: string
+          reminders?: boolean
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_notes: {
         Row: {
           client_id: string

@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, CheckCircle } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { completeSetAction } from '@/features/training/actions/complete-set'
 import { completeSessionAction } from '@/features/training/actions/complete-session'
+import VideoModal from '@/components/ui/video-modal'
 import type { LiveSessionData } from '@/features/training/types'
 
 type SetInputs = { weight: string; duration: string }
@@ -16,8 +17,21 @@ function makeKey(exerciseId: string, setNumber: number): string {
 export default function LiveTraining({ session }: { session: LiveSessionData }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [isFinished, setIsFinished] = useState(false)
+  const [showVideo, setShowVideo] = useState(false)
 
-  // Initialize completed set keys from server data
+  const [currentIndex, setCurrentIndex] = useState<number>(() => {
+    if (session.exercises.length === 0) return 0
+    for (let i = 0; i < session.exercises.length; i++) {
+      const ex = session.exercises[i]!
+      const allDone = Array.from({ length: ex.plannedSets }, (_, j) => j + 1).every(
+        (n) => ex.loggedSets.find((s) => s.setNumber === n)?.completed
+      )
+      if (!allDone) return i
+    }
+    return session.exercises.length - 1
+  })
+
   const [localCompleted, setLocalCompleted] = useState<Set<string>>(() => {
     const s = new Set<string>()
     for (const ex of session.exercises) {
@@ -28,7 +42,6 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     return s
   })
 
-  // Per-set inputs initialized from server data
   const [inputs, setInputs] = useState<Map<string, SetInputs>>(() => {
     const m = new Map<string, SetInputs>()
     for (const ex of session.exercises) {
@@ -42,6 +55,49 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     return m
   })
 
+  if (session.exercises.length === 0) {
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 40,
+          gap: 16,
+          textAlign: 'center',
+        }}
+      >
+        <p style={{ fontSize: 15, color: '#9CA3AF' }}>
+          No hay ejercicios en esta sesión.
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push('/client/dashboard')}
+          style={{
+            padding: '12px 24px',
+            backgroundColor: '#1F2227',
+            border: '1px solid #2A2D34',
+            borderRadius: 12,
+            color: '#F0F0F0',
+            cursor: 'pointer',
+          }}
+        >
+          Volver al inicio
+        </button>
+      </div>
+    )
+  }
+
+  const currentEx = session.exercises[currentIndex]!
+  const setNumbers = Array.from({ length: currentEx.plannedSets }, (_, i) => i + 1)
+  const allCurrentDone = setNumbers.every((n) =>
+    localCompleted.has(makeKey(currentEx.clientPlanDayExerciseId, n))
+  )
+  const isLastExercise = currentIndex === session.exercises.length - 1
+  const isFirstExercise = currentIndex === 0
+
   function getInput(exId: string, setNum: number): SetInputs {
     return inputs.get(makeKey(exId, setNum)) ?? { weight: '', duration: '' }
   }
@@ -54,28 +110,23 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     })
   }
 
-  function handleCompleteSet(
-    exerciseId: string,
-    setNumber: number,
-    type: 'strength' | 'cardio'
-  ) {
-    const key = makeKey(exerciseId, setNumber)
-    const inp = getInput(exerciseId, setNumber)
+  function handleCompleteSet(setNumber: number) {
+    const key = makeKey(currentEx.clientPlanDayExerciseId, setNumber)
+    const inp = getInput(currentEx.clientPlanDayExerciseId, setNumber)
 
-    // Optimistic update
     setLocalCompleted((prev) => new Set([...prev, key]))
 
     startTransition(async () => {
       const formData = new FormData()
       formData.set('sessionId', session.sessionId)
-      formData.set('clientPlanDayExerciseId', exerciseId)
+      formData.set('clientPlanDayExerciseId', currentEx.clientPlanDayExerciseId)
       formData.set('setNumber', String(setNumber))
-      if (type === 'strength' && inp.weight) formData.set('weightKg', inp.weight)
-      if (type === 'cardio' && inp.duration) formData.set('durationSeconds', inp.duration)
+      if (currentEx.type === 'strength' && inp.weight) formData.set('weightKg', inp.weight)
+      if (currentEx.type === 'cardio' && inp.duration)
+        formData.set('durationSeconds', inp.duration)
 
       const result = await completeSetAction(formData)
       if (result.error) {
-        // Revert on error
         setLocalCompleted((prev) => {
           const next = new Set(prev)
           next.delete(key)
@@ -88,22 +139,52 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   function handleFinish() {
     startTransition(async () => {
       await completeSessionAction(session.sessionId)
-      router.push('/client/dashboard')
+      setIsFinished(true)
     })
   }
 
-  const totalSets = session.exercises.reduce((acc, ex) => acc + ex.plannedSets, 0)
-  const allDone = localCompleted.size >= totalSets
-
-  const completedExCount = session.exercises.filter((ex) =>
-    Array.from({ length: ex.plannedSets }, (_, i) => i + 1).every((n) =>
-      localCompleted.has(makeKey(ex.clientPlanDayExerciseId, n))
+  if (isFinished) {
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px 24px',
+          gap: 20,
+          textAlign: 'center',
+        }}
+      >
+        <p style={{ fontSize: 52 }}>🏆</p>
+        <p style={{ fontSize: 24, fontWeight: 700, color: '#F0F0F0' }}>
+          ¡Entrenamiento completado!
+        </p>
+        <p style={{ fontSize: 14, color: '#6B7280' }}>Excelente trabajo. Seguí así.</p>
+        <button
+          type="button"
+          onClick={() => router.push('/client/dashboard')}
+          style={{
+            marginTop: 8,
+            padding: '14px 32px',
+            backgroundColor: '#B5F23D',
+            color: '#0A0A0A',
+            fontWeight: 700,
+            fontSize: 15,
+            borderRadius: 12,
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Volver al inicio
+        </button>
+      </div>
     )
-  ).length
+  }
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Header */}
       <div
         style={{
           padding: '14px 20px',
@@ -130,238 +211,259 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
           <ChevronLeft size={22} />
         </button>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0' }}>
-            Entrenamiento
+          <p style={{ fontSize: 11, color: '#6B7280', fontWeight: 500 }}>
+            Ejercicio {currentIndex + 1} de {session.exercises.length}
           </p>
-          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 1 }}>
-            {completedExCount} / {session.exercises.length} ejercicios
+          <p style={{ fontSize: 17, fontWeight: 700, color: '#F0F0F0', marginTop: 1 }}>
+            {currentEx.name}
           </p>
+          {currentEx.muscleGroup && (
+            <p style={{ fontSize: 12, color: '#6B7280', marginTop: 1 }}>
+              {currentEx.muscleGroup}
+            </p>
+          )}
         </div>
+        {currentEx.videoUrl && (
+          <button
+            type="button"
+            onClick={() => setShowVideo(true)}
+            style={{
+              background: 'none',
+              border: '1px solid #2A2D34',
+              borderRadius: 8,
+              cursor: 'pointer',
+              color: '#B5F23D',
+              fontSize: 11,
+              fontWeight: 600,
+              padding: '5px 10px',
+              flexShrink: 0,
+            }}
+          >
+            Video
+          </button>
+        )}
       </div>
 
-      {/* Scrollable exercises */}
+      {(currentEx.plannedReps != null || currentEx.plannedDurationSeconds != null) && (
+        <div
+          style={{
+            padding: '8px 20px',
+            backgroundColor: 'rgba(181,242,61,0.06)',
+            borderBottom: '1px solid #1F2227',
+            flexShrink: 0,
+          }}
+        >
+          <p style={{ fontSize: 12, color: '#9CA3AF' }}>
+            Objetivo: {currentEx.plannedSets} series ×{' '}
+            {currentEx.plannedReps != null
+              ? `${currentEx.plannedReps} reps`
+              : `${currentEx.plannedDurationSeconds}s`}
+            {currentEx.restSeconds != null ? ` · ${currentEx.restSeconds}s descanso` : ''}
+          </p>
+        </div>
+      )}
+
       <div
         style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '16px 20px',
+          padding: '14px 20px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 16,
+          gap: 10,
         }}
       >
-        {session.exercises.map((ex) => {
-          const setNumbers = Array.from({ length: ex.plannedSets }, (_, i) => i + 1)
-          const exAllDone = setNumbers.every((n) =>
-            localCompleted.has(makeKey(ex.clientPlanDayExerciseId, n))
-          )
+        {setNumbers.map((setNum) => {
+          const key = makeKey(currentEx.clientPlanDayExerciseId, setNum)
+          const isDone = localCompleted.has(key)
+          const inp = getInput(currentEx.clientPlanDayExerciseId, setNum)
 
           return (
             <div
-              key={ex.clientPlanDayExerciseId}
+              key={setNum}
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
                 backgroundColor: '#111317',
-                border: `1px solid ${exAllDone ? 'rgba(181,242,61,0.3)' : '#1F2227'}`,
-                borderRadius: 14,
-                overflow: 'hidden',
+                border: `1px solid ${isDone ? 'rgba(181,242,61,0.3)' : '#1F2227'}`,
+                borderRadius: 12,
+                padding: '12px 16px',
               }}
             >
-              {/* Exercise header */}
-              <div
+              <span
                 style={{
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #1F2227',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  fontSize: 12,
+                  color: '#6B7280',
+                  minWidth: 58,
+                  flexShrink: 0,
                 }}
               >
-                <div>
-                  <p
+                Serie {setNum}
+              </span>
+
+              {isDone ? (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 13, color: '#9CA3AF' }}>
+                    {currentEx.type === 'strength'
+                      ? `${inp.weight || '—'} kg × ${currentEx.plannedReps ?? '—'} reps`
+                      : `${inp.duration || '—'} seg`}
+                  </span>
+                  <span style={{ fontSize: 14, color: '#B5F23D', marginLeft: 'auto' }}>
+                    ✓
+                  </span>
+                </div>
+              ) : (
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {currentEx.type === 'strength' ? (
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="kg"
+                      value={inp.weight}
+                      onChange={(e) =>
+                        updateInput(currentEx.clientPlanDayExerciseId, setNum, {
+                          weight: e.target.value,
+                        })
+                      }
+                      style={{
+                        width: 62,
+                        padding: '7px 8px',
+                        backgroundColor: '#1A1D22',
+                        border: '1px solid #2A2D34',
+                        borderRadius: 8,
+                        color: '#F0F0F0',
+                        fontSize: 14,
+                        textAlign: 'center',
+                      }}
+                    />
+                  ) : (
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="seg"
+                      value={inp.duration}
+                      onChange={(e) =>
+                        updateInput(currentEx.clientPlanDayExerciseId, setNum, {
+                          duration: e.target.value,
+                        })
+                      }
+                      style={{
+                        width: 62,
+                        padding: '7px 8px',
+                        backgroundColor: '#1A1D22',
+                        border: '1px solid #2A2D34',
+                        borderRadius: 8,
+                        color: '#F0F0F0',
+                        fontSize: 14,
+                        textAlign: 'center',
+                      }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleCompleteSet(setNum)}
+                    disabled={isPending}
                     style={{
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: exAllDone ? '#B5F23D' : '#F0F0F0',
+                      flex: 1,
+                      padding: '8px 12px',
+                      backgroundColor: '#1F2227',
+                      border: '1px solid #2A2D34',
+                      borderRadius: 8,
+                      color: '#9CA3AF',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: isPending ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    {ex.name}
-                  </p>
-                  {ex.muscleGroup && (
-                    <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
-                      {ex.muscleGroup}
-                    </p>
-                  )}
+                    Completar
+                  </button>
                 </div>
-                {exAllDone && <CheckCircle size={18} color="#B5F23D" />}
-              </div>
-
-              {/* Sets */}
-              <div
-                style={{
-                  padding: '10px 16px 14px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 10,
-                }}
-              >
-                {setNumbers.map((setNum) => {
-                  const key = makeKey(ex.clientPlanDayExerciseId, setNum)
-                  const isDone = localCompleted.has(key)
-                  const inp = getInput(ex.clientPlanDayExerciseId, setNum)
-
-                  return (
-                    <div
-                      key={setNum}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 12,
-                          color: '#6B7280',
-                          minWidth: 54,
-                          flexShrink: 0,
-                        }}
-                      >
-                        Serie {setNum}
-                      </span>
-
-                      {isDone ? (
-                        <div
-                          style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 6,
-                          }}
-                        >
-                          <span style={{ fontSize: 13, color: '#9CA3AF' }}>
-                            {ex.type === 'strength'
-                              ? `${inp.weight || '—'} kg × ${ex.plannedReps ?? '—'} reps`
-                              : `${inp.duration || '—'} seg`}
-                          </span>
-                          <span
-                            style={{
-                              fontSize: 14,
-                              color: '#B5F23D',
-                              marginLeft: 'auto',
-                            }}
-                          >
-                            ✓
-                          </span>
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
-                          {ex.type === 'strength' ? (
-                            <input
-                              type="number"
-                              inputMode="decimal"
-                              placeholder="kg"
-                              value={inp.weight}
-                              onChange={(e) =>
-                                updateInput(ex.clientPlanDayExerciseId, setNum, {
-                                  weight: e.target.value,
-                                })
-                              }
-                              style={{
-                                width: 62,
-                                padding: '7px 8px',
-                                backgroundColor: '#1A1D22',
-                                border: '1px solid #2A2D34',
-                                borderRadius: 8,
-                                color: '#F0F0F0',
-                                fontSize: 14,
-                                textAlign: 'center',
-                              }}
-                            />
-                          ) : (
-                            <input
-                              type="number"
-                              inputMode="numeric"
-                              placeholder="seg"
-                              value={inp.duration}
-                              onChange={(e) =>
-                                updateInput(ex.clientPlanDayExerciseId, setNum, {
-                                  duration: e.target.value,
-                                })
-                              }
-                              style={{
-                                width: 62,
-                                padding: '7px 8px',
-                                backgroundColor: '#1A1D22',
-                                border: '1px solid #2A2D34',
-                                borderRadius: 8,
-                                color: '#F0F0F0',
-                                fontSize: 14,
-                                textAlign: 'center',
-                              }}
-                            />
-                          )}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleCompleteSet(
-                                ex.clientPlanDayExerciseId,
-                                setNum,
-                                ex.type
-                              )
-                            }
-                            disabled={isPending}
-                            style={{
-                              flex: 1,
-                              padding: '8px 12px',
-                              backgroundColor: '#1F2227',
-                              border: '1px solid #2A2D34',
-                              borderRadius: 8,
-                              color: '#9CA3AF',
-                              fontSize: 13,
-                              fontWeight: 600,
-                              cursor: isPending ? 'not-allowed' : 'pointer',
-                            }}
-                          >
-                            Completar
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+              )}
             </div>
           )
         })}
+      </div>
 
-        {/* Finish button — appears when all sets are done */}
-        {allDone && (
+      <div
+        style={{
+          padding: '12px 20px 16px',
+          borderTop: '1px solid #1F2227',
+          display: 'flex',
+          gap: 10,
+          flexShrink: 0,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setCurrentIndex((i) => i - 1)}
+          disabled={isFirstExercise}
+          style={{
+            padding: '12px 14px',
+            backgroundColor: '#111317',
+            border: '1px solid #1F2227',
+            borderRadius: 12,
+            color: isFirstExercise ? '#374151' : '#9CA3AF',
+            cursor: isFirstExercise ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 13,
+            flexShrink: 0,
+          }}
+        >
+          <ChevronLeft size={16} />
+          Ant.
+        </button>
+
+        {isLastExercise ? (
           <button
             type="button"
             onClick={handleFinish}
-            disabled={isPending}
+            disabled={isPending || !allCurrentDone}
             style={{
-              width: '100%',
-              padding: 16,
-              backgroundColor: isPending ? '#8BA82B' : '#B5F23D',
-              color: '#0A0A0A',
+              flex: 1,
+              padding: 12,
+              backgroundColor: allCurrentDone && !isPending ? '#B5F23D' : '#111317',
+              border: `1px solid ${allCurrentDone ? '#B5F23D' : '#1F2227'}`,
+              borderRadius: 12,
+              color: allCurrentDone && !isPending ? '#0A0A0A' : '#374151',
               fontWeight: 700,
-              fontSize: 16,
-              borderRadius: 14,
-              border: 'none',
-              cursor: isPending ? 'not-allowed' : 'pointer',
-              marginTop: 8,
+              fontSize: 14,
+              cursor: allCurrentDone && !isPending ? 'pointer' : 'not-allowed',
             }}
           >
-            {isPending ? 'Guardando...' : '✓ Finalizar entrenamiento'}
+            {isPending ? 'Guardando...' : '✓ Finalizar'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setCurrentIndex((i) => i + 1)}
+            disabled={!allCurrentDone}
+            style={{
+              flex: 1,
+              padding: 12,
+              backgroundColor: '#111317',
+              border: `1px solid ${allCurrentDone ? '#B5F23D' : '#1F2227'}`,
+              borderRadius: 12,
+              color: allCurrentDone ? '#B5F23D' : '#374151',
+              fontWeight: 600,
+              fontSize: 14,
+              cursor: allCurrentDone ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            Siguiente <ChevronRight size={16} />
           </button>
         )}
-
-        <div style={{ height: 40 }} />
       </div>
+
+      {showVideo && currentEx.videoUrl && (
+        <VideoModal url={currentEx.videoUrl} onClose={() => setShowVideo(false)} />
+      )}
     </div>
   )
 }
