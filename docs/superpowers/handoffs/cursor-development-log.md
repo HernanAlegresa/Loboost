@@ -140,6 +140,10 @@ Archivos extra:
 
 - `src/app/(coach)/coach/library/exercises/delete-exercise-dialog.tsx`
 
+### Git (pulido)
+
+- Commit: `90b9c4c` — `polish: exercise library UX (Spanish copy, delete sheet, no native dialogs)`
+
 ### Deuda / próximo paso natural
 
 - **Grupo 3**: biblioteca de planes + builder + asignación (rutas bajo `/coach/library/plans` o similar).
