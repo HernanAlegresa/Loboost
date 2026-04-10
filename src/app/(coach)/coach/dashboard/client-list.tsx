@@ -54,8 +54,8 @@ export default function ClientList({ clients }: ClientListProps) {
   })
 
   return (
-    <div>
-      <div style={{ padding: '16px 20px 8px' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ padding: '16px 20px 8px', flexShrink: 0 }}>
         <FilterTabs
           tabs={TABS}
           activeTab={activeFilter}
@@ -63,7 +63,7 @@ export default function ClientList({ clients }: ClientListProps) {
         />
       </div>
 
-      <div style={{ padding: '8px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 20px 160px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         {filtered.length === 0 ? (
           <p style={{ fontSize: 12, color: '#6B7280', textAlign: 'center', padding: '24px 0' }}>
             No hay clientes en esta categoría.

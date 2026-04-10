@@ -1,171 +1,96 @@
-Estoy comenzando un nuevo proyecto desde cero y quiero que me ayudes a analizarlo, planificarlo y recomendar la mejor forma de abordarlo utilizando todas tus capacidades (Claude Code), herramientas disponibles, plugins instalados y buenas prácticas actuales.
+Quiero generar un resumen completo, claro y estructurado del estado actual del proyecto LoBoost después de haber completado todas las tasks de la Fase 1.
 
-Primero te voy a explicar el proyecto de forma completa para que tengas todo el contexto.
+El objetivo es que este resumen pueda ser compartido con otro asistente para que entienda perfectamente:
 
-## 🧠 Proyecto: LoBoost
+* en qué estado está el proyecto
+* qué se hizo
+* cómo está estructurado
+* cómo estamos trabajando con Claude Code
+* y qué sigue a partir de ahora
 
-LoBoost es una web app (mobile-first + desktop) enfocada en coaches de fitness. El objetivo es crear una plataforma donde los entrenadores puedan gestionar sus clientes, crear planes de entrenamiento y hacer seguimiento del progreso de cada cliente de forma profesional, moderna y eficiente.
+Necesito que incluyas:
 
----
+## 1. Estado general del proyecto
 
-## 🎯 Enfoque del producto
+* Qué está completamente terminado
+* Qué partes están funcionales hoy
+* Qué partes todavía no están implementadas
 
-* Enfoque principal: fitness / entrenamiento
-* Enfoque secundario: nutrición (simple, no compleja)
+## 2. Arquitectura actual
 
-La parte de nutrición no será avanzada (sin tracking de macros ni cálculos complejos), sino más bien recomendaciones o planes simples en formato texto.
+* Estructura de carpetas real del proyecto (src/)
+* Organización por features
+* Cómo están separadas las responsabilidades (features, lib, ui, etc.)
 
----
+## 3. Autenticación y roles
 
-## 👥 Usuarios
+* Cómo está implementado el auth (Supabase + server actions)
+* Cómo funcionan los roles (coach / client)
+* Qué hace el middleware exactamente
 
-### Coach (usuario principal)
+## 4. Base de datos
 
-Puede:
+* Tablas creadas
+* Relaciones importantes
+* Cómo se maneja profiles
+* Qué parte del modelo todavía no está implementada (planes, ejercicios, etc.)
 
-* Crear clientes
-* Ver lista de clientes
-* Acceder al dashboard individual de cada cliente
-* Crear ejercicios (biblioteca propia)
-* Crear planes de entrenamiento
-* Crear planes de nutrición
-* Editar y gestionar todo
-* Asignar planes a clientes
+## 5. Testing
 
----
+* Qué está cubierto actualmente
+* Qué tipo de tests existen (schemas, roles, etc.)
 
-### Cliente
+## 6. Supabase integración
 
-Puede:
+* Cómo están configurados los clientes (server, client, middleware)
+* Cómo se usan en el proyecto
 
-* Ver su dashboard personal
-* Ver su plan de entrenamiento
-* Ver ejercicios asignados
-* Ver plan nutricional
-* Registrar progreso
+## 7. Decisiones importantes tomadas
 
----
+* Decisiones clave de arquitectura o producto que ya se aplicaron
+* Convenciones importantes que hay que respetar
 
-## 🏋️ Estructura de planes
+## 8. Flujo actual de la aplicación
 
-Un plan tiene:
+* Qué puede hacer hoy un usuario (coach o client)
+* Qué pantallas o rutas funcionan actualmente
 
-* duración en semanas (ej: 4 semanas)
-* semanas fijas
+## 9. Uso de Claude Code (MUY IMPORTANTE)
 
-Cada semana:
+Quiero que expliques claramente cómo estamos utilizando Claude Code en este proyecto:
 
-* contiene días (lunes a domingo)
+* Qué enfoque de trabajo estamos usando (ej: subagent-driven, task-by-task, etc.)
+* Cómo estamos organizando el desarrollo por fases y tasks
+* Cómo estamos manejando el contexto (CLAUDE.md, spec, plan)
+* Qué herramientas de Claude Code estamos usando (subagents, memory, MCP, etc.)
+* Si estamos usando skills:
 
-Cada día:
+  * cuáles
+  * para qué sirven
+  * cómo se están aplicando en este proyecto
+* Cómo estamos optimizando el uso de tokens y contexto
+* Qué buenas prácticas estamos siguiendo en este flujo
 
-* contiene ejercicios
+Quiero que esto quede explicado de forma clara para poder replicarlo en futuros proyectos.
 
-Cada ejercicio:
+## 10. Pendiente / siguiente fase
 
-* sets (definido por el coach)
-* reps (definido por el coach)
-* peso (lo registra el cliente)
+* Qué falta construir a partir de ahora
+* Qué incluiría la Fase 2
+* Qué prioridad recomendarías
 
----
+## 11. Riesgos o puntos a tener en cuenta
 
-## 📚 Biblioteca de ejercicios
-
-* Cada coach tiene su propia biblioteca de ejercicios
-* Puede crear ejercicios personalizados
-* Puede reutilizarlos en múltiples planes
-* Se permite modificar (override) un ejercicio dentro de un plan sin afectar la biblioteca
-
----
-
-## 📊 Progreso del cliente
-
-El cliente puede:
-
-* Marcar ejercicios como completados
-* Marcar días como completados
-* Registrar el peso utilizado en cada ejercicio
+* Cosas que podrían romperse si no se siguen correctamente
+* Dependencias importantes
 
 ---
 
-## 📈 Historial
+Quiero que la respuesta sea:
 
-* Se guarda desde el inicio
-* El cliente puede ver su progreso en el tiempo
+* clara
+* estructurada
+* sin texto innecesario
+* pensada para que otro ingeniero pueda entender el proyecto rápidamente
 
----
-
-## 🧠 Lógica importante
-
-* Cuando un plan se asigna a un cliente, se crea una COPIA del plan (no referencia compartida)
-* Cada cliente tiene 1 plan activo
-* Se mantiene historial de planes anteriores
-
----
-
-## 💬 Comunicación
-
-* No habrá chat interno en el MVP
-* La comunicación será externa (ej: WhatsApp)
-
----
-
-## 🎨 Dirección de diseño
-
-Busco una estética:
-
-* Premium
-* Deportiva
-* Minimalista
-* Moderna
-
-Colores:
-
-* Base: negros / grises oscuros
-* Primario: verde / lima (fitness vibe)
-* Secundarios: grises / plateados
-* Acentos: blanco / detalles premium
-
-Tipografía:
-
-* Moderna
-* Legible en mobile
-* Con buena jerarquía visual
-
----
-
-## 🎯 Lo que necesito de vos
-
-Quiero que analices este proyecto como un AI engineer y como un sistema completo, no solo como código.
-
-Necesito que me ayudes con lo siguiente:
-
-1. Cómo me recomendás abordar este proyecto desde cero utilizando Claude Code
-2. Qué arquitectura inicial recomendarías (estructura de proyecto, carpetas, etc.)
-3. Cómo organizarías el flujo de trabajo conmigo (cómo interactuar, cómo dividir tareas, etc.)
-4. Qué herramientas de las que ya tengo disponibles en mi entorno podrían potenciar este proyecto
-5. Si tiene sentido utilizar herramientas externas como Stitch para el diseño del frontend y cómo integrarlo correctamente con el desarrollo
-6. Si recomendarías usar skills, cuáles y cómo estructurarlas
-7. Si recomendarías usar multi-agents o subagents, en qué momento y para qué casos
-8. Buenas prácticas para optimizar el uso de contexto, tokens y rendimiento
-9. Riesgos o errores comunes que debería evitar en este tipo de proyecto
-10. Cualquier mejora o recomendación que consideres importante para llevar este proyecto a un nivel profesional
-
----
-
-## ⚠️ Importante
-
-No quiero que empieces a escribir código todavía.
-
-Quiero que primero:
-
-* analices
-* propongas
-* estructures
-* y me des una guía clara y profesional
-
-Luego, en base a eso, vamos a avanzar paso a paso.
-
----
-
-Quiero que respondas con un enfoque estructurado, claro y orientado a construir un sistema sólido desde el inicio.
+No quiero logs ni detalles irrelevantes, solo información útil de ingeniería.

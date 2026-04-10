@@ -13,7 +13,7 @@ describe('getCurrentWeek', () => {
 
   it('returns 2 after 7 days', () => {
     const start = new Date(Date.now() - 7 * 86400000)
-    start.setHours(0, 0, 0, 0)
+    start.setUTCHours(0, 0, 0, 0)
     expect(getCurrentWeek(start.toISOString().split('T')[0], 8)).toBe(2)
   })
 
