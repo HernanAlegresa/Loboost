@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth/session'
 import { getUserRole } from '@/lib/auth/roles'
-import { signOut } from '@/features/auth/actions/sign-out'
+import ClientBottomNav from '@/components/ui/client-bottom-nav'
 
 export default async function ClientLayout({
   children,
@@ -15,21 +15,47 @@ export default async function ClientLayout({
   if (role !== 'client') redirect('/coach/dashboard')
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
-      <header className="border-b border-[#1a1a1a] px-6 py-4 flex items-center justify-between">
-        <span className="text-xl font-bold text-white">
-          Lo<span className="text-[#b5f23d]">Boost</span>
+    <div
+      style={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        backgroundColor: '#0A0A0A',
+        color: '#F0F0F0',
+      }}
+    >
+      {/* Header */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          backgroundColor: '#0A0A0A',
+          padding: '16px 20px',
+          flexShrink: 0,
+          borderBottom: '1px solid #1F2227',
+        }}
+      >
+        <span
+          style={{
+            fontSize: 22,
+            fontWeight: 800,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+          }}
+        >
+          <span style={{ color: '#B5F23D' }}>Lobo</span>
+          <span style={{ color: '#F0F0F0' }}>ost</span>
         </span>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Salir
-          </button>
-        </form>
       </header>
-      <main className="px-6 py-8">{children}</main>
+
+      {/* Scrollable content */}
+      <main style={{ flex: 1, overflowY: 'auto' }}>
+        {children}
+      </main>
+
+      <ClientBottomNav />
     </div>
   )
 }
