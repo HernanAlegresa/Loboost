@@ -79,6 +79,64 @@ Resultado al momento de la implementación: **TypeScript OK**, **78 tests OK** (
 
 ---
 
+## 2026-04-10 — Grupo 2 (MVP): Librería de ejercicios (`/coach/library`)
+
+### Qué se hizo
+
+- Se implementó el **hub de Librería** en la ruta que ya usa el `BottomNav`: `/coach/library`.
+- Se implementó **listado de ejercicios** + **crear ejercicio** + **eliminar ejercicio** (con confirmación).
+- Se alineó `createExerciseAction` con el patrón del repo (**React 19 `useActionState`**: firma `(prevState, formData)`).
+- Se endureció `deleteExerciseAction` para exigir auth y filtrar por `coach_id` (defensa en profundidad además de RLS).
+
+### Rutas nuevas
+
+| Ruta | Descripción |
+|------|-------------|
+| `/coach/library` | Hub: acceso a Ejercicios + placeholder explícito de Planes (Grupo 3) |
+| `/coach/library/exercises` | Lista ejercicios del coach (orden por nombre) |
+| `/coach/library/exercises/new` | Formulario crear ejercicio |
+
+### Archivos tocados / añadidos
+
+- `src/app/(coach)/coach/library/page.tsx`
+- `src/app/(coach)/coach/library/exercises/page.tsx`
+- `src/app/(coach)/coach/library/exercises/queries.ts`
+- `src/app/(coach)/coach/library/exercises/exercise-list.tsx` (`'use client'`)
+- `src/app/(coach)/coach/library/exercises/new/page.tsx`
+- `src/app/(coach)/coach/library/exercises/new/create-exercise-form.tsx` (`'use client'`)
+- `src/features/exercises/actions/create-exercise.ts` (breaking change interno: ahora es `useActionState`-compatible)
+- `src/features/exercises/actions/update-exercise.ts` (video URL vacío → no valida URL)
+- `src/features/exercises/actions/delete-exercise.ts` (auth + `eq('coach_id', user.id)`)
+
+### Cómo verlo en localhost
+
+1. `npm run dev`
+2. Login coach
+3. Tap **Librería** en bottom nav → `/coach/library`
+4. Entrar a **Ejercicios** → crear con **+** → volver al listado
+
+### Verificación ejecutada (Cursor)
+
+```powershell
+cd "C:\Users\herna\Loboost App"
+npx tsc --noEmit
+npx jest --no-coverage
+```
+
+Resultado: **TypeScript OK**, **78 tests OK** (13 suites).
+
+### Git
+
+- Commit: `1c28935` — `feat: add coach exercise library under /coach/library`
+
+### Deuda / próximo paso natural
+
+- **Grupo 3**: biblioteca de planes + builder + asignación (rutas bajo `/coach/library/plans` o similar).
+- Pulido de copy (tildes) para consistencia con el resto de UI.
+- (Opcional) reemplazar `alert/confirm` por UI propia si queremos pulir UX MVP.
+
+---
+
 ## Plantilla para próximas entradas
 
 ```markdown
