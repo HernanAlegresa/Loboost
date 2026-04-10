@@ -129,11 +129,20 @@ Resultado: **TypeScript OK**, **78 tests OK** (13 suites).
 
 - Commit: `1c28935` — `feat: add coach exercise library under /coach/library`
 
+### Pulido producto (mismo Grupo 2)
+
+- Copy en español con tildes en hub + formulario (ej. “Librería”, “Categoría”).
+- Empty state más “producto” en lista vacía.
+- Eliminación sin `alert()` / `confirm()`: **sheet/modal** con error inline si el ejercicio está en uso.
+- Cierre UX: tap fuera del sheet / tecla `Esc` (salvo mientras elimina).
+
+Archivos extra:
+
+- `src/app/(coach)/coach/library/exercises/delete-exercise-dialog.tsx`
+
 ### Deuda / próximo paso natural
 
 - **Grupo 3**: biblioteca de planes + builder + asignación (rutas bajo `/coach/library/plans` o similar).
-- Pulido de copy (tildes) para consistencia con el resto de UI.
-- (Opcional) reemplazar `alert/confirm` por UI propia si queremos pulir UX MVP.
 
 ---
 

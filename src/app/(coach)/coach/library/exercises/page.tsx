@@ -29,11 +29,12 @@ export default async function ExercisesLibraryPage() {
         <div>
           <p style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0' }}>Ejercicios</p>
           <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
-            {exercises.length} {exercises.length === 1 ? 'ejercicio' : 'ejercicios'}
+            {exercises.length} {exercises.length === 1 ? 'ejercicio' : 'ejercicios'} en tu biblioteca
           </p>
         </div>
         <Link
           href="/coach/library/exercises/new"
+          aria-label="Crear ejercicio"
           style={{
             width: 36,
             height: 36,

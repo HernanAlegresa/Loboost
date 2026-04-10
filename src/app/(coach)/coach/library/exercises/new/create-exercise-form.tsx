@@ -92,22 +92,43 @@ export default function CreateExerciseForm() {
           <p style={sectionTitleStyle}>Datos</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Field label="Nombre">
-              <input name="name" type="text" required style={inputStyle} placeholder="Press banca" />
+              <input
+                name="name"
+                type="text"
+                required
+                style={inputStyle}
+                placeholder="Press de banca"
+                autoComplete="off"
+              />
             </Field>
 
             <Field label="Grupo muscular">
-              <input name="muscleGroup" type="text" required style={inputStyle} placeholder="Pecho" />
+              <input
+                name="muscleGroup"
+                type="text"
+                required
+                style={inputStyle}
+                placeholder="Pecho"
+                autoComplete="off"
+              />
             </Field>
 
-            <Field label="Categoria">
-              <input name="category" type="text" required style={inputStyle} placeholder="Fuerza" />
+            <Field label="Categoría">
+              <input
+                name="category"
+                type="text"
+                required
+                style={inputStyle}
+                placeholder="Empuje, tirón, piernas…"
+                autoComplete="off"
+              />
             </Field>
 
             <Field label="Tipo">
               <CustomSelect
                 name="type"
                 required
-                placeholder="Tipo"
+                placeholder="Elegí el tipo"
                 options={[
                   { value: 'strength', label: 'Fuerza' },
                   { value: 'cardio', label: 'Cardio' },
@@ -115,19 +136,31 @@ export default function CreateExerciseForm() {
               />
             </Field>
 
-            <Field label="Video URL (opcional)">
+            <Field label="Video (opcional)">
               <input
                 name="videoUrl"
                 type="url"
                 style={inputStyle}
-                placeholder="https://..."
+                placeholder="https://youtube.com/…"
+                inputMode="url"
+                autoComplete="off"
               />
             </Field>
           </div>
         </div>
 
         {state && !state.success && 'error' in state && (
-          <p style={{ fontSize: 13, color: '#F25252' }}>{state.error}</p>
+          <div
+            role="alert"
+            style={{
+              backgroundColor: 'rgba(242, 82, 82, 0.08)',
+              border: '1px solid rgba(242, 82, 82, 0.25)',
+              borderRadius: 12,
+              padding: '12px 14px',
+            }}
+          >
+            <p style={{ fontSize: 13, color: '#F25252', lineHeight: 1.45 }}>{state.error}</p>
+          </div>
         )}
 
         <button

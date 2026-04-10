@@ -22,7 +22,7 @@ const LABEL: React.CSSProperties = {
 export default function LibraryHubPage() {
   return (
     <div style={{ height: '100%', overflowY: 'auto', padding: '20px 20px 120px' }}>
-      <p style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', marginBottom: 4 }}>Libreria</p>
+      <p style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', marginBottom: 4 }}>Librería</p>
       <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 24 }}>
         Ejercicios y planes del coach
       </p>
@@ -36,10 +36,21 @@ export default function LibraryHubPage() {
           </p>
         </Link>
 
-        <div style={{ ...CARD, opacity: 0.55, cursor: 'not-allowed' } as React.CSSProperties}>
+        <div
+          style={
+            {
+              ...CARD,
+              opacity: 0.55,
+              cursor: 'not-allowed',
+              pointerEvents: 'none',
+            } as React.CSSProperties
+          }
+        >
           <p style={LABEL}>Planes</p>
           <p style={{ fontSize: 15, fontWeight: 600 }}>Biblioteca de planes</p>
-          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 6 }}>Proximo: Grupo 3</p>
+          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 6 }}>
+            Próximo: plantillas y asignación (Grupo 3)
+          </p>
         </div>
       </div>
     </div>
