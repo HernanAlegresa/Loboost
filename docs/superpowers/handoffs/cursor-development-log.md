@@ -92,7 +92,7 @@ Resultado al momento de la implementación: **TypeScript OK**, **78 tests OK** (
 
 | Ruta | Descripción |
 |------|-------------|
-| `/coach/library` | Hub: acceso a Ejercicios + placeholder explícito de Planes (Grupo 3) |
+| `/coach/library` | Hub: acceso a Ejercicios y Planes |
 | `/coach/library/exercises` | Lista ejercicios del coach (orden por nombre) |
 | `/coach/library/exercises/new` | Formulario crear ejercicio |
 
@@ -146,7 +146,73 @@ Archivos extra:
 
 ### Deuda / próximo paso natural
 
-- **Grupo 3**: biblioteca de planes + builder + asignación (rutas bajo `/coach/library/plans` o similar).
+- Cubierto en **Grupo 3** (entrada siguiente).
+
+---
+
+## 2026-04-10 — Grupo 3 (MVP): Librería de planes (`/coach/library/plans`)
+
+### Qué se hizo
+
+- **Hub** `/coach/library`: el tile **Planes** enlaza a `/coach/library/plans` (ya no es placeholder).
+- **Listado** de plantillas del coach (`plans`) con conteo de días/semana y semanas.
+- **Crear plantilla** `/coach/library/plans/new`: builder por días de la semana + ejercicios de la biblioteca; serializa JSON en `FormData` bajo `planPayload` para `createPlanAction` (validación Zod + reglas fuerza/cardio en servidor).
+- **Asignar** `/coach/library/plans/[id]/assign`: elige cliente del coach, fecha de inicio; `assignPlanAction` copia a `client_plans` / días / ejercicios; redirección al perfil del cliente.
+- **Eliminar** plantilla: sheet (sin `alert`/`confirm`) que llama a `deletePlanAction` (auth + `coach_id`).
+
+### Rutas
+
+| Ruta | Descripción |
+|------|-------------|
+| `/coach/library/plans` | Lista plantillas + FAB a crear |
+| `/coach/library/plans/new` | Builder nueva plantilla |
+| `/coach/library/plans/[id]/assign` | Asignar a cliente |
+
+### Archivos (App Router y UI)
+
+- `src/app/(coach)/coach/library/page.tsx` (enlace Planes)
+- `src/app/(coach)/coach/library/plans/page.tsx`
+- `src/app/(coach)/coach/library/plans/queries.ts`
+- `src/app/(coach)/coach/library/plans/plan-list.tsx`
+- `src/app/(coach)/coach/library/plans/delete-plan-dialog.tsx`
+- `src/app/(coach)/coach/library/plans/new/page.tsx`
+- `src/app/(coach)/coach/library/plans/new/create-plan-form.tsx`
+- `src/app/(coach)/coach/library/plans/[id]/assign/page.tsx`
+- `src/app/(coach)/coach/library/plans/[id]/assign/assign-plan-form.tsx`
+
+**Servidor (features, ya endurecido en la misma línea de trabajo):**
+
+- `src/features/plans/schemas.ts` (`planBuilderPayloadSchema`, etc.)
+- `src/features/plans/actions/create-plan.ts`, `assign-plan.ts`, `update-plan.ts`, `delete-plan.ts`
+- Tests: `src/features/plans/__tests__/schemas.test.ts`
+
+### Cómo verlo en localhost
+
+1. `npm run dev`
+2. Login coach → **Librería** → **Planes**
+3. Crear plantilla (necesitás al menos un ejercicio en **Ejercicios**)
+4. Desde la lista, flecha → **Asignar** → cliente + fecha → enviar → debe abrir `/coach/clients/[id]`
+
+### Verificación ejecutada (Cursor)
+
+```powershell
+cd "C:\Users\herna\Loboost App"
+npx tsc --noEmit
+npx jest --no-coverage
+```
+
+Resultado: **TypeScript OK**, **80 tests OK** (13 suites).
+
+### Git
+
+- Mensaje: `feat: coach plan library, builder, and assign flow` (UI + `src/features/plans`).
+- Ubicar en el historial: `git log --oneline --grep "coach plan library" -n 1`
+
+### Deuda / mejoras posteriores
+
+- Editar plantilla existente en UI (existe `update-plan` en features; falta pantalla).
+- Pulido visual: reutilizar `CustomSelect` u otros primitivos si se unifica con ejercicios.
+- Mensaje de error más específico si asignación falla a mitad de copia (hoy la acción no hace rollback transaccional de todo el `client_plan`).
 
 ---
 

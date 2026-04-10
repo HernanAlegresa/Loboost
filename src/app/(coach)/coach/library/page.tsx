@@ -36,22 +36,13 @@ export default function LibraryHubPage() {
           </p>
         </Link>
 
-        <div
-          style={
-            {
-              ...CARD,
-              opacity: 0.55,
-              cursor: 'not-allowed',
-              pointerEvents: 'none',
-            } as React.CSSProperties
-          }
-        >
+        <Link href="/coach/library/plans" style={CARD}>
           <p style={LABEL}>Planes</p>
           <p style={{ fontSize: 15, fontWeight: 600 }}>Biblioteca de planes</p>
           <p style={{ fontSize: 12, color: '#6B7280', marginTop: 6 }}>
-            Próximo: plantillas y asignación (Grupo 3)
+            Plantillas, creación y asignación a clientes
           </p>
-        </div>
+        </Link>
       </div>
     </div>
   )

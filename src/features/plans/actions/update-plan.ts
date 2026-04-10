@@ -19,6 +19,8 @@ export async function updatePlanAction(planId: string, formData: FormData) {
   }
 
   const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) return { error: 'No autenticado' }
 
   const updates: PlanUpdate = {}
   if (result.data.name) updates.name = result.data.name
@@ -31,6 +33,7 @@ export async function updatePlanAction(planId: string, formData: FormData) {
     .from('plans')
     .update(updates)
     .eq('id', planId)
+    .eq('coach_id', user.id)
 
   if (error) return { error: 'Error al actualizar el plan' }
 

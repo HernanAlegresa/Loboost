@@ -9,7 +9,15 @@ export function calculateEndDate(startDate: Date, weeks: number): Date {
   return end
 }
 
-export async function assignPlanAction(formData: FormData) {
+export type AssignPlanState =
+  | { success: true; clientPlanId: string }
+  | { success: false; error: string }
+  | null
+
+export async function assignPlanAction(
+  _prevState: AssignPlanState,
+  formData: FormData
+): Promise<AssignPlanState> {
   const raw = {
     clientId: formData.get('clientId'),
     planId: formData.get('planId'),
@@ -18,12 +26,23 @@ export async function assignPlanAction(formData: FormData) {
 
   const result = assignPlanSchema.safeParse(raw)
   if (!result.success) {
-    return { error: result.error.issues[0].message }
+    return { success: false, error: result.error.issues[0].message }
   }
 
   const supabase = await createClient()
   const { data: { user: coachUser }, error: authError } = await supabase.auth.getUser()
-  if (authError || !coachUser) return { error: 'No autenticado' }
+  if (authError || !coachUser) return { success: false, error: 'No autenticado' }
+
+  const { data: clientProfile, error: clientError } = await supabase
+    .from('profiles')
+    .select('id, coach_id, role')
+    .eq('id', result.data.clientId)
+    .single()
+
+  if (clientError || !clientProfile) return { success: false, error: 'Cliente no encontrado' }
+  if (clientProfile.role !== 'client' || clientProfile.coach_id !== coachUser.id) {
+    return { success: false, error: 'Cliente no válido' }
+  }
 
   // Obtener el plan template con días y ejercicios
   const { data: plan, error: planError } = await supabase
@@ -38,9 +57,29 @@ export async function assignPlanAction(formData: FormData) {
       )
     `)
     .eq('id', result.data.planId)
+    .eq('coach_id', coachUser.id)
     .single()
 
-  if (planError || !plan) return { error: 'Plan no encontrado' }
+  if (planError || !plan) return { success: false, error: 'Plan no encontrado' }
+
+  const planDays = (plan.plan_days ?? []) as Array<{
+    id: string
+    day_of_week: number
+    order: number
+    plan_day_exercises: Array<{
+      id: string
+      exercise_id: string
+      order: number
+      sets: number
+      reps: number | null
+      duration_seconds: number | null
+      rest_seconds: number | null
+    }>
+  }>
+
+  if (planDays.length === 0) {
+    return { success: false, error: 'Este plan no tiene días configurados' }
+  }
 
   const startDate = new Date(result.data.startDate)
   const endDate = calculateEndDate(startDate, plan.weeks)
@@ -50,6 +89,7 @@ export async function assignPlanAction(formData: FormData) {
     .from('client_plans')
     .update({ status: 'completed' })
     .eq('client_id', result.data.clientId)
+    .eq('coach_id', coachUser.id)
     .eq('status', 'active')
 
   // Crear client_plan
@@ -68,23 +108,7 @@ export async function assignPlanAction(formData: FormData) {
     .select('id')
     .single()
 
-  if (clientPlanError || !clientPlan) return { error: 'Error al asignar el plan' }
-
-  // Copiar días y ejercicios para cada semana (1 a N)
-  const planDays = (plan.plan_days ?? []) as Array<{
-    id: string
-    day_of_week: number
-    order: number
-    plan_day_exercises: Array<{
-      id: string
-      exercise_id: string
-      order: number
-      sets: number
-      reps: number | null
-      duration_seconds: number | null
-      rest_seconds: number | null
-    }>
-  }>
+  if (clientPlanError || !clientPlan) return { success: false, error: 'Error al asignar el plan' }
 
   const sortedDays = [...planDays].sort((a, b) => a.order - b.order)
 
@@ -101,7 +125,7 @@ export async function assignPlanAction(formData: FormData) {
         .select('id')
         .single()
 
-      if (dayError || !clientDay) return { error: 'Error al copiar los días del plan' }
+      if (dayError || !clientDay) return { success: false, error: 'Error al copiar los días del plan' }
 
       const sortedExercises = [...(day.plan_day_exercises ?? [])].sort(
         (a, b) => a.order - b.order
@@ -120,7 +144,7 @@ export async function assignPlanAction(formData: FormData) {
             rest_seconds: exercise.rest_seconds ?? null,
           })
 
-        if (exError) return { error: 'Error al copiar ejercicios del plan' }
+        if (exError) return { success: false, error: 'Error al copiar ejercicios del plan' }
       }
     }
   }

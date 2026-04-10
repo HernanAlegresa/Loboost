@@ -1,4 +1,4 @@
-import { createPlanSchema, planDayExerciseSchema } from '@/features/plans/schemas'
+import { createPlanSchema, planBuilderPayloadSchema, planDayExerciseSchema } from '@/features/plans/schemas'
 
 describe('createPlanSchema', () => {
   it('accepts valid plan', () => {
@@ -42,5 +42,32 @@ describe('planDayExerciseSchema', () => {
       durationSeconds: 1800,
     })
     expect(result.success).toBe(true)
+  })
+})
+
+describe('planBuilderPayloadSchema', () => {
+  const exId = '123e4567-e89b-12d3-a456-426614174000'
+
+  it('accepts minimal valid builder payload', () => {
+    const result = planBuilderPayloadSchema.safeParse({
+      name: 'Fuerza full body',
+      weeks: 4,
+      days: [
+        {
+          dayOfWeek: 1,
+          exercises: [{ exerciseId: exId, order: 1, sets: 3, reps: 10 }],
+        },
+      ],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects empty days array', () => {
+    const result = planBuilderPayloadSchema.safeParse({
+      name: 'Plan',
+      weeks: 4,
+      days: [],
+    })
+    expect(result.success).toBe(false)
   })
 })

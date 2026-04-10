@@ -42,6 +42,22 @@ export const assignPlanSchema = z.object({
 
 export type AssignPlanInput = z.infer<typeof assignPlanSchema>
 
+export const planBuilderDaySchema = z.object({
+  dayOfWeek: z.coerce.number().int().min(1).max(7),
+  exercises: z.array(planDayExerciseSchema).min(1, 'Cada día debe tener al menos un ejercicio'),
+})
+
+export type PlanBuilderDayInput = z.infer<typeof planBuilderDaySchema>
+
+export const planBuilderPayloadSchema = z.object({
+  name: z.string().min(1, 'El nombre es requerido'),
+  description: z.string().optional(),
+  weeks: z.coerce.number().int().min(1).max(12),
+  days: z.array(planBuilderDaySchema).min(1, 'Agregá al menos un día de entrenamiento'),
+})
+
+export type PlanBuilderPayloadInput = z.infer<typeof planBuilderPayloadSchema>
+
 export const updateClientPlanExerciseSchema = z.object({
   sets: z.coerce.number().int().min(1).optional(),
   reps: z.coerce.number().int().min(1).optional(),
