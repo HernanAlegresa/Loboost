@@ -1,4 +1,4 @@
-import { calculateEndDate } from '@/features/plans/actions/assign-plan'
+import { calculateEndDate } from '@/features/plans/calculate-end-date'
 
 describe('calculateEndDate', () => {
   it('adds correct days for 4 weeks starting 2026-04-09', () => {

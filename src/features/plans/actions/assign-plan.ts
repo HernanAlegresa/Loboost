@@ -1,13 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { calculateEndDate } from '@/features/plans/calculate-end-date'
 import { assignPlanSchema } from '@/features/plans/schemas'
-
-export function calculateEndDate(startDate: Date, weeks: number): Date {
-  const end = new Date(startDate)
-  end.setDate(end.getDate() + weeks * 7 - 1)
-  return end
-}
 
 export type AssignPlanState =
   | { success: true; clientPlanId: string }
