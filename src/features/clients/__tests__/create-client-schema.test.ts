@@ -19,19 +19,24 @@ describe('createClientSchema', () => {
     expect(createClientSchema.safeParse(valid).success).toBe(true)
   })
 
-  it('rejects empty injuries', () => {
-    expect(createClientSchema.safeParse({ ...valid, injuries: '' }).success).toBe(false)
-  })
-
   it('rejects invalid goal value', () => {
     expect(createClientSchema.safeParse({ ...valid, goal: 'Algo random' }).success).toBe(false)
   })
 
   it('accepts all valid goal values', () => {
-    const goals = ['Pérdida de peso', 'Ganancia muscular', 'Tonificación', 'Rendimiento atlético', 'Otro']
+    const goals = [
+      'Pérdida de peso', 'Ganancia muscular', 'Definición muscular',
+      'Mejorar condición física', 'Rendimiento deportivo', 'Rehabilitación',
+      'Salud general', 'Otro',
+    ]
     for (const goal of goals) {
       expect(createClientSchema.safeParse({ ...valid, goal }).success).toBe(true)
     }
+  })
+
+  it('accepts missing injuries (optional field)', () => {
+    const { injuries, ...withoutInjuries } = valid
+    expect(createClientSchema.safeParse(withoutInjuries).success).toBe(true)
   })
 
   it('rejects daysPerWeek > 6', () => {

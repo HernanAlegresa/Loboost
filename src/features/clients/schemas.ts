@@ -3,8 +3,11 @@ import { z } from 'zod'
 const GOALS = [
   'Pérdida de peso',
   'Ganancia muscular',
-  'Tonificación',
-  'Rendimiento atlético',
+  'Definición muscular',
+  'Mejorar condición física',
+  'Rendimiento deportivo',
+  'Rehabilitación',
+  'Salud general',
   'Otro',
 ] as const
 
@@ -21,7 +24,7 @@ export const createClientSchema = z.object({
   heightCm:        z.coerce.number().min(100).max(250),
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
   daysPerWeek:     z.coerce.number().int().min(1).max(6),
-  injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones').max(500),
+  injuries:        z.string().max(500).optional(),
 })
 
 export type CreateClientInput = z.infer<typeof createClientSchema>
@@ -34,7 +37,7 @@ export const updateClientProfileSchema = z.object({
   heightCm:        z.coerce.number().min(100).max(250).optional(),
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   daysPerWeek:     z.coerce.number().int().min(1).max(6).optional(),
-  injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones').optional(),
+  injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones').max(500).optional(),
 })
 
 export type UpdateClientProfileInput = z.infer<typeof updateClientProfileSchema>
