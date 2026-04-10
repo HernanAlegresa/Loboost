@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronDown } from 'lucide-react'
 import { createClientAction } from '@/features/clients/actions/create-client'
 import { GOAL_OPTIONS } from '@/features/clients/schemas'
 import SuccessOverlay from './success-overlay'
-import type { CreateClientState } from '@/features/clients/actions/create-client'
+import type { CreateClientState } from '@/features/clients/types'
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -104,7 +104,7 @@ export default function CreateClientForm() {
           }}
         >
           <Link
-            href="/coach/dashboard"
+            href="/coach/clients"
             style={{ display: 'flex', alignItems: 'center', color: '#6B7280', textDecoration: 'none' }}
           >
             <ChevronLeft size={22} />

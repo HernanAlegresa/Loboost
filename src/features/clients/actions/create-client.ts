@@ -3,11 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClientSchema } from '@/features/clients/schemas'
+import type { CreateClientState } from '@/features/clients/types'
 
-export type CreateClientState =
-  | { success: true; clientId: string; clientName: string }
-  | { success: false; error: string }
-  | null
+export type { CreateClientState } from '@/features/clients/types'
 
 export async function createClientAction(
   _prevState: CreateClientState,
@@ -35,6 +33,13 @@ export async function createClientAction(
   const supabase = await createClient()
   const { data: { user: coachUser }, error: authGetError } = await supabase.auth.getUser()
   if (authGetError || !coachUser) return { success: false, error: 'No autenticado' }
+
+  const { data: coachProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', coachUser.id)
+    .single()
+  if (coachProfile?.role !== 'coach') return { success: false, error: 'No autorizado' }
 
   const supabaseAdmin = createAdminClient()
 
@@ -73,6 +78,7 @@ export async function createClientAction(
     })
 
   if (clientProfileError) {
+    await supabaseAdmin.from('profiles').delete().eq('id', newUser.user.id)
     await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
     return { success: false, error: 'Error al guardar el perfil del cliente' }
   }
