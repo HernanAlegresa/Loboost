@@ -24,25 +24,17 @@ export const createClientSchema = z.object({
   injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones'),
 })
 
-export const GOAL_OPTIONS_LABELS: Record<string, string> = {
-  'Pérdida de peso': 'Pérdida de peso',
-  'Ganancia muscular': 'Ganancia muscular',
-  'Tonificación': 'Tonificación',
-  'Rendimiento atlético': 'Rendimiento atlético',
-  'Otro': 'Otro',
-}
-
 export type CreateClientInput = z.infer<typeof createClientSchema>
 
 export const updateClientProfileSchema = z.object({
   age:             z.coerce.number().int().min(10).max(100).optional(),
   sex:             z.enum(['male', 'female', 'other']).optional(),
-  goal:            z.string().min(3).optional(),
+  goal:            z.enum(GOALS).optional(),
   weightKg:        z.coerce.number().min(20).max(300).optional(),
   heightCm:        z.coerce.number().min(100).max(250).optional(),
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
-  daysPerWeek:     z.coerce.number().int().min(1).max(7).optional(),
-  injuries:        z.string().optional(),
+  daysPerWeek:     z.coerce.number().int().min(1).max(6).optional(),
+  injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones').optional(),
 })
 
 export type UpdateClientProfileInput = z.infer<typeof updateClientProfileSchema>
