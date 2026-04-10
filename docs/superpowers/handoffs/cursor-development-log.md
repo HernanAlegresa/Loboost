@@ -208,11 +208,99 @@ Resultado: **TypeScript OK**, **80 tests OK** (13 suites).
 - Mensaje: `feat: coach plan library, builder, and assign flow` (UI + `src/features/plans`).
 - Ubicar en el historial: `git log --oneline --grep "coach plan library" -n 1`
 
-### Deuda / mejoras posteriores
+### Deuda / mejoras posteriores (parcialmente cubierto en entradas siguientes)
 
-- Editar plantilla existente en UI (existe `update-plan` en features; falta pantalla).
-- Pulido visual: reutilizar `CustomSelect` u otros primitivos si se unifica con ejercicios.
-- Mensaje de error más específico si asignación falla a mitad de copia (hoy la acción no hace rollback transaccional de todo el `client_plan`).
+- Edición de plan en UI, `CustomSelect` unificado, detalle de plan y rollback de assign: ver **sesión Cursor** más abajo.
+
+---
+
+## 2026-04-10 — Cursor: fix Next 16 + pantalla Ajustes coach
+
+### Qué se hizo
+
+- **Build Next.js 16 / Turbopack:** en `'use server'`, cualquier `export function` no async se interpreta como Server Action. `calculateEndDate` en `assign-plan.ts` rompía el build. Se extrajo a `src/features/plans/calculate-end-date.ts` (sin `'use server'`). Tests: import actualizado.
+- **Ajustes:** `/coach/settings` — perfil (nombre con server action), email solo lectura, cerrar sesión.
+
+### Git
+
+- `1174f2a` — fix calculateEndDate  
+- `afb25b4` — feat coach settings
+
+---
+
+## 2026-04-10 — Cursor: polish funcional/UX coach (pre–lado cliente)
+
+### Qué se hizo
+
+- **Global:** scrollbars ocultos (`globals.css`); bottom nav etiqueta **Biblioteca**.
+- **Componente:** `src/components/ui/coach-subpage-header.tsx` (volver + título centrado + subtítulo + slot derecho).
+- **Biblioteca hub:** tarjetas con chevron, títulos lima, hover; copy sin “plantilla” donde correspondía.
+- **Ejercicios:** cabecera unificada; tarjetas con nombre lima, borrar rojo, **editar** → `/coach/library/exercises/[id]/edit`; `updateExerciseAction` con `useActionState`, `coach_id`, `revalidatePath`.
+- **Planes:** misma cabecera; lista con enlace a **detalle**; nombre lima; borrar rojo.
+- **Detalle plan:** `/coach/library/plans/[id]` — acciones **Editar plan** y **Asignar a cliente**.
+- **Editar plan (estructura completa):** `/coach/library/plans/[id]/edit` — `plan-builder-form.tsx` modo edit, `update-plan-full.ts`, lógica compartida `plan-builder-persist.ts`, `submit-plan-builder.ts` para un solo `useActionState` en create/edit.
+- **Plan builder UX:** un solo día editable a la vez (flechas + puntos); tarjetas **Ejercicio 1…N** con separación clara; **Agregar ejercicio** a ancho completo **al final** de la lista del día.
+- **Asignar:** vuelta atrás al detalle del plan; `CoachSubpageHeader`.
+- **CustomSelect:** modo **controlado** (`value` + `onChange`, `name` opcional) además del modo formulario; mismo patrón visual que crear cliente — usado en movimiento del plan, cliente al asignar, tipo al editar ejercicio. Lista con `max-height` + scroll.
+- **Ajustes (iteración):** “Editar nombre” / Guardar solo si hay cambios; títulos de sección lima; cerrar sesión con contenedor rojo.
+
+### Rutas coach (resumen ampliado)
+
+| Ruta | Descripción |
+|------|-------------|
+| `/coach/settings` | Ajustes |
+| `/coach/library/plans/[id]` | Detalle del plan |
+| `/coach/library/plans/[id]/edit` | Editar plan (metadata + días/ejercicios) |
+| `/coach/library/exercises/[id]/edit` | Editar ejercicio |
+
+### Archivos nuevos o clave (esta iteración)
+
+- `src/features/plans/plan-builder-persist.ts`, `actions/update-plan-full.ts`, `actions/submit-plan-builder.ts`
+- `src/app/(coach)/coach/library/plans/plan-builder-form.tsx` (reemplaza `new/create-plan-form.tsx`)
+- `src/features/plans/calculate-end-date.ts`
+- Varios bajo `coach/library/...`, `components/ui/coach-subpage-header.tsx`, `custom-select.tsx` ampliado
+
+### Verificación (Cursor)
+
+```powershell
+cd "C:\Users\herna\Loboost App"
+npx tsc --noEmit
+npx jest --no-coverage
+```
+
+**TypeScript OK**, **80 tests** (13 suites), última corrida en esta línea de trabajo.
+
+### Git (orden sugerido para revisar)
+
+`028e273` CustomSelect unificado · `fd7d001` plan builder ejercicios · `50fee34` polish coach UX · `afb25b4` settings · `1174f2a` Next 16 assign · `163e993` plan library inicial (+ commits anteriores de perfil cliente y ejercicios en este log)
+
+---
+
+## Estado al handoff (2026-04-10) — Coach vs siguiente paso (para Claude)
+
+### Lado coach (MVP funcional base)
+
+Cubre el flujo principal: **dashboard**, **clientes** (lista, alta, perfil), **biblioteca** (ejercicios crear/editar/borrar; planes crear/editar estructura, detalle, asignar, borrar), **ajustes**, **auth**. El usuario seguirá con **pulido visual pantalla por pantalla** aparte; no bloquea Fase 2 cliente.
+
+### Pendiente funcional coach (no bloquea arrancar el cliente)
+
+- Editar la **copia** `client_plans` asignada al cliente desde UI (ajustes sin tocar el template `plans`).
+- Estados explícitos del plan del cliente (pausar / completar) más allá del reemplazo al asignar otro.
+- Búsqueda / orden en lista de clientes; header buscar/campana (hoy decorativo o vacío).
+- Unificar API de **notas del coach** (`save-coach-note` vs wrapper en `clients/[id]/actions.ts`).
+- **Rollback** o transacción en `assignPlanAction` si la copia falla a mitad.
+
+### Prioridad recomendada para Claude Code
+
+1. **Lado cliente** según `docs/superpowers/specs/2026-04-09-fase2-design.md`: plan activo, semanas/días, **sesión** (`sessions` + `session_sets`), historial mínimo. Sin esto el dashboard del coach no refleja adherencia real.
+2. Revisar `CLAUDE.md` / `AGENTS.md`; el proyecto puede estar en **Next 16.x** en el entorno local — leer guía en `node_modules/next/dist/docs/` si hay APIs nuevas o deprecadas.
+
+### Cómo retomó Claude (mecanismo acordado)
+
+1. Leer **este archivo completo** (`docs/superpowers/handoffs/cursor-development-log.md`).
+2. `git pull` / `git log -20 --oneline` y diff frente a la expectativa del usuario.
+3. Alinear con spec Fase 2 y planes en `docs/superpowers/plans/` si el alcance cambió.
+4. Seguir convenciones del repo (Zod en `schemas`, Server Actions, `Plan` vs `ClientPlan`, migraciones Supabase).
 
 ---
 
