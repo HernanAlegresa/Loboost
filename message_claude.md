@@ -1,96 +1,114 @@
-Quiero generar un resumen completo, claro y estructurado del estado actual del proyecto LoBoost después de haber completado todas las tasks de la Fase 1.
+Perfecto, estuve revisando y pensando bien todo el lado cliente de la app antes de seguir avanzando, y quiero compartirte cómo lo estoy viendo a nivel producto para que me des tu opinión.
 
-El objetivo es que este resumen pueda ser compartido con otro asistente para que entienda perfectamente:
+La idea general es que la app del cliente sea simple, clara y enfocada en lo más importante: que el cliente entrene, sepa qué tiene que hacer y pueda registrar su progreso sin fricción.
 
-* en qué estado está el proyecto
-* qué se hizo
-* cómo está estructurado
-* cómo estamos trabajando con Claude Code
-* y qué sigue a partir de ahora
+Te resumo cómo estoy pensando cada parte:
 
-Necesito que incluyas:
+Dashboard (home del cliente):
+Quiero que sea una pantalla muy simple y enfocada en el día actual.
 
-## 1. Estado general del proyecto
+* Header con saludo + nombre + avatar del usuario
+* Bloque de plan activo con:
 
-* Qué está completamente terminado
-* Qué partes están funcionales hoy
-* Qué partes todavía no están implementadas
+  * nombre del plan
+  * progreso
+  * semana actual (ej: Semana 2 de 6)
+  * botón “Ver plan” para ir a la vista completa
+* Bloque principal centrado en el día de hoy:
 
-## 2. Arquitectura actual
+  * mostrar fecha completa (ej: Viernes 10 de abril)
+  * indicar si es día de entrenamiento o descanso
+  * si es entrenamiento:
 
-* Estructura de carpetas real del proyecto (src/)
-* Organización por features
-* Cómo están separadas las responsabilidades (features, lib, ui, etc.)
+    * mostrar un pequeño contexto (ej: grupo muscular o cantidad de ejercicios)
+    * botón principal “Empezar entrenamiento”
+  * si es descanso:
 
-## 3. Autenticación y roles
+    * mostrar un estado visual claro (icono + mensaje)
+* No quiero mostrar días anteriores ni siguientes en esta pantalla, solo foco en hoy
 
-* Cómo está implementado el auth (Supabase + server actions)
-* Cómo funcionan los roles (coach / client)
-* Qué hace el middleware exactamente
+Vista de plan:
+Estoy de acuerdo con tener una pantalla donde el cliente pueda ver el plan completo.
 
-## 4. Base de datos
+* Navegación por semanas
+* Cada semana con sus días
+* Estado de cada día (completado, hoy, pendiente)
+* Al entrar a un día:
 
-* Tablas creadas
-* Relaciones importantes
-* Cómo se maneja profiles
-* Qué parte del modelo todavía no está implementada (planes, ejercicios, etc.)
+  * ver ejercicios, sets y videos de cada ejercicio
 
-## 5. Testing
+Live training (la más importante):
+Acá quiero una experiencia muy clara y usable en el gym.
 
-* Qué está cubierto actualmente
-* Qué tipo de tests existen (schemas, roles, etc.)
+* Un ejercicio por pantalla
+* Mostrar:
 
-## 6. Supabase integración
+  * nombre del ejercicio
+  * indicador tipo “Ejercicio 2 de 5”
+* Por cada serie:
 
-* Cómo están configurados los clientes (server, client, middleware)
-* Cómo se usan en el proyecto
+  * input para peso (o tiempo si es cardio)
+  * botón o check para marcar como completado
+* Cuando completa todas las series:
 
-## 7. Decisiones importantes tomadas
+  * permitir avanzar al siguiente ejercicio
+* Navegación controlada (no scroll libre entre ejercicios)
+* Al terminar todo:
 
-* Decisiones clave de arquitectura o producto que ya se aplicaron
-* Convenciones importantes que hay que respetar
+  * mensaje tipo “Entrenamiento completado”
+* Importante:
 
-## 8. Flujo actual de la aplicación
+  * que el usuario pueda retomar si sale de la app
+  * acceso fácil a ver el video del ejercicio (modal o similar, sin romper el flujo)
 
-* Qué puede hacer hoy un usuario (coach o client)
-* Qué pantallas o rutas funcionan actualmente
+Historial:
+No quiero historial por día, sino por semana.
 
-## 9. Uso de Claude Code (MUY IMPORTANTE)
+* Lista de semanas completadas
+* Cada semana con:
 
-Quiero que expliques claramente cómo estamos utilizando Claude Code en este proyecto:
+  * porcentaje de cumplimiento
+  * cantidad de días completados
+* Al entrar a una semana:
 
-* Qué enfoque de trabajo estamos usando (ej: subagent-driven, task-by-task, etc.)
-* Cómo estamos organizando el desarrollo por fases y tasks
-* Cómo estamos manejando el contexto (CLAUDE.md, spec, plan)
-* Qué herramientas de Claude Code estamos usando (subagents, memory, MCP, etc.)
-* Si estamos usando skills:
+  * ver detalle de días y lo que hizo
 
-  * cuáles
-  * para qué sirven
-  * cómo se están aplicando en este proyecto
-* Cómo estamos optimizando el uso de tokens y contexto
-* Qué buenas prácticas estamos siguiendo en este flujo
+Nutrición:
+Por ahora la dejaría simple.
 
-Quiero que esto quede explicado de forma clara para poder replicarlo en futuros proyectos.
+* Pantalla existente pero con estado vacío si no hay contenido
+* Mensaje tipo: “Tu coach aún no cargó recomendaciones de nutrición”
+* Más adelante la idea es que el coach agregue tips o comentarios
 
-## 10. Pendiente / siguiente fase
+Ajustes:
+Pantalla simple, sin sobrecargar.
 
-* Qué falta construir a partir de ahora
-* Qué incluiría la Fase 2
-* Qué prioridad recomendarías
+* Foto de perfil (editable)
+* Nombre visible (no editable por ahora)
+* Notificaciones (toggles para recordatorios, mensajes del coach, etc.)
+* Botón de cerrar sesión
 
-## 11. Riesgos o puntos a tener en cuenta
+Perfil:
+Pantalla básica con información del cliente.
 
-* Cosas que podrían romperse si no se siguen correctamente
-* Dependencias importantes
+* Foto
+* Nombre
+* Objetivo
+* Plan actual
+* Opcional más adelante: datos motivacionales como racha o mejor semana
 
----
+En general, lo que busco es:
 
-Quiero que la respuesta sea:
+* no sobrecargar las pantallas
+* que todo sea rápido de entender
+* que el foco esté en entrenar y registrar
+* separar bien: ver → hacer → revisar
 
-* clara
-* estructurada
-* sin texto innecesario
-* pensada para que otro ingeniero pueda entender el proyecto rápidamente
+Quiero que lo mires como producto y me digas:
 
-No quiero logs ni detalles irrelevantes, solo información útil de ingeniería.
+* si la estructura tiene sentido
+* si ves algo que sobra o falta
+* si mejorarías algo a nivel UX, especialmente en live training y dashboard
+* si hay algo importante que no estamos considerando
+
+Después de alinear esto, avanzamos con el plan de implementación.

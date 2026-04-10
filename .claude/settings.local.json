@@ -26,7 +26,20 @@
       "Bash(cp /tmp/loboost-app/postcss.config.mjs \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
       "Bash(cp /tmp/loboost-app/AGENTS.md \"C:\\\\Users\\\\herna\\\\Loboost App/\")",
       "Bash(npm install:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)",
+      "mcp__plugin_supabase_supabase__apply_migration",
+      "mcp__plugin_supabase_supabase__generate_typescript_types",
+      "Bash(npx jest:*)",
+      "mcp__plugin_figma_figma__get_design_context",
+      "mcp__plugin_figma_figma__get_metadata",
+      "mcp__plugin_figma_figma__get_screenshot",
+      "Bash(npm uninstall:*)",
+      "Bash(rm:*)",
+      "mcp__plugin_supabase_supabase__execute_sql",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(p.dependencies['next'], p.dependencies['framer-motion']\\)\")",
+      "Bash(sed:*)"
     ]
   }
 }
