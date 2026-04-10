@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { updateExerciseAction, type UpdateExerciseState } from '@/features/exercises/actions/update-exercise'
 import type { ExerciseEditRow } from '../../queries'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import CustomSelect from '@/components/ui/custom-select'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -136,16 +137,17 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
               </Field>
 
               <Field label="Tipo">
-                <select
+                <CustomSelect
                   name="type"
                   required
                   value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  style={{ ...inputStyle, appearance: 'none' }}
-                >
-                  <option value="strength">Fuerza</option>
-                  <option value="cardio">Cardio</option>
-                </select>
+                  onChange={setType}
+                  placeholder="Elegí el tipo"
+                  options={[
+                    { value: 'strength', label: 'Fuerza' },
+                    { value: 'cardio', label: 'Cardio' },
+                  ]}
+                />
               </Field>
 
               <Field label="Video (opcional)">

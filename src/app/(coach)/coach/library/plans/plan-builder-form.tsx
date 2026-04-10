@@ -17,6 +17,7 @@ import {
 } from '@/features/plans/actions/submit-plan-builder'
 import type { ExercisePick, PlanBuilderInitial } from './queries'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import CustomSelect from '@/components/ui/custom-select'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -527,24 +528,17 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                             <div>
                               <label style={{ ...labelStyle, marginBottom: 6 }}>Movimiento</label>
-                              <select
-                                value={line.exerciseId}
-                                onChange={(e) =>
-                                  updateLine(activeDow, line.id, { exerciseId: e.target.value })
-                                }
+                              <CustomSelect
+                                key={`${line.id}-${line.exerciseId}`}
                                 required
-                                style={{
-                                  ...inputStyle,
-                                  appearance: 'none',
-                                }}
-                              >
-                                <option value="">Seleccioná de tu biblioteca…</option>
-                                {exercises.map((ex) => (
-                                  <option key={ex.id} value={ex.id}>
-                                    {ex.name} ({ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})
-                                  </option>
-                                ))}
-                              </select>
+                                value={line.exerciseId}
+                                onChange={(v) => updateLine(activeDow, line.id, { exerciseId: v })}
+                                placeholder="Seleccioná de tu biblioteca…"
+                                options={exercises.map((ex) => ({
+                                  value: ex.id,
+                                  label: `${ex.name} (${ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})`,
+                                }))}
+                              />
                             </div>
 
                             <div

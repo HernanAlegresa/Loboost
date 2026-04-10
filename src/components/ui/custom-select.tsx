@@ -6,25 +6,51 @@ import { Check, ChevronDown } from 'lucide-react'
 
 export type SelectOption = { value: string; label: string }
 
-type CustomSelectProps = {
-  name: string
+type CustomSelectPropsBase = {
   options: SelectOption[]
   placeholder?: string
   required?: boolean
+}
+
+/** FormData: valor solo interno + input hidden con `name`. */
+export type CustomSelectUncontrolledProps = CustomSelectPropsBase & {
+  name: string
   defaultValue?: string
 }
 
-export default function CustomSelect({
-  name,
-  options,
-  placeholder = 'Seleccioná...',
-  required,
-  defaultValue = '',
-}: CustomSelectProps) {
+/** Estado en el padre; opcional `name` para un hidden en formularios. */
+export type CustomSelectControlledProps = CustomSelectPropsBase & {
+  value: string
+  onChange: (value: string) => void
+  name?: string
+}
+
+export type CustomSelectProps = CustomSelectUncontrolledProps | CustomSelectControlledProps
+
+function isControlled(props: CustomSelectProps): props is CustomSelectControlledProps {
+  return 'onChange' in props && typeof props.onChange === 'function'
+}
+
+export default function CustomSelect(props: CustomSelectProps) {
+  const { options, placeholder = 'Seleccioná...', required } = props
+  const controlled = isControlled(props)
+
   const [open, setOpen] = useState(false)
-  const [selected, setSelected] = useState<SelectOption | null>(
-    defaultValue ? (options.find((o) => o.value === defaultValue) ?? null) : null
-  )
+  const [internalSelected, setInternalSelected] = useState<SelectOption | null>(() => {
+    if (controlled) return null
+    const def = props.defaultValue ?? ''
+    return def ? (options.find((o) => o.value === def) ?? null) : null
+  })
+
+  const selected = controlled
+    ? (options.find((o) => o.value === props.value) ?? null)
+    : internalSelected
+
+  const hiddenValue = controlled ? props.value : (internalSelected?.value ?? '')
+  const formName = controlled
+    ? props.name
+    : (props as CustomSelectUncontrolledProps).name
+
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -38,12 +64,21 @@ export default function CustomSelect({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
 
+  function pick(option: SelectOption) {
+    if (controlled) {
+      props.onChange(option.value)
+    } else {
+      setInternalSelected(option)
+    }
+    setOpen(false)
+  }
+
   return (
     <div ref={ref} style={{ position: 'relative', zIndex: open ? 40 : 'auto' }}>
-      {/* Hidden input carries the value into FormData */}
-      <input type="hidden" name={name} value={selected?.value ?? ''} required={required} />
+      {(!controlled || formName) && (
+        <input type="hidden" name={formName as string} value={hiddenValue} required={required} />
+      )}
 
-      {/* Trigger button */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -77,7 +112,6 @@ export default function CustomSelect({
         </motion.span>
       </button>
 
-      {/* Dropdown list */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -90,11 +124,13 @@ export default function CustomSelect({
               top: '100%',
               left: 0,
               right: 0,
+              maxHeight: 'min(50vh, 280px)',
+              overflowY: 'auto',
               backgroundColor: '#111317',
               border: '1px solid #B5F23D',
               borderTop: 'none',
               borderRadius: '0 0 10px 10px',
-              overflow: 'hidden',
+              overflowX: 'hidden',
               boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
             }}
           >
@@ -104,10 +140,7 @@ export default function CustomSelect({
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => {
-                    setSelected(option)
-                    setOpen(false)
-                  }}
+                  onClick={() => pick(option)}
                   style={{
                     width: '100%',
                     padding: '12px 14px',

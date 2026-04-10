@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { assignPlanAction, type AssignPlanState } from '@/features/plans/actions/assign-plan'
 import type { ClientPick } from '../../queries'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import CustomSelect from '@/components/ui/custom-select'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -128,19 +129,17 @@ export default function AssignPlanForm({ planId, planName, planWeeks, clients }:
         ) : (
           <>
             <Field label="Cliente">
-              <select
+              <CustomSelect
                 name="clientId"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
                 required
-                style={{ ...inputStyle, appearance: 'none' }}
-              >
-                {sortedClients.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.full_name?.trim() || 'Sin nombre'}
-                  </option>
-                ))}
-              </select>
+                value={clientId}
+                onChange={setClientId}
+                placeholder="Elegí un cliente"
+                options={sortedClients.map((c) => ({
+                  value: c.id,
+                  label: c.full_name?.trim() || 'Sin nombre',
+                }))}
+              />
             </Field>
 
             <Field label="Fecha de inicio">
