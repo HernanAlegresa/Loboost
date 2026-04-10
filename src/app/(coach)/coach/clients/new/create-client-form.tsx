@@ -1,13 +1,14 @@
 'use client'
 
-import { useActionState, useEffect } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronDown } from 'lucide-react'
+import { ChevronLeft, Eye, EyeOff } from 'lucide-react'
 import { createClientAction } from '@/features/clients/actions/create-client'
 import { GOAL_OPTIONS } from '@/features/clients/schemas'
 import SuccessOverlay from './success-overlay'
 import type { CreateClientState } from '@/features/clients/types'
+import CustomSelect from '@/components/ui/custom-select'
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -50,31 +51,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-function SelectWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ position: 'relative' }}>
-      {children}
-      <ChevronDown
-        size={16}
-        color="#6B7280"
-        style={{
-          position: 'absolute',
-          right: 14,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          pointerEvents: 'none',
-        }}
-      />
-    </div>
-  )
-}
-
 export default function CreateClientForm() {
   const router = useRouter()
   const [state, formAction, isPending] = useActionState<CreateClientState, FormData>(
     createClientAction,
     null
   )
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (state?.success) {
@@ -133,19 +116,15 @@ export default function CreateClientForm() {
               </Field>
 
               <Field label="Sexo">
-                <SelectWrapper>
-                  <select
-                    name="sex"
-                    required
-                    defaultValue=""
-                    style={{ ...inputStyle, appearance: 'none', paddingRight: 40 }}
-                  >
-                    <option value="" disabled>Seleccioná...</option>
-                    <option value="female">Femenino</option>
-                    <option value="male">Masculino</option>
-                    <option value="other">Otro</option>
-                  </select>
-                </SelectWrapper>
+                <CustomSelect
+                  name="sex"
+                  required
+                  options={[
+                    { value: 'female', label: 'Femenino' },
+                    { value: 'male', label: 'Masculino' },
+                    { value: 'other', label: 'Otro' },
+                  ]}
+                />
               </Field>
 
               {/* Edad / Peso / Altura en fila */}
@@ -186,62 +165,42 @@ export default function CreateClientForm() {
               </div>
 
               <Field label="Objetivo">
-                <SelectWrapper>
-                  <select
-                    name="goal"
-                    required
-                    defaultValue=""
-                    style={{ ...inputStyle, appearance: 'none', paddingRight: 40 }}
-                  >
-                    <option value="" disabled>Seleccioná...</option>
-                    {GOAL_OPTIONS.map((g) => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
-                </SelectWrapper>
+                <CustomSelect
+                  name="goal"
+                  required
+                  options={GOAL_OPTIONS.map((g) => ({ value: g, label: g }))}
+                />
               </Field>
 
               <Field label="Nivel de experiencia">
-                <SelectWrapper>
-                  <select
-                    name="experienceLevel"
-                    required
-                    defaultValue=""
-                    style={{ ...inputStyle, appearance: 'none', paddingRight: 40 }}
-                  >
-                    <option value="" disabled>Seleccioná...</option>
-                    <option value="beginner">Principiante</option>
-                    <option value="intermediate">Intermedio</option>
-                    <option value="advanced">Avanzado</option>
-                  </select>
-                </SelectWrapper>
+                <CustomSelect
+                  name="experienceLevel"
+                  required
+                  options={[
+                    { value: 'beginner', label: 'Principiante' },
+                    { value: 'intermediate', label: 'Intermedio' },
+                    { value: 'advanced', label: 'Avanzado' },
+                  ]}
+                />
               </Field>
 
               <Field label="Días disponibles por semana">
-                <SelectWrapper>
-                  <select
-                    name="daysPerWeek"
-                    required
-                    defaultValue=""
-                    style={{ ...inputStyle, appearance: 'none', paddingRight: 40 }}
-                  >
-                    <option value="" disabled>Seleccioná...</option>
-                    {[1, 2, 3, 4, 5, 6].map((d) => (
-                      <option key={d} value={d}>
-                        {d} {d === 1 ? 'día' : 'días'}
-                      </option>
-                    ))}
-                  </select>
-                </SelectWrapper>
+                <CustomSelect
+                  name="daysPerWeek"
+                  required
+                  options={[1, 2, 3, 4, 5, 6].map((d) => ({
+                    value: String(d),
+                    label: `${d} ${d === 1 ? 'día' : 'días'}`,
+                  }))}
+                />
               </Field>
 
               <Field label='Lesiones o limitaciones'>
                 <input
                   name="injuries"
                   type="text"
-                  required
                   style={inputStyle}
-                  placeholder='Ej: "Rodilla derecha" o "Ninguna"'
+                  placeholder='Ej: "Rodilla derecha" o dejar vacío si no hay'
                 />
               </Field>
             </div>
@@ -266,14 +225,37 @@ export default function CreateClientForm() {
               </Field>
 
               <Field label="Contraseña">
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  style={inputStyle}
-                  placeholder="Mínimo 8 caracteres"
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    style={{ ...inputStyle, paddingRight: 44 }}
+                    placeholder="Mínimo 8 caracteres"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    style={{
+                      position: 'absolute',
+                      right: 14,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {showPassword
+                      ? <EyeOff size={18} color="#6B7280" />
+                      : <Eye size={18} color="#6B7280" />
+                    }
+                  </button>
+                </div>
               </Field>
             </div>
           </div>
