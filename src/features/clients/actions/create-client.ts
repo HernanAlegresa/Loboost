@@ -1,9 +1,8 @@
 'use server'
 
-import { createClient as createSupabaseAdmin } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClientSchema } from '@/features/clients/schemas'
-import type { Database } from '@/types/database'
 
 export type CreateClientState =
   | { success: true; clientId: string; clientName: string }
@@ -37,11 +36,7 @@ export async function createClientAction(
   const { data: { user: coachUser }, error: authGetError } = await supabase.auth.getUser()
   if (authGetError || !coachUser) return { success: false, error: 'No autenticado' }
 
-  const supabaseAdmin = createSupabaseAdmin<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const supabaseAdmin = createAdminClient()
 
   const { data: newUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: result.data.email,
@@ -51,13 +46,12 @@ export async function createClientAction(
   })
 
   if (authError || !newUser.user) {
-    return { success: false, error: authError?.message ?? 'Error al crear el usuario' }
+    return { success: false, error: 'No se pudo crear la cuenta. Verificá que el email no esté en uso.' }
   }
 
   const { error: profileError } = await supabaseAdmin
     .from('profiles')
-    .update({ full_name: result.data.fullName, role: 'client', coach_id: coachUser.id })
-    .eq('id', newUser.user.id)
+    .upsert({ id: newUser.user.id, full_name: result.data.fullName, role: 'client', coach_id: coachUser.id })
 
   if (profileError) {
     await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)

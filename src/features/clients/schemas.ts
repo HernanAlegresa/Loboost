@@ -21,7 +21,7 @@ export const createClientSchema = z.object({
   heightCm:        z.coerce.number().min(100).max(250),
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
   daysPerWeek:     z.coerce.number().int().min(1).max(6),
-  injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones'),
+  injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones').max(500),
 })
 
 export type CreateClientInput = z.infer<typeof createClientSchema>
