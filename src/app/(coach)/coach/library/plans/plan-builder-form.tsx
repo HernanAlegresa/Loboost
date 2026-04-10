@@ -442,147 +442,210 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                   ))}
                 </div>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 10,
-                    marginTop: 16,
-                  }}
-                >
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#B5F23D', margin: 0 }}>
+                <div style={{ marginTop: 16 }}>
+                  <p
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: '#6B7280',
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      margin: '0 0 12px',
+                    }}
+                  >
                     Ejercicios del día
                   </p>
+                  <p style={{ fontSize: 12, color: '#6B7280', margin: '-8px 0 14px', lineHeight: 1.45 }}>
+                    Orden de ejecución: el primero es el que va arriba en la lista.
+                  </p>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {draft.exercises.map((line, exerciseIndex) => {
+                      const exType = exerciseById.get(line.exerciseId)?.type
+                      const n = exerciseIndex + 1
+                      return (
+                        <div
+                          key={line.id}
+                          style={{
+                            backgroundColor: '#0D0F12',
+                            border: '1px solid #252830',
+                            borderRadius: 14,
+                            borderLeft: '3px solid #B5F23D',
+                            padding: '14px 14px 16px',
+                            boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 12,
+                              marginBottom: 14,
+                              paddingBottom: 12,
+                              borderBottom: '1px solid #1A1D22',
+                            }}
+                          >
+                            <div>
+                              <p
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 800,
+                                  color: '#B5F23D',
+                                  letterSpacing: '0.14em',
+                                  textTransform: 'uppercase',
+                                  margin: 0,
+                                }}
+                              >
+                                Ejercicio {n}
+                              </p>
+                              <p style={{ fontSize: 11, color: '#5C6370', margin: '4px 0 0' }}>
+                                {n === 1 ? 'Primero del día' : `Después del ejercicio ${n - 1}`}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeExercise(activeDow, line.id)}
+                              aria-label={`Quitar ejercicio ${n}`}
+                              style={{
+                                flexShrink: 0,
+                                background: 'rgba(242, 82, 82, 0.1)',
+                                border: '1px solid rgba(242, 82, 82, 0.25)',
+                                borderRadius: 10,
+                                color: '#F25252',
+                                cursor: 'pointer',
+                                padding: '8px 10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div>
+                              <label style={{ ...labelStyle, marginBottom: 6 }}>Movimiento</label>
+                              <select
+                                value={line.exerciseId}
+                                onChange={(e) =>
+                                  updateLine(activeDow, line.id, { exerciseId: e.target.value })
+                                }
+                                required
+                                style={{
+                                  ...inputStyle,
+                                  appearance: 'none',
+                                }}
+                              >
+                                <option value="">Seleccioná de tu biblioteca…</option>
+                                {exercises.map((ex) => (
+                                  <option key={ex.id} value={ex.id}>
+                                    {ex.name} ({ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: 10,
+                              }}
+                            >
+                              <div>
+                                <label style={{ ...labelStyle, marginBottom: 6 }}>Series</label>
+                                <input
+                                  value={line.sets}
+                                  onChange={(e) =>
+                                    updateLine(activeDow, line.id, { sets: e.target.value })
+                                  }
+                                  inputMode="numeric"
+                                  style={inputStyle}
+                                />
+                              </div>
+                              {exType === 'cardio' ? (
+                                <div>
+                                  <label style={{ ...labelStyle, marginBottom: 6 }}>Duración (seg)</label>
+                                  <input
+                                    value={line.durationSeconds}
+                                    onChange={(e) =>
+                                      updateLine(activeDow, line.id, {
+                                        durationSeconds: e.target.value,
+                                      })
+                                    }
+                                    inputMode="numeric"
+                                    style={inputStyle}
+                                  />
+                                </div>
+                              ) : (
+                                <div>
+                                  <label style={{ ...labelStyle, marginBottom: 6 }}>Reps</label>
+                                  <input
+                                    value={line.reps}
+                                    onChange={(e) =>
+                                      updateLine(activeDow, line.id, { reps: e.target.value })
+                                    }
+                                    inputMode="numeric"
+                                    style={inputStyle}
+                                  />
+                                </div>
+                              )}
+                              <div style={{ gridColumn: '1 / -1' }}>
+                                <label style={{ ...labelStyle, marginBottom: 6 }}>
+                                  Descanso (seg, opcional)
+                                </label>
+                                <input
+                                  value={line.restSeconds}
+                                  onChange={(e) =>
+                                    updateLine(activeDow, line.id, { restSeconds: e.target.value })
+                                  }
+                                  inputMode="numeric"
+                                  style={inputStyle}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => addExercise(activeDow)}
                     style={{
+                      width: '100%',
+                      marginTop: 16,
+                      minHeight: 48,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 6,
-                      border: '1px solid #2A2D34',
-                      background: 'transparent',
+                      justifyContent: 'center',
+                      gap: 8,
+                      borderRadius: 12,
+                      border: '1px dashed #3D4A2E',
+                      backgroundColor: 'rgba(181, 242, 61, 0.06)',
                       color: '#B5F23D',
-                      borderRadius: 10,
-                      padding: '6px 10px',
-                      cursor: 'pointer',
-                      fontSize: 12,
+                      fontSize: 14,
                       fontWeight: 700,
+                      cursor: 'pointer',
                     }}
                   >
-                    <Plus size={16} />
-                    Ejercicio
+                    <Plus size={20} strokeWidth={2.5} />
+                    Agregar ejercicio
                   </button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
-                  {draft.exercises.map((line) => {
-                    const exType = exerciseById.get(line.exerciseId)?.type
-                    return (
-                      <div
-                        key={line.id}
-                        style={{
-                          borderTop: '1px solid #1A1D22',
-                          paddingTop: 12,
-                        }}
-                      >
-                        <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <label style={{ ...labelStyle, marginBottom: 6 }}>Ejercicio</label>
-                            <select
-                              value={line.exerciseId}
-                              onChange={(e) =>
-                                updateLine(activeDow, line.id, { exerciseId: e.target.value })
-                              }
-                              required
-                              style={{
-                                ...inputStyle,
-                                appearance: 'none',
-                              }}
-                            >
-                              <option value="">Seleccioná…</option>
-                              {exercises.map((ex) => (
-                                <option key={ex.id} value={ex.id}>
-                                  {ex.name} ({ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeExercise(activeDow, line.id)}
-                            aria-label="Quitar ejercicio"
-                            style={{
-                              marginTop: 26,
-                              background: 'none',
-                              border: 'none',
-                              color: '#F25252',
-                              cursor: 'pointer',
-                              padding: 6,
-                            }}
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-
-                        <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1fr 1fr',
-                            gap: 10,
-                            marginTop: 10,
-                          }}
-                        >
-                          <div>
-                            <label style={{ ...labelStyle, marginBottom: 6 }}>Series</label>
-                            <input
-                              value={line.sets}
-                              onChange={(e) => updateLine(activeDow, line.id, { sets: e.target.value })}
-                              inputMode="numeric"
-                              style={inputStyle}
-                            />
-                          </div>
-                          {exType === 'cardio' ? (
-                            <div>
-                              <label style={{ ...labelStyle, marginBottom: 6 }}>Duración (seg)</label>
-                              <input
-                                value={line.durationSeconds}
-                                onChange={(e) =>
-                                  updateLine(activeDow, line.id, { durationSeconds: e.target.value })
-                                }
-                                inputMode="numeric"
-                                style={inputStyle}
-                              />
-                            </div>
-                          ) : (
-                            <div>
-                              <label style={{ ...labelStyle, marginBottom: 6 }}>Reps</label>
-                              <input
-                                value={line.reps}
-                                onChange={(e) => updateLine(activeDow, line.id, { reps: e.target.value })}
-                                inputMode="numeric"
-                                style={inputStyle}
-                              />
-                            </div>
-                          )}
-                          <div style={{ gridColumn: '1 / -1' }}>
-                            <label style={{ ...labelStyle, marginBottom: 6 }}>
-                              Descanso (seg, opcional)
-                            </label>
-                            <input
-                              value={line.restSeconds}
-                              onChange={(e) =>
-                                updateLine(activeDow, line.id, { restSeconds: e.target.value })
-                              }
-                              inputMode="numeric"
-                              style={inputStyle}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: '#5C6370',
+                      textAlign: 'center',
+                      margin: '8px 0 0',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Siempre podés sumar otro bloque acá, sin volver arriba.
+                  </p>
                 </div>
               </div>
             ) : (
