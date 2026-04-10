@@ -4,12 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 import { exerciseSchema } from '@/features/exercises/schemas'
 
 export async function updateExerciseAction(exerciseId: string, formData: FormData) {
+  const videoRaw = formData.get('videoUrl')
   const raw = {
     name: formData.get('name'),
     muscleGroup: formData.get('muscleGroup'),
     category: formData.get('category'),
     type: formData.get('type'),
-    videoUrl: formData.get('videoUrl') || undefined,
+    videoUrl:
+      typeof videoRaw === 'string' && videoRaw.trim() === '' ? undefined : videoRaw || undefined,
   }
 
   const result = exerciseSchema.safeParse(raw)

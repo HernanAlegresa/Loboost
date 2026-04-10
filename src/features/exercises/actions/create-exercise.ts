@@ -3,23 +3,33 @@
 import { createClient } from '@/lib/supabase/server'
 import { exerciseSchema } from '@/features/exercises/schemas'
 
-export async function createExerciseAction(formData: FormData) {
+export type CreateExerciseState =
+  | { success: true; exerciseId: string }
+  | { success: false; error: string }
+  | null
+
+export async function createExerciseAction(
+  _prevState: CreateExerciseState,
+  formData: FormData
+): Promise<CreateExerciseState> {
+  const videoRaw = formData.get('videoUrl')
   const raw = {
     name: formData.get('name'),
     muscleGroup: formData.get('muscleGroup'),
     category: formData.get('category'),
     type: formData.get('type'),
-    videoUrl: formData.get('videoUrl') || undefined,
+    videoUrl:
+      typeof videoRaw === 'string' && videoRaw.trim() === '' ? undefined : videoRaw || undefined,
   }
 
   const result = exerciseSchema.safeParse(raw)
   if (!result.success) {
-    return { error: result.error.issues[0].message }
+    return { success: false, error: result.error.issues[0].message }
   }
 
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
-  if (authError || !user) return { error: 'No autenticado' }
+  if (authError || !user) return { success: false, error: 'No autenticado' }
 
   const { data, error } = await supabase
     .from('exercises')
@@ -34,7 +44,7 @@ export async function createExerciseAction(formData: FormData) {
     .select('id')
     .single()
 
-  if (error) return { error: 'Error al crear el ejercicio' }
+  if (error) return { success: false, error: 'Error al crear el ejercicio' }
 
   return { success: true, exerciseId: data.id }
 }
