@@ -15,3 +15,9 @@ export const bodyMeasurementSchema = z.object({
 })
 
 export type BodyMeasurementInput = z.infer<typeof bodyMeasurementSchema>
+
+export const coachProfileUpdateSchema = z.object({
+  fullName: z.string().trim().min(1, 'El nombre es requerido').max(120, 'Máximo 120 caracteres'),
+})
+
+export type CoachProfileUpdateInput = z.infer<typeof coachProfileUpdateSchema>
