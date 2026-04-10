@@ -304,6 +304,68 @@ Cubre el flujo principal: **dashboard**, **clientes** (lista, alta, perfil), **b
 
 ---
 
+## 2026-04-10 — Claude Code: lado cliente completo (Fase 2)
+
+### Qué se hizo
+
+Implementación completa del **lado cliente** según `docs/superpowers/specs/2026-04-09-fase2-design.md`. Plan ejecutado: `docs/superpowers/plans/2026-04-10-client-side.md` (todos los checkboxes marcados).
+
+### Archivos añadidos
+
+| Archivo | Rol |
+|--------|-----|
+| `src/features/training/types.ts` | Tipos de dominio: `ClientDashboardData`, `TodayDayData`, `LiveSessionData`, `LiveExercise`, `SetLog`, `SessionHistoryItem`, `ClientActivePlan` |
+| `src/components/ui/client-bottom-nav.tsx` | Bottom nav cliente: Inicio + Historial, color activo `#B5F23D` |
+| `src/app/(client)/layout.tsx` | Layout grupo `(client)`: inline styles, `100dvh`, header + `<ClientBottomNav />` |
+| `src/app/(client)/client/dashboard/queries.ts` | `getClientDashboardData`: perfil + plan activo + día de hoy (ejercicios + sesión) |
+| `src/app/(client)/client/dashboard/today-card.tsx` | Client component: iniciar / retomar sesión, TypeScript closure fix con `const day = today` |
+| `src/app/(client)/client/dashboard/page.tsx` | Dashboard cliente: saludo, barra de progreso del plan, `<TodayCard>` |
+| `src/app/(training)/layout.tsx` | Layout grupo `(training)`: full-screen sin nav para pantalla de gym |
+| `src/app/(training)/client/training/[sessionId]/queries.ts` | `getLiveSessionData`: ejercicios + sets en paralelo, verifica ownership |
+| `src/app/(training)/client/training/[sessionId]/page.tsx` | `await params`, auth, `getLiveSessionData`, `<LiveTraining>` |
+| `src/app/(training)/client/training/[sessionId]/live-training.tsx` | Client component: set-by-set logging, optimistic updates, finish button |
+| `src/app/(client)/client/history/queries.ts` | `getSessionHistory`: últimas 50 sesiones con join anidado `client_plan_days → client_plans` |
+| `src/app/(client)/client/history/page.tsx` | Historial: empty state, lista de sesiones con badge de estado |
+
+### Decisiones técnicas clave
+
+- **Ruta groups separados**: `(client)` = nav; `(training)` = full-screen sin nav. Esto permite que `/client/training/[id]` use un layout distinto al dashboard aunque comparten prefijo de URL.
+- **TypeScript closure narrowing**: `today: TodayDayData | null` no se estrecha dentro de closures async. Fix: `const day = today` después del early return.
+- **Optimistic updates** en `live-training.tsx`: `Set<string>` de claves `"exerciseId:setNumber"` se actualiza antes del servidor, se revierte en error.
+- Reutiliza `startSessionAction`, `completeSetAction`, `completeSessionAction` ya existentes.
+
+### Commits (esta sesión Claude)
+
+```
+f2cc392  feat: session history screen
+(+ commits de tasks 1–3 en sesión anterior)
+```
+
+### Cómo verificar
+
+```powershell
+cd "C:\Users\herna\Loboost App"
+npx tsc --noEmit
+npx jest --no-coverage
+npm run dev
+```
+
+Smoke test manual:
+1. Login como cliente → `/client/dashboard` → ver plan activo + día de hoy
+2. Tap "Iniciar entrenamiento" → `/client/training/[id]`
+3. Completar sets → ver check verde por ejercicio → "Finalizar" → vuelve al dashboard
+4. Ir a `/client/history` → ver la sesión completada
+
+### Deuda / pendientes (no bloquean el flujo principal)
+
+- Editar copia `client_plans` desde UI (coach)
+- Pausar / completar plan explícitamente
+- Búsqueda en lista de clientes
+- Unificar API notas del coach
+- Rollback en `assignPlanAction`
+
+---
+
 ## Plantilla para próximas entradas
 
 ```markdown

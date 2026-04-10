@@ -36,7 +36,7 @@
 - Modify: `src/app/(client)/layout.tsx`
 - Create: `src/components/ui/client-bottom-nav.tsx`
 
-- [ ] **Step 1: Create `src/features/training/types.ts`**
+- [x] **Step 1: Create `src/features/training/types.ts`**
 
 ```typescript
 // Types for the client-side training features
@@ -116,7 +116,7 @@ export type SessionHistoryItem = {
 }
 ```
 
-- [ ] **Step 2: Create `src/components/ui/client-bottom-nav.tsx`**
+- [x] **Step 2: Create `src/components/ui/client-bottom-nav.tsx`**
 
 ```typescript
 'use client'
@@ -175,7 +175,7 @@ export default function ClientBottomNav() {
 }
 ```
 
-- [ ] **Step 3: Overhaul `src/app/(client)/layout.tsx`**
+- [x] **Step 3: Overhaul `src/app/(client)/layout.tsx`**
 
 Read the file first (`src/app/(client)/layout.tsx`). Replace its full content with:
 
@@ -243,7 +243,7 @@ export default async function ClientLayout({
 }
 ```
 
-- [ ] **Step 4: TypeScript check**
+- [x] **Step 4: TypeScript check**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
@@ -251,7 +251,7 @@ cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
 
 Expected: no errors.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
@@ -259,7 +259,7 @@ cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
 
 Expected: all tests pass (no new tests in this task — types and layout have no unit-testable logic).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && git add src/features/training/types.ts src/components/ui/client-bottom-nav.tsx "src/app/(client)/layout.tsx" && git commit -m "feat: client training types, layout overhaul, client bottom nav"
@@ -274,7 +274,7 @@ cd "C:\Users\herna\Loboost App" && git add src/features/training/types.ts src/co
 - Modify: `src/app/(client)/client/dashboard/page.tsx`
 - Create: `src/app/(client)/client/dashboard/today-card.tsx`
 
-- [ ] **Step 1: Create `src/app/(client)/client/dashboard/queries.ts`**
+- [x] **Step 1: Create `src/app/(client)/client/dashboard/queries.ts`**
 
 ```typescript
 import { createClient } from '@/lib/supabase/server'
@@ -386,7 +386,7 @@ export async function getClientDashboardData(
 }
 ```
 
-- [ ] **Step 2: Create `src/app/(client)/client/dashboard/today-card.tsx`**
+- [x] **Step 2: Create `src/app/(client)/client/dashboard/today-card.tsx`**
 
 ```typescript
 'use client'
@@ -548,7 +548,7 @@ export default function TodayCard({ today }: { today: TodayDayData | null }) {
 }
 ```
 
-- [ ] **Step 3: Replace `src/app/(client)/client/dashboard/page.tsx`**
+- [x] **Step 3: Replace `src/app/(client)/client/dashboard/page.tsx`**
 
 Read the file first. Replace its full content with:
 
@@ -701,7 +701,7 @@ export default async function ClientDashboardPage() {
 }
 ```
 
-- [ ] **Step 4: TypeScript check**
+- [x] **Step 4: TypeScript check**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
@@ -709,7 +709,7 @@ cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
 
 Expected: no errors.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
@@ -717,7 +717,7 @@ cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
 
 Expected: all tests pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && git add "src/app/(client)/client/dashboard/queries.ts" "src/app/(client)/client/dashboard/today-card.tsx" "src/app/(client)/client/dashboard/page.tsx" && git commit -m "feat: client dashboard — active plan card and today's training day"
@@ -735,7 +735,7 @@ cd "C:\Users\herna\Loboost App" && git add "src/app/(client)/client/dashboard/qu
 
 Note: `(training)` is a Next.js route group. The folder name in parentheses does NOT appear in the URL. The URL for the page is `/client/training/[sessionId]`.
 
-- [ ] **Step 1: Create `src/app/(training)/layout.tsx`**
+- [x] **Step 1: Create `src/app/(training)/layout.tsx`**
 
 ```typescript
 export default function TrainingLayout({
@@ -760,7 +760,7 @@ export default function TrainingLayout({
 }
 ```
 
-- [ ] **Step 2: Create `src/app/(training)/client/training/[sessionId]/queries.ts`**
+- [x] **Step 2: Create `src/app/(training)/client/training/[sessionId]/queries.ts`**
 
 ```typescript
 import { createClient } from '@/lib/supabase/server'
@@ -847,7 +847,7 @@ export async function getLiveSessionData(
 }
 ```
 
-- [ ] **Step 3: Create `src/app/(training)/client/training/[sessionId]/page.tsx`**
+- [x] **Step 3: Create `src/app/(training)/client/training/[sessionId]/page.tsx`**
 
 ```typescript
 import { notFound, redirect } from 'next/navigation'
@@ -872,7 +872,7 @@ export default async function LiveTrainingPage({
 }
 ```
 
-- [ ] **Step 4: Create `src/app/(training)/client/training/[sessionId]/live-training.tsx`**
+- [x] **Step 4: Create `src/app/(training)/client/training/[sessionId]/live-training.tsx`**
 
 ```typescript
 'use client'
@@ -1244,7 +1244,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
 }
 ```
 
-- [ ] **Step 5: TypeScript check**
+- [x] **Step 5: TypeScript check**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
@@ -1252,7 +1252,7 @@ cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
 
 Expected: no errors.
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
@@ -1260,7 +1260,7 @@ cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && git add "src/app/(training)" && git commit -m "feat: live training screen — set-by-set logging with optimistic updates"
@@ -1274,7 +1274,7 @@ cd "C:\Users\herna\Loboost App" && git add "src/app/(training)" && git commit -m
 - Create: `src/app/(client)/client/history/queries.ts`
 - Create: `src/app/(client)/client/history/page.tsx`
 
-- [ ] **Step 1: Create `src/app/(client)/client/history/queries.ts`**
+- [x] **Step 1: Create `src/app/(client)/client/history/queries.ts`**
 
 ```typescript
 import { createClient } from '@/lib/supabase/server'
@@ -1320,7 +1320,7 @@ export async function getSessionHistory(
 }
 ```
 
-- [ ] **Step 2: Create `src/app/(client)/client/history/page.tsx`**
+- [x] **Step 2: Create `src/app/(client)/client/history/page.tsx`**
 
 ```typescript
 import { redirect } from 'next/navigation'
@@ -1438,7 +1438,7 @@ export default async function HistoryPage() {
 }
 ```
 
-- [ ] **Step 3: TypeScript check**
+- [x] **Step 3: TypeScript check**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
@@ -1446,7 +1446,7 @@ cd "C:\Users\herna\Loboost App" && npx tsc --noEmit 2>&1
 
 Expected: no errors.
 
-- [ ] **Step 4: Run tests**
+- [x] **Step 4: Run tests**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
@@ -1454,7 +1454,7 @@ cd "C:\Users\herna\Loboost App" && npx jest --no-coverage 2>&1
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Manual smoke test**
+- [x] **Step 5: Manual smoke test**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && npm run dev
@@ -1470,7 +1470,7 @@ cd "C:\Users\herna\Loboost App" && npm run dev
 8. Navigate to **Historial** → session appears in the list with "Completado" badge
 9. If today is a rest day or no plan active: correct empty states show
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd "C:\Users\herna\Loboost App" && git add "src/app/(client)/client/history/" && git commit -m "feat: session history screen"
