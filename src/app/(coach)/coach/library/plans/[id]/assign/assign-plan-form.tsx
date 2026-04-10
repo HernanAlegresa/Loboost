@@ -2,10 +2,9 @@
 
 import { useActionState, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
 import { assignPlanAction, type AssignPlanState } from '@/features/plans/actions/assign-plan'
 import type { ClientPick } from '../../queries'
+import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -78,29 +77,25 @@ export default function AssignPlanForm({ planId, planName, planWeeks, clients }:
   )
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <CoachSubpageHeader
+        backHref={`/coach/library/plans/${planId}`}
+        title="Asignar plan"
+        subtitle={planName}
+        titleColor="#B5F23D"
+      />
+
+      <form
+        action={formAction}
         style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '16px 20px 120px',
           display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '16px 20px 24px',
-          position: 'sticky',
-          top: 0,
-          backgroundColor: '#0A0A0A',
-          zIndex: 10,
+          flexDirection: 'column',
+          gap: 22,
         }}
       >
-        <Link
-          href="/coach/library/plans"
-          style={{ display: 'flex', alignItems: 'center', color: '#6B7280', textDecoration: 'none' }}
-        >
-          <ChevronLeft size={22} />
-        </Link>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#F0F0F0' }}>Asignar plan</span>
-      </div>
-
-      <form action={formAction} style={{ padding: '0 20px 120px', display: 'flex', flexDirection: 'column', gap: 22 }}>
         <input type="hidden" name="planId" value={planId} readOnly />
 
         <div
@@ -111,8 +106,7 @@ export default function AssignPlanForm({ planId, planName, planWeeks, clients }:
             padding: '14px 16px',
           }}
         >
-          <p style={{ fontSize: 13, fontWeight: 700, color: '#F0F0F0' }}>{planName}</p>
-          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 6 }}>
+          <p style={{ fontSize: 12, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>
             {planWeeks} {planWeeks === 1 ? 'semana' : 'semanas'} · Se crea una copia activa para el cliente
           </p>
         </div>

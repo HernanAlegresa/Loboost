@@ -24,3 +24,26 @@ body {
   font-family: Inter, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Ocultar barras de scroll manteniendo el scroll (coach / cliente) */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+body::-webkit-scrollbar {
+  display: none;
+}
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}

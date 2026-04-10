@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { deleteExerciseAction } from '@/features/exercises/actions/delete-exercise'
 import type { ExerciseRow } from './queries'
 import DeleteExerciseDialog from './delete-exercise-dialog'
@@ -64,15 +65,15 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
         style={{
           backgroundColor: '#111317',
           border: '1px solid #1F2227',
-          borderRadius: 14,
+          borderRadius: 16,
           padding: '28px 20px',
           textAlign: 'center',
         }}
       >
         <p style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F0' }}>Tu biblioteca está vacía</p>
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
-          Creá el primer ejercicio con el botón <span style={{ color: '#B5F23D' }}>+</span>. Los vas a
-          reutilizar al armar planes.
+          Creá el primer ejercicio con el botón <span style={{ color: '#B5F23D' }}>+</span>. Los vas a reutilizar al
+          armar planes.
         </p>
       </div>
     )
@@ -88,15 +89,15 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
         onCancel={closeDelete}
         onConfirm={confirmDelete}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {exercises.map((ex) => (
           <div
             key={ex.id}
             style={{
               backgroundColor: '#111317',
               border: '1px solid #1F2227',
-              borderRadius: 14,
-              padding: '14px 16px',
+              borderRadius: 16,
+              padding: '16px 14px',
               display: 'flex',
               alignItems: 'flex-start',
               gap: 12,
@@ -106,12 +107,13 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
             <div style={{ flex: 1, minWidth: 0 }}>
               <p
                 style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#F0F0F0',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: '#B5F23D',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
+                  margin: 0,
                 }}
               >
                 {ex.name}
@@ -120,31 +122,48 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
                 style={{
                   fontSize: 12,
                   color: '#6B7280',
-                  marginTop: 4,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  margin: '8px 0 0',
+                  lineHeight: 1.45,
                 }}
               >
-                {ex.muscle_group} · {ex.category} · {TYPE_LABEL[ex.type] ?? ex.type}
+                <span style={{ color: '#9CA3AF' }}>{ex.muscle_group}</span>
+                {' · '}
+                {ex.category}
+                {' · '}
+                <span style={{ color: '#B5F23D', fontWeight: 600 }}>
+                  {TYPE_LABEL[ex.type] ?? ex.type}
+                </span>
               </p>
             </div>
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={() => openDelete(ex)}
-              aria-label={`Eliminar ejercicio ${ex.name}`}
-              style={{
-                flexShrink: 0,
-                background: 'none',
-                border: 'none',
-                padding: 6,
-                cursor: isPending ? 'default' : 'pointer',
-                color: '#6B7280',
-              }}
-            >
-              <Trash2 size={18} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+              <Link
+                href={`/coach/library/exercises/${ex.id}/edit`}
+                aria-label={`Editar ${ex.name}`}
+                style={{
+                  display: 'flex',
+                  padding: 8,
+                  color: '#B5F23D',
+                  textDecoration: 'none',
+                }}
+              >
+                <Pencil size={20} />
+              </Link>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => openDelete(ex)}
+                aria-label={`Eliminar ejercicio ${ex.name}`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 8,
+                  cursor: isPending ? 'default' : 'pointer',
+                  color: '#F25252',
+                }}
+              >
+                <Trash2 size={20} />
+              </button>
+            </div>
           </div>
         ))}
       </div>

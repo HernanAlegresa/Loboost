@@ -19,3 +19,21 @@ export async function getCoachExercises(coachId: string): Promise<ExerciseRow[]>
   if (error || !data) return []
   return data
 }
+
+export type ExerciseEditRow = ExerciseRow & { video_url: string | null }
+
+export async function getExerciseForEdit(
+  coachId: string,
+  exerciseId: string
+): Promise<ExerciseEditRow | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('exercises')
+    .select('id, name, muscle_group, category, type, video_url')
+    .eq('id', exerciseId)
+    .eq('coach_id', coachId)
+    .single()
+
+  if (error || !data) return null
+  return data as ExerciseEditRow
+}

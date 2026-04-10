@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Trash2, ArrowRight } from 'lucide-react'
+import { Trash2, ChevronRight } from 'lucide-react'
 import { deletePlanAction } from '@/features/plans/actions/delete-plan'
 import type { PlanListRow } from './queries'
 import DeletePlanDialog from './delete-plan-dialog'
@@ -60,15 +60,15 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
         style={{
           backgroundColor: '#111317',
           border: '1px solid #1F2227',
-          borderRadius: 14,
+          borderRadius: 16,
           padding: '28px 20px',
           textAlign: 'center',
         }}
       >
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F0' }}>Todavía no tenés plantillas</p>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F0' }}>Todavía no tenés planes guardados</p>
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
-          Creá tu primera plantilla con el botón <span style={{ color: '#B5F23D' }}>+</span>. Después
-          vas a poder asignarla a un cliente y se genera su plan personalizado en la base.
+          Creá el primero con el botón <span style={{ color: '#B5F23D' }}>+</span>. Después podés asignarlo a un
+          cliente desde el detalle del plan.
         </p>
       </div>
     )
@@ -85,73 +85,70 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
         onConfirm={confirmDelete}
       />
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {plans.map((p) => (
           <div
             key={p.id}
             style={{
               backgroundColor: '#111317',
               border: '1px solid #1F2227',
-              borderRadius: 14,
-              padding: '14px 16px',
+              borderRadius: 16,
+              padding: '16px 14px',
               display: 'flex',
               alignItems: 'center',
-              gap: 12,
+              gap: 10,
               opacity: isPending && pendingId === p.id ? 0.55 : 1,
             }}
           >
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#F0F0F0',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {p.name}
-              </p>
-              <p style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>
-                {p.weeks} semanas · {p.trainingDays} {p.trainingDays === 1 ? 'día' : 'días'} / semana
-              </p>
-            </div>
-
             <Link
-              href={`/coach/library/plans/${p.id}/assign`}
-              aria-label={`Asignar plan ${p.name}`}
+              href={`/coach/library/plans/${p.id}`}
               style={{
-                flexShrink: 0,
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                border: '1px solid #2A2D34',
+                flex: 1,
+                minWidth: 0,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                gap: 10,
                 textDecoration: 'none',
-                color: '#B5F23D',
+                color: 'inherit',
               }}
             >
-              <ArrowRight size={18} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: '#B5F23D',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    margin: 0,
+                  }}
+                >
+                  {p.name}
+                </p>
+                <p style={{ fontSize: 12, color: '#6B7280', margin: '6px 0 0', lineHeight: 1.4 }}>
+                  {p.weeks} {p.weeks === 1 ? 'semana' : 'semanas'} · {p.trainingDays}{' '}
+                  {p.trainingDays === 1 ? 'día' : 'días'} / semana
+                </p>
+              </div>
+              <ChevronRight size={20} color="#6B7280" style={{ flexShrink: 0 }} aria-hidden />
             </Link>
 
             <button
               type="button"
               disabled={isPending}
               onClick={() => openDelete(p)}
-              aria-label={`Eliminar plantilla ${p.name}`}
+              aria-label={`Eliminar plan ${p.name}`}
               style={{
                 flexShrink: 0,
                 background: 'none',
                 border: 'none',
-                padding: 6,
+                padding: 8,
                 cursor: isPending ? 'default' : 'pointer',
-                color: '#6B7280',
+                color: '#F25252',
               }}
             >
-              <Trash2 size={18} />
+              <Trash2 size={20} />
             </button>
           </div>
         ))}

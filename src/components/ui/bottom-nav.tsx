@@ -7,7 +7,7 @@ import { Home, Users, BookOpen, Settings } from 'lucide-react'
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/coach/dashboard', Icon: Home },
   { label: 'Clientes', href: '/coach/clients', Icon: Users },
-  { label: 'Librería', href: '/coach/library', Icon: BookOpen },
+  { label: 'Biblioteca', href: '/coach/library', Icon: BookOpen },
   { label: 'Ajustes', href: '/coach/settings', Icon: Settings },
 ]
 

@@ -50,11 +50,11 @@ export default function DeletePlanDialog({
         }}
       >
         <p id="delete-plan-title" style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0' }}>
-          ¿Eliminar plantilla de plan?
+          ¿Eliminar este plan?
         </p>
         <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
-          Se eliminará <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{planName}</span> y sus
-          días/ejercicios del template. Esto no borra planes ya asignados a clientes.
+          Se eliminará <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{planName}</span> de tu biblioteca
+          (días y ejercicios del plan base). No se borran copias ya asignadas a clientes.
         </p>
         {error && (
           <p style={{ fontSize: 13, color: '#F25252', marginTop: 12, lineHeight: 1.45 }}>{error}</p>

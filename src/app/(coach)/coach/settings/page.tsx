@@ -13,8 +13,8 @@ const cardStyle: CSSProperties = {
 
 const sectionLabel: CSSProperties = {
   fontSize: 11,
-  fontWeight: 600,
-  color: '#6B7280',
+  fontWeight: 700,
+  color: '#B5F23D',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   marginBottom: 14,
@@ -68,22 +68,31 @@ export default async function CoachSettingsPage() {
         <section style={cardStyle}>
           <p style={sectionLabel}>Sesión</p>
           <form action={signOut}>
-            <button
-              type="submit"
+            <div
               style={{
-                width: '100%',
-                height: 46,
-                borderRadius: 12,
-                border: '1px solid #2A2D34',
-                fontSize: 15,
-                fontWeight: 600,
-                color: '#F0F0F0',
-                backgroundColor: 'transparent',
-                cursor: 'pointer',
+                borderRadius: 14,
+                border: '1px solid rgba(242, 82, 82, 0.35)',
+                backgroundColor: 'rgba(242, 82, 82, 0.06)',
+                padding: 4,
               }}
             >
-              Cerrar sesión
-            </button>
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  height: 48,
+                  borderRadius: 10,
+                  border: 'none',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: '#F25252',
+                  backgroundColor: 'rgba(242, 82, 82, 0.12)',
+                  cursor: 'pointer',
+                }}
+              >
+                Cerrar sesión
+              </button>
+            </div>
           </form>
         </section>
       </div>

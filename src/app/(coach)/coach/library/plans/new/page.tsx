@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getCoachExercisesForPlanBuilder } from '../queries'
-import CreatePlanForm from './create-plan-form'
+import PlanBuilderForm from '../plan-builder-form'
 
 export default async function NewPlanPage() {
   const supabase = await createClient()
@@ -13,5 +13,5 @@ export default async function NewPlanPage() {
 
   const exercises = await getCoachExercisesForPlanBuilder(user.id)
 
-  return <CreatePlanForm exercises={exercises} />
+  return <PlanBuilderForm exercises={exercises} mode="create" />
 }

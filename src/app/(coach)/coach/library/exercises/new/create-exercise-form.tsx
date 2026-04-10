@@ -1,13 +1,12 @@
 'use client'
 
-import { useActionState, useEffect } from 'react'
+import { useActionState, useEffect, type CSSProperties, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
 import { createExerciseAction, type CreateExerciseState } from '@/features/exercises/actions/create-exercise'
 import CustomSelect from '@/components/ui/custom-select'
+import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 
-const inputStyle: React.CSSProperties = {
+const inputStyle: CSSProperties = {
   width: '100%',
   height: 44,
   backgroundColor: '#111317',
@@ -20,7 +19,7 @@ const inputStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 }
 
-const labelStyle: React.CSSProperties = {
+const labelStyle: CSSProperties = {
   display: 'block',
   fontSize: 11,
   fontWeight: 600,
@@ -30,7 +29,7 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 8,
 }
 
-const sectionTitleStyle: React.CSSProperties = {
+const sectionTitleStyle: CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
   color: '#6B7280',
@@ -39,7 +38,7 @@ const sectionTitleStyle: React.CSSProperties = {
   marginBottom: 16,
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       <label style={labelStyle}>{label}</label>
@@ -62,31 +61,19 @@ export default function CreateExerciseForm() {
   }, [state, router])
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '16px 20px 24px',
-          position: 'sticky',
-          top: 0,
-          backgroundColor: '#0A0A0A',
-          zIndex: 10,
-        }}
-      >
-        <Link
-          href="/coach/library/exercises"
-          style={{ display: 'flex', alignItems: 'center', color: '#6B7280', textDecoration: 'none' }}
-        >
-          <ChevronLeft size={22} />
-        </Link>
-        <span style={{ fontSize: 18, fontWeight: 700, color: '#F0F0F0' }}>Nuevo ejercicio</span>
-      </div>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <CoachSubpageHeader backHref="/coach/library/exercises" title="Nuevo ejercicio" />
 
       <form
         action={formAction}
-        style={{ padding: '0 20px 120px', display: 'flex', flexDirection: 'column', gap: 28 }}
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '16px 20px 120px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 28,
+        }}
       >
         <div>
           <p style={sectionTitleStyle}>Datos</p>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useActionState, useEffect, useRef, type CSSProperties } from 'react'
+import { useActionState, useEffect, useState, type CSSProperties } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   updateCoachProfileAction,
   type UpdateCoachProfileState,
@@ -34,10 +35,62 @@ type Props = {
 }
 
 export default function CoachSettingsForm({ initialFullName }: Props) {
+  const router = useRouter()
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(initialFullName)
+
+  useEffect(() => {
+    setName(initialFullName)
+  }, [initialFullName])
+
   const [state, formAction, isPending] = useActionState<UpdateCoachProfileState, FormData>(
     updateCoachProfileAction,
     null
   )
+
+  useEffect(() => {
+    if (state?.success) {
+      setEditing(false)
+      router.refresh()
+    }
+  }, [state, router])
+
+  const dirty = name.trim() !== initialFullName.trim()
+
+  if (!editing) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div>
+          <p style={{ ...labelStyle, marginBottom: 6 }}>Nombre actual</p>
+          <p style={{ fontSize: 20, fontWeight: 700, color: '#F0F0F0', margin: 0, lineHeight: 1.35 }}>
+            {initialFullName.trim() || 'Sin nombre'}
+          </p>
+          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 8, lineHeight: 1.45 }}>
+            Así te mostramos en el panel y en los saludos.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setName(initialFullName)
+            setEditing(true)
+          }}
+          style={{
+            height: 46,
+            borderRadius: 12,
+            border: '1px solid #2A2D34',
+            fontSize: 15,
+            fontWeight: 600,
+            color: '#B5F23D',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+          }}
+        >
+          Editar nombre
+        </button>
+      </div>
+    )
+  }
 
   return (
     <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -51,13 +104,11 @@ export default function CoachSettingsForm({ initialFullName }: Props) {
           type="text"
           required
           autoComplete="name"
-          defaultValue={initialFullName}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           disabled={isPending}
           style={inputStyle}
         />
-        <p style={{ fontSize: 12, color: '#6B7280', marginTop: 8, lineHeight: 1.45 }}>
-          Así te mostramos en el panel y en los saludos.
-        </p>
       </div>
 
       {state && !state.success && 'error' in state && (
@@ -66,28 +117,44 @@ export default function CoachSettingsForm({ initialFullName }: Props) {
         </p>
       )}
 
-      {state?.success && (
-        <p role="status" style={{ fontSize: 13, color: '#B5F23D', lineHeight: 1.45 }}>
-          Cambios guardados.
-        </p>
-      )}
-
-      <button
-        type="submit"
-        disabled={isPending}
-        style={{
-          height: 46,
-          borderRadius: 12,
-          border: 'none',
-          fontSize: 15,
-          fontWeight: 700,
-          color: '#0A0A0A',
-          backgroundColor: isPending ? '#8BA82B' : '#B5F23D',
-          cursor: isPending ? 'not-allowed' : 'pointer',
-        }}
-      >
-        {isPending ? 'Guardando...' : 'Guardar nombre'}
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button
+          type="submit"
+          disabled={isPending || !dirty}
+          style={{
+            height: 46,
+            borderRadius: 12,
+            border: 'none',
+            fontSize: 15,
+            fontWeight: 700,
+            color: '#0A0A0A',
+            backgroundColor: isPending || !dirty ? '#8BA82B' : '#B5F23D',
+            cursor: isPending || !dirty ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {isPending ? 'Guardando...' : 'Guardar'}
+        </button>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={() => {
+            setName(initialFullName)
+            setEditing(false)
+          }}
+          style={{
+            height: 44,
+            borderRadius: 12,
+            border: 'none',
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#6B7280',
+            backgroundColor: 'transparent',
+            cursor: isPending ? 'default' : 'pointer',
+          }}
+        >
+          Cancelar
+        </button>
+      </div>
     </form>
   )
 }

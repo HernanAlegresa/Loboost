@@ -3,19 +3,26 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import {
+  deletePlanDayTree,
   insertPlanDayTree,
   validatePlanBuilderForCoach,
 } from '@/features/plans/plan-builder-persist'
 
-export type CreatePlanState =
+export type UpdatePlanFullState =
   | { success: true; planId: string }
   | { success: false; error: string }
   | null
 
-export async function createPlanAction(
-  _prevState: CreatePlanState,
+export async function updatePlanFullAction(
+  _prev: UpdatePlanFullState,
   formData: FormData
-): Promise<CreatePlanState> {
+): Promise<UpdatePlanFullState> {
+  const planIdRaw = formData.get('planId')
+  if (typeof planIdRaw !== 'string' || planIdRaw.length < 10) {
+    return { success: false, error: 'Plan inválido' }
+  }
+  const planId = planIdRaw
+
   const payloadRaw = formData.get('planPayload')
   if (typeof payloadRaw !== 'string') {
     return { success: false, error: 'Payload inválido' }
@@ -35,31 +42,40 @@ export async function createPlanAction(
   } = await supabase.auth.getUser()
   if (authError || !user) return { success: false, error: 'No autenticado' }
 
+  const { data: owned, error: ownErr } = await supabase
+    .from('plans')
+    .select('id')
+    .eq('id', planId)
+    .eq('coach_id', user.id)
+    .single()
+
+  if (ownErr || !owned) return { success: false, error: 'Plan no encontrado' }
+
   const validated = await validatePlanBuilderForCoach(supabase, user.id, parsedJson)
   if (!validated.ok) return { success: false, error: validated.error }
   const { sortedDays, payload } = validated.data
 
-  const { data: plan, error: planError } = await supabase
+  const { error: metaErr } = await supabase
     .from('plans')
-    .insert({
-      coach_id: user.id,
+    .update({
       name: payload.name,
       description: payload.description ?? null,
       weeks: payload.weeks,
     })
-    .select('id')
-    .single()
+    .eq('id', planId)
+    .eq('coach_id', user.id)
 
-  if (planError || !plan) return { success: false, error: 'Error al crear el plan' }
+  if (metaErr) return { success: false, error: 'Error al actualizar el plan' }
 
-  const inserted = await insertPlanDayTree(supabase, plan.id, user.id, sortedDays)
-  if (!inserted.ok) {
-    await supabase.from('plans').delete().eq('id', plan.id).eq('coach_id', user.id)
-    return { success: false, error: inserted.error }
-  }
+  const del = await deletePlanDayTree(supabase, planId)
+  if (!del.ok) return { success: false, error: del.error }
+
+  const ins = await insertPlanDayTree(supabase, planId, user.id, sortedDays)
+  if (!ins.ok) return { success: false, error: ins.error }
 
   revalidatePath('/coach/library/plans')
-  revalidatePath(`/coach/library/plans/${plan.id}`)
+  revalidatePath(`/coach/library/plans/${planId}`)
+  revalidatePath(`/coach/library/plans/${planId}/edit`)
 
-  return { success: true, planId: plan.id }
+  return { success: true, planId }
 }
