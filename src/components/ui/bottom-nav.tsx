@@ -3,6 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Users, BookOpen, Settings } from 'lucide-react'
+import {
+  SAFE_BOTTOM_NAV_HEIGHT,
+  SAFE_BOTTOM_NAV_PADDING_BOTTOM,
+  SAFE_BOTTOM_NAV_PADDING_TOP,
+} from '@/lib/ui/safe-area'
 
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/coach/dashboard', Icon: Home },
@@ -21,11 +26,14 @@ export default function BottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 64,
+        height: SAFE_BOTTOM_NAV_HEIGHT,
         backgroundColor: '#0A0A0A',
         borderTop: '1px solid #1F2227',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'stretch',
+        paddingTop: SAFE_BOTTOM_NAV_PADDING_TOP,
+        paddingBottom: SAFE_BOTTOM_NAV_PADDING_BOTTOM,
+        boxSizing: 'border-box',
         zIndex: 50,
       }}
     >
