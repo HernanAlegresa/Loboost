@@ -90,7 +90,15 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <CoachSubpageHeader backHref="/coach/library/exercises" title="Editar ejercicio" />
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
+        }}
+      >
         <form
           action={formAction}
           style={{ padding: '16px 20px 120px', display: 'flex', flexDirection: 'column', gap: 28 }}

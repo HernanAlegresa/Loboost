@@ -61,14 +61,25 @@ export default function CreateExerciseForm() {
   }, [state, router])
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div
+      style={{
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <CoachSubpageHeader backHref="/coach/library/exercises" title="Nuevo ejercicio" />
 
       <form
         action={formAction}
         style={{
           flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
           padding: '16px 20px 120px',
           display: 'flex',
           flexDirection: 'column',

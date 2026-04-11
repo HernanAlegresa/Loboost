@@ -24,20 +24,18 @@ export default async function ClientLayout({
         overflow: 'hidden',
         backgroundColor: '#0A0A0A',
         color: '#F0F0F0',
+        overscrollBehavior: 'none',
       }}
     >
-      {/* Header */}
       <header
         style={{
-          position: 'sticky',
-          top: 0,
+          flexShrink: 0,
           zIndex: 50,
           backgroundColor: '#0A0A0A',
           paddingLeft: 20,
           paddingRight: 20,
           paddingBottom: 16,
           paddingTop: SAFE_HEADER_PADDING_TOP,
-          flexShrink: 0,
           borderBottom: '1px solid #1F2227',
         }}
       >
@@ -55,7 +53,15 @@ export default async function ClientLayout({
       </header>
 
       {/* Scrollable content */}
-      <main style={{ flex: 1, overflowY: 'auto' }}>
+      <main
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
+        }}
+      >
         {children}
       </main>
 

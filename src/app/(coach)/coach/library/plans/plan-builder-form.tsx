@@ -260,13 +260,29 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
   const draft = activeDow !== null ? days[activeDow] : null
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div
+      style={{
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <CoachSubpageHeader
         backHref="/coach/library/plans"
         title={mode === 'edit' ? 'Editar plan' : 'Nuevo plan'}
       />
 
-      <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
+        }}
+      >
         <form
           action={formAction}
           style={{ padding: '16px 20px 120px', display: 'flex', flexDirection: 'column', gap: 24 }}

@@ -26,7 +26,16 @@ const kicker: CSSProperties = {
 
 export default function LibraryHubPage() {
   return (
-    <div style={{ height: '100%', overflowY: 'auto', padding: '20px 20px 120px' }}>
+    <div
+      style={{
+        height: '100%',
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        overscrollBehaviorY: 'contain',
+        padding: '20px 20px 120px',
+      }}
+    >
       <p style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', marginBottom: 4 }}>Biblioteca</p>
       <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 24 }}>
         Ejercicios y planes para armar entrenamientos

@@ -17,7 +17,15 @@ export default async function ExercisesLibraryPage() {
   const exercises = await getCoachExercises(user.id)
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div
+      style={{
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <CoachSubpageHeader
         backHref="/coach/library"
         title="Ejercicios"
@@ -43,7 +51,16 @@ export default async function ExercisesLibraryPage() {
         }
       />
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 20px 120px' }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
+          padding: '8px 20px 120px',
+        }}
+      >
         <ExerciseList exercises={exercises} />
       </div>
     </div>

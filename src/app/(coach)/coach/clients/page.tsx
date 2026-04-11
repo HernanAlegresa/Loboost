@@ -13,7 +13,15 @@ export default async function ClientsPage() {
   const { clients } = await getDashboardData(user.id)
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div
+      style={{
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       {/* Header */}
       <div
         style={{

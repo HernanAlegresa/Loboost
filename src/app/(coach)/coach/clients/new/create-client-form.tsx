@@ -72,18 +72,23 @@ export default function CreateClientForm() {
     <>
       {state?.success && <SuccessOverlay clientName={state.clientName} />}
 
-      <div style={{ height: '100%', overflowY: 'auto' }}>
-        {/* Sub-header con back button */}
+      <div
+        style={{
+          height: '100%',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: 8,
             padding: '16px 20px 24px',
-            position: 'sticky',
-            top: 0,
+            flexShrink: 0,
             backgroundColor: '#0A0A0A',
-            zIndex: 10,
           }}
         >
           <Link
@@ -95,11 +100,19 @@ export default function CreateClientForm() {
           <span style={{ fontSize: 18, fontWeight: 700, color: '#F0F0F0' }}>Nuevo cliente</span>
         </div>
 
-        {/* Form */}
-        <form
-          action={formAction}
-          style={{ padding: '0 20px 120px', display: 'flex', flexDirection: 'column', gap: 32 }}
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            overscrollBehaviorY: 'contain',
+          }}
         >
+          <form
+            action={formAction}
+            style={{ padding: '0 20px 120px', display: 'flex', flexDirection: 'column', gap: 32 }}
+          >
           {/* Sección 1: Datos del cliente */}
           <div>
             <p style={sectionTitleStyle}>Datos del cliente</p>
@@ -295,7 +308,8 @@ export default function CreateClientForm() {
           >
             {isPending ? 'Creando cliente...' : 'Guardar cliente'}
           </button>
-        </form>
+          </form>
+        </div>
       </div>
     </>
   )

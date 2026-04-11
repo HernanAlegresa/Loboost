@@ -14,12 +14,21 @@ export default async function CoachLayout({
   if (error || !user) redirect('/login')
 
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#0A0A0A', color: '#F0F0F0' }}>
-      {/* Header */}
+    <div
+      style={{
+        height: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        backgroundColor: '#0A0A0A',
+        color: '#F0F0F0',
+        overscrollBehavior: 'none',
+      }}
+    >
+      {/* Header fijo por flex (no sticky): no se mueve con el scroll interno */}
       <header
         style={{
-          position: 'sticky',
-          top: 0,
+          flexShrink: 0,
           zIndex: 50,
           backgroundColor: '#0A0A0A',
           paddingLeft: 20,
@@ -46,7 +55,15 @@ export default async function CoachLayout({
       </header>
 
       {/* Main content — flex: 1, solo la lista interna hace scroll */}
-      <main style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <main
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         {children}
       </main>
 

@@ -34,7 +34,15 @@ export default async function DashboardPage() {
   const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1)
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div
+      style={{
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       {/* Greeting */}
       <div
         style={{
@@ -42,6 +50,7 @@ export default async function DashboardPage() {
           display: 'flex',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
+          flexShrink: 0,
         }}
       >
         <div>
@@ -82,13 +91,14 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI Strip */}
-      <KpiStrip
-        totalClients={dashboardData.totalClients}
-        activeClients={dashboardData.activeClients}
-        momentumPercent={dashboardData.momentumPercent}
-        sparklineData={dashboardData.sparklineData}
-      />
+      <div style={{ flexShrink: 0 }}>
+        <KpiStrip
+          totalClients={dashboardData.totalClients}
+          activeClients={dashboardData.activeClients}
+          momentumPercent={dashboardData.momentumPercent}
+          sparklineData={dashboardData.sparklineData}
+        />
+      </div>
 
       {/* Client list with filter tabs — toma el espacio restante y scrollea internamente */}
       <div style={{ flex: 1, overflow: 'hidden', minHeight: 0, marginTop: 24 }}>

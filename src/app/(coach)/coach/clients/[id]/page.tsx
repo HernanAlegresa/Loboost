@@ -43,7 +43,10 @@ export default async function ClientProfilePage({
       <div
         style={{
           flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
           display: 'flex',
           flexDirection: 'column',
           gap: 24,

@@ -63,7 +63,19 @@ export default function ClientList({ clients }: ClientListProps) {
         />
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 20px 160px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
+          padding: '8px 20px 160px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+        }}
+      >
         {filtered.length === 0 ? (
           <p style={{ fontSize: 12, color: '#6B7280', textAlign: 'center', padding: '24px 0' }}>
             No hay clientes en esta categoría.

@@ -56,7 +56,15 @@ export default async function PlanDetailPage({ params }: Props) {
   if (!plan) notFound()
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div
+      style={{
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <CoachSubpageHeader
         backHref="/coach/library/plans"
         title={plan.name}
@@ -66,7 +74,16 @@ export default async function PlanDetailPage({ params }: Props) {
         } / semana`}
       />
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 120px' }}>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
+          padding: '16px 20px 120px',
+        }}
+      >
         {plan.description ? (
           <div
             style={{

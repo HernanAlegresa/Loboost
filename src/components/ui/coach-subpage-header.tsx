@@ -8,6 +8,7 @@ const grid: CSSProperties = {
   alignItems: 'center',
   padding: '12px 16px 16px',
   flexShrink: 0,
+  flexGrow: 0,
   backgroundColor: '#0A0A0A',
   borderBottom: '1px solid #1F2227',
 }

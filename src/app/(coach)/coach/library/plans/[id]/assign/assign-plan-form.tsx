@@ -90,7 +90,10 @@ export default function AssignPlanForm({ planId, planName, planWeeks, clients }:
         action={formAction}
         style={{
           flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
           padding: '16px 20px 120px',
           display: 'flex',
           flexDirection: 'column',
