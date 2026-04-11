@@ -19,7 +19,8 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: 'LoBoost',
-    statusBarStyle: 'black-translucent',
+    /** Opaca la barra de estado; el contenido empieza debajo + padding safe-area en layouts. */
+    statusBarStyle: 'black',
   },
   formatDetection: {
     telephone: false,

@@ -7,6 +7,7 @@ import { completeSetAction } from '@/features/training/actions/complete-set'
 import { completeSessionAction } from '@/features/training/actions/complete-session'
 import VideoModal from '@/components/ui/video-modal'
 import type { LiveSessionData } from '@/features/training/types'
+import { SAFE_HEADER_PADDING_TOP_COMPACT } from '@/lib/ui/safe-area'
 
 type SetInputs = { weight: string; duration: string }
 
@@ -64,7 +65,10 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 40,
+          paddingLeft: 40,
+          paddingRight: 40,
+          paddingBottom: 40,
+          paddingTop: 'calc(40px + env(safe-area-inset-top, 0px))',
           gap: 16,
           textAlign: 'center',
         }}
@@ -152,7 +156,10 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '40px 24px',
+          paddingLeft: 24,
+          paddingRight: 24,
+          paddingBottom: 40,
+          paddingTop: 'calc(40px + env(safe-area-inset-top, 0px))',
           gap: 20,
           textAlign: 'center',
         }}
@@ -187,7 +194,10 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div
         style={{
-          padding: '14px 20px',
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingBottom: 14,
+          paddingTop: SAFE_HEADER_PADDING_TOP_COMPACT,
           borderBottom: '1px solid #1F2227',
           display: 'flex',
           alignItems: 'center',

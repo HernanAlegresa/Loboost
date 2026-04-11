@@ -3,7 +3,10 @@ import { RegisterForm } from '@/features/auth/components/register-form'
 
 export default function RegisterPage() {
   return (
-    <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4">
+    <main
+      className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-white tracking-tight">

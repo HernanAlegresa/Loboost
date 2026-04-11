@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth/session'
 import { getUserRole } from '@/lib/auth/roles'
 import ClientBottomNav from '@/components/ui/client-bottom-nav'
+import { SAFE_HEADER_PADDING_TOP } from '@/lib/ui/safe-area'
 
 export default async function ClientLayout({
   children,
@@ -32,7 +33,10 @@ export default async function ClientLayout({
           top: 0,
           zIndex: 50,
           backgroundColor: '#0A0A0A',
-          padding: '16px 20px',
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingBottom: 16,
+          paddingTop: SAFE_HEADER_PADDING_TOP,
           flexShrink: 0,
           borderBottom: '1px solid #1F2227',
         }}

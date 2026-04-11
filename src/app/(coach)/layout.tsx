@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import BottomNav from '@/components/ui/bottom-nav'
 import { Bell, Search } from 'lucide-react'
+import { SAFE_HEADER_PADDING_TOP } from '@/lib/ui/safe-area'
 
 export default async function CoachLayout({
   children,
@@ -21,7 +22,10 @@ export default async function CoachLayout({
           top: 0,
           zIndex: 50,
           backgroundColor: '#0A0A0A',
-          padding: '16px 20px',
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingBottom: 16,
+          paddingTop: SAFE_HEADER_PADDING_TOP,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
