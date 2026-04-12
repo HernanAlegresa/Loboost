@@ -3,6 +3,7 @@ import {
   getCurrentWeek,
   computeDayDate,
   computeDayStatus,
+  getTodayISO,
 } from '@/features/clients/utils/training-utils'
 import type {
   ClientPlanViewData,
@@ -25,11 +26,7 @@ export async function getClientPlanViewData(
   if (!plan) return null
 
   const currentWeek = getCurrentWeek(plan.start_date, plan.weeks)
-  const todayISO = new Date().toISOString().split('T')[0]
-  const progressPct = Math.max(
-    8,
-    Math.round(((currentWeek - 1) / plan.weeks) * 100)
-  )
+  const todayISO = getTodayISO()
 
   const [daysResult, sessionsResult] = await Promise.all([
     supabase
@@ -52,6 +49,16 @@ export async function getClientPlanViewData(
       sessionByDayId.set(s.client_plan_day_id, { id: s.id, status: s.status })
     }
   }
+
+  const planDayIds = new Set((daysResult.data ?? []).map((d) => d.id))
+  const totalTrainingDays = planDayIds.size
+  const completedSessions = (sessionsResult.data ?? []).filter(
+    (s) => s.status === 'completed' && planDayIds.has(s.client_plan_day_id)
+  ).length
+  const progressPct =
+    totalTrainingDays > 0
+      ? Math.max(4, Math.round((completedSessions / totalTrainingDays) * 100))
+      : 0
 
   const weekMap = new Map<number, PlanDayWithStatus[]>()
   for (const day of daysResult.data ?? []) {
@@ -91,6 +98,8 @@ export async function getClientPlanViewData(
     weeks: plan.weeks,
     currentWeek,
     progressPct,
+    completedSessions,
+    totalTrainingDays,
     weeksByNumber,
   }
 }

@@ -1,6 +1,17 @@
 import type { DayStatus } from '../types'
 
 /**
+ * Returns today's ISO date string (YYYY-MM-DD) adjusted for Argentina (UTC-3, no DST).
+ * The server runs in UTC; without this adjustment, dates shift after 9 PM local time.
+ * TODO: make timezone configurable via user profile preference.
+ */
+export function getTodayISO(): string {
+  const now = new Date()
+  const argentinaMs = now.getTime() - 3 * 60 * 60 * 1000
+  return new Date(argentinaMs).toISOString().split('T')[0]!
+}
+
+/**
  * Returns the 1-indexed week number for today given a plan's start date.
  * Returns 1 if today < startDate. Capped at totalWeeks.
  */

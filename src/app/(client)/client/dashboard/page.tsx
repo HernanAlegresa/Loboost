@@ -93,26 +93,6 @@ export default async function ClientDashboardPage() {
         </div>
       </div>
 
-      {data.inProgressSession && resumeHref && (
-        <Link
-          href={resumeHref}
-          style={{
-            display: 'block',
-            backgroundColor: 'rgba(242,153,74,0.12)',
-            border: '1px solid rgba(242,153,74,0.35)',
-            borderRadius: 14,
-            padding: '14px 16px',
-            textDecoration: 'none',
-          }}
-        >
-          <p style={{ fontSize: 14, fontWeight: 700, color: '#F2994A' }}>
-            Tenés un entrenamiento sin terminar
-          </p>
-          <p style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>
-            Tocá para retomar donde lo dejaste →
-          </p>
-        </Link>
-      )}
 
       {data.activePlan ? (
         <div>
@@ -204,7 +184,11 @@ export default async function ClientDashboardPage() {
       {data.weekStrip && data.weekStrip.length > 0 && (
         <div>
           <p style={SECTION_TITLE}>Esta semana</p>
-          <WeekStrip days={data.weekStrip} trainingHref={resumeHref} />
+          <WeekStrip
+            days={data.weekStrip}
+            trainingHref={resumeHref}
+            currentWeek={data.activePlan!.currentWeek}
+          />
         </div>
       )}
 

@@ -38,6 +38,8 @@ export type WeekStripDayStatus =
 export type WeekStripDay = {
   dayOfWeek: number
   status: WeekStripDayStatus
+  clientPlanDayId?: string
+  dateISO?: string
 }
 
 export type ClientDashboardData = {
@@ -114,6 +116,8 @@ export type ClientPlanViewData = {
   weeks: number
   currentWeek: number
   progressPct: number
+  completedSessions: number
+  totalTrainingDays: number
   weeksByNumber: PlanWeekData[]
 }
 

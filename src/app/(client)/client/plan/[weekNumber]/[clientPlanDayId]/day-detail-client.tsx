@@ -116,7 +116,28 @@ export default function DayDetailClient({ data }: { data: DayDetailData }) {
         ))
       )}
 
-      {isToday && !isCompleted && data.exercises.length > 0 && (
+      {isCompleted && data.sessionId && (
+        <button
+          type="button"
+          onClick={() => router.push(`/client/training/${data.sessionId}`)}
+          style={{
+            marginTop: 8,
+            width: '100%',
+            padding: 14,
+            backgroundColor: 'transparent',
+            border: '1px solid #2A2D34',
+            borderRadius: 12,
+            color: '#6B7280',
+            fontWeight: 600,
+            fontSize: 14,
+            cursor: 'pointer',
+          }}
+        >
+          Ver y editar datos registrados
+        </button>
+      )}
+
+      {!isCompleted && data.exercises.length > 0 && (
         <button
           type="button"
           onClick={isInProgress ? handleResume : handleStart}
@@ -138,7 +159,9 @@ export default function DayDetailClient({ data }: { data: DayDetailData }) {
             ? 'Cargando...'
             : isInProgress
               ? 'Retomar entrenamiento'
-              : 'Empezar entrenamiento'}
+              : isToday
+                ? 'Empezar entrenamiento'
+                : 'Registrar entrenamiento'}
         </button>
       )}
 

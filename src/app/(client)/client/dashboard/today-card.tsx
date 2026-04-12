@@ -25,7 +25,7 @@ export default function TodayCard({ today }: { today: TodayDayData | null }) {
           Hoy es día de descanso
         </p>
         <p style={{ fontSize: 12, color: '#374151', marginTop: 4 }}>
-          Recuperate bien. Mañana volvemos.
+          Recuperate bien.
         </p>
       </div>
     )
@@ -82,10 +82,10 @@ export default function TodayCard({ today }: { today: TodayDayData | null }) {
         >
           <div>
             <p style={{ fontSize: 13, fontWeight: 700, color: '#F2994A' }}>
-              Tenés un entrenamiento en curso
+              Falta completar el registro de tu sesión
             </p>
             <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
-              Retomá desde donde dejaste
+              Tocá para terminar de cargar los datos
             </p>
           </div>
           <button

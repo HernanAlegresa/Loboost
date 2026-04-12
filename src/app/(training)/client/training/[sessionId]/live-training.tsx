@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { completeSetAction } from '@/features/training/actions/complete-set'
 import { completeSessionAction } from '@/features/training/actions/complete-session'
+import { updateSetAction } from '@/features/training/actions/update-set'
 import VideoModal from '@/components/ui/video-modal'
 import type { LiveSessionData } from '@/features/training/types'
 import { SAFE_HEADER_PADDING_TOP_COMPACT } from '@/lib/ui/safe-area'
@@ -20,6 +21,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   const [isPending, startTransition] = useTransition()
   const [isFinished, setIsFinished] = useState(false)
   const [showVideo, setShowVideo] = useState(false)
+  const [editingKey, setEditingKey] = useState<string | null>(null)
 
   const [currentIndex, setCurrentIndex] = useState<number>(() => {
     if (session.exercises.length === 0) return 0
@@ -144,6 +146,20 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     startTransition(async () => {
       await completeSessionAction(session.sessionId)
       setIsFinished(true)
+    })
+  }
+
+  function handleUpdateSet(setNumber: number) {
+    const inp = getInput(currentEx.clientPlanDayExerciseId, setNumber)
+    startTransition(async () => {
+      const formData = new FormData()
+      formData.set('sessionId', session.sessionId)
+      formData.set('clientPlanDayExerciseId', currentEx.clientPlanDayExerciseId)
+      formData.set('setNumber', String(setNumber))
+      if (currentEx.type === 'strength') formData.set('weightKg', inp.weight)
+      if (currentEx.type === 'cardio') formData.set('durationSeconds', inp.duration)
+      const result = await updateSetAction(formData)
+      if (result.success) setEditingKey(null)
     })
   }
 
@@ -312,16 +328,114 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                 Serie {setNum}
               </span>
 
-              {isDone ? (
+              {isDone && editingKey !== key ? (
+                // Completed — show values + edit trigger
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 13, color: '#9CA3AF' }}>
                     {currentEx.type === 'strength'
                       ? `${inp.weight || '—'} kg × ${currentEx.plannedReps ?? '—'} reps`
                       : `${inp.duration || '—'} seg`}
                   </span>
-                  <span style={{ fontSize: 14, color: '#B5F23D', marginLeft: 'auto' }}>
-                    ✓
-                  </span>
+                  <span style={{ fontSize: 14, color: '#B5F23D', marginLeft: 'auto' }}>✓</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingKey(key)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#4B5563',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      padding: '2px 6px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    Editar
+                  </button>
+                </div>
+              ) : isDone && editingKey === key ? (
+                // Edit mode — pre-filled inputs + Guardar + Cancel
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {currentEx.type === 'strength' ? (
+                    <input
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="kg"
+                      value={inp.weight}
+                      onChange={(e) =>
+                        updateInput(currentEx.clientPlanDayExerciseId, setNum, {
+                          weight: e.target.value,
+                        })
+                      }
+                      style={{
+                        width: 62,
+                        padding: '7px 8px',
+                        backgroundColor: '#1A1D22',
+                        border: '1px solid #B5F23D',
+                        borderRadius: 8,
+                        color: '#F0F0F0',
+                        fontSize: 14,
+                        textAlign: 'center',
+                      }}
+                    />
+                  ) : (
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="seg"
+                      value={inp.duration}
+                      onChange={(e) =>
+                        updateInput(currentEx.clientPlanDayExerciseId, setNum, {
+                          duration: e.target.value,
+                        })
+                      }
+                      style={{
+                        width: 62,
+                        padding: '7px 8px',
+                        backgroundColor: '#1A1D22',
+                        border: '1px solid #B5F23D',
+                        borderRadius: 8,
+                        color: '#F0F0F0',
+                        fontSize: 14,
+                        textAlign: 'center',
+                      }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateSet(setNum)}
+                    disabled={isPending}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      backgroundColor: isPending ? 'rgba(181,242,61,0.4)' : '#B5F23D',
+                      border: 'none',
+                      borderRadius: 8,
+                      color: '#0A0A0A',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: isPending ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {isPending ? '...' : 'Guardar'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingKey(null)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#4B5563',
+                      fontSize: 18,
+                      lineHeight: 1,
+                      padding: '4px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    ✕
+                  </button>
                 </div>
               ) : (
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>

@@ -23,6 +23,9 @@ function cellStyle(status: WeekStripDay['status']): CSSProperties {
       boxShadow: '0 0 0 2px rgba(181,242,61,0.5)',
     }
   }
+  if (status === 'past_missed') {
+    return { color: '#6B7280', fontSize: 12 }
+  }
   if (status === 'rest') {
     return { color: '#2A2D34', fontSize: 11 }
   }
@@ -32,9 +35,11 @@ function cellStyle(status: WeekStripDay['status']): CSSProperties {
 export default function WeekStrip({
   days,
   trainingHref,
+  currentWeek,
 }: {
   days: WeekStripDay[]
   trainingHref: string | null
+  currentWeek: number
 }) {
   return (
     <div
@@ -101,6 +106,18 @@ export default function WeekStrip({
             <Link
               key={d.dayOfWeek}
               href={trainingHref}
+              style={{ textDecoration: 'none', flex: 1, minWidth: 0 }}
+            >
+              {inner}
+            </Link>
+          )
+        }
+
+        if (d.status === 'past_missed' && d.clientPlanDayId) {
+          return (
+            <Link
+              key={d.dayOfWeek}
+              href={`/client/plan/${currentWeek}/${d.clientPlanDayId}`}
               style={{ textDecoration: 'none', flex: 1, minWidth: 0 }}
             >
               {inner}

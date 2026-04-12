@@ -82,7 +82,9 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-          <p style={{ fontSize: 13, color: '#9CA3AF' }}>Progreso general</p>
+          <p style={{ fontSize: 13, color: '#9CA3AF' }}>
+            {data.completedSessions} de {data.totalTrainingDays} entrenamientos
+          </p>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#B5F23D' }}>
             {data.progressPct}%
           </p>
