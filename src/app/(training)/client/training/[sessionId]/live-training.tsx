@@ -375,7 +375,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                         border: '1px solid #B5F23D',
                         borderRadius: 8,
                         color: '#F0F0F0',
-                        fontSize: 14,
+                        fontSize: 16,
                         textAlign: 'center',
                       }}
                     />
@@ -397,7 +397,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                         border: '1px solid #B5F23D',
                         borderRadius: 8,
                         color: '#F0F0F0',
-                        fontSize: 14,
+                        fontSize: 16,
                         textAlign: 'center',
                       }}
                     />
@@ -457,7 +457,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                         border: '1px solid #2A2D34',
                         borderRadius: 8,
                         color: '#F0F0F0',
-                        fontSize: 14,
+                        fontSize: 16,
                         textAlign: 'center',
                       }}
                     />
@@ -479,7 +479,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                         border: '1px solid #2A2D34',
                         borderRadius: 8,
                         color: '#F0F0F0',
-                        fontSize: 14,
+                        fontSize: 16,
                         textAlign: 'center',
                       }}
                     />
