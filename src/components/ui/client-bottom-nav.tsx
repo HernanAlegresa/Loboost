@@ -22,10 +22,8 @@ export default function ClientBottomNav() {
   return (
     <nav
       style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
+        flexShrink: 0,
+        width: '100%',
         height: SAFE_BOTTOM_NAV_HEIGHT,
         backgroundColor: '#0A0A0A',
         borderTop: '1px solid #1F2227',

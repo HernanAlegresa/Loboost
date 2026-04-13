@@ -79,7 +79,7 @@ export default function ClientNotificationBell({ inProgressSession, weekStrip }:
           background: open ? 'rgba(255,255,255,0.06)' : 'none',
           border: 'none',
           cursor: 'pointer',
-          color: count > 0 ? '#F0F0F0' : '#6B7280',
+          color: count > 0 ? '#F0F0F0' : '#E5E7EB',
           padding: 8,
           borderRadius: 10,
           display: 'flex',
@@ -156,9 +156,18 @@ export default function ClientNotificationBell({ inProgressSession, weekStrip }:
 
           {/* Items */}
           {count === 0 ? (
-            <div style={{ padding: '20px 16px', textAlign: 'center' }}>
-              <p style={{ fontSize: 22, marginBottom: 8 }}>🔔</p>
-              <p style={{ fontSize: 13, color: '#4B5563' }}>Todo al día</p>
+            <div
+              style={{
+                padding: '20px 16px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              <Bell size={28} strokeWidth={2} color="#E5E7EB" aria-hidden />
+              <p style={{ fontSize: 13, color: '#4B5563', margin: 0 }}>Todo al día</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
