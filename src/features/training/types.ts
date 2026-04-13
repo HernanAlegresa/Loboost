@@ -142,6 +142,7 @@ export type DayDetailData = {
   weekNumber: number
   dayOfWeek: number
   dateISO: string
+  dayStatus: 'completed' | 'in_progress' | 'today' | 'upcoming' | 'past_missed' | 'rest'
   exercises: DayExerciseDetail[]
   sessionId: string | null
   sessionStatus: 'in_progress' | 'completed' | null

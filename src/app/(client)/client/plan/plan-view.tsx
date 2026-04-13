@@ -5,11 +5,20 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { ClientPlanViewData, PlanDayWithStatus } from '@/features/training/types'
 
-const DAY_SHORT = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+const DAY_FULL = [
+  '',
+  'Lunes',
+  'Martes',
+  'Miercoles',
+  'Jueves',
+  'Viernes',
+  'Sabado',
+  'Domingo',
+]
 
-function formatDateShort(iso: string): string {
-  const d = new Date(iso + 'T00:00:00')
-  return d.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+function formatDateNumeric(iso: string): string {
+  const [year, month, day] = iso.split('-')
+  return `${Number(day)}/${Number(month)}/${year}`
 }
 
 function DayStatusIcon({ status }: { status: PlanDayWithStatus['status'] }) {
@@ -40,7 +49,7 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
     if (days.length === 0) return ''
     const first = days[0]!.dateISO
     const last = days[days.length - 1]!.dateISO
-    return `${formatDateShort(first)} – ${formatDateShort(last)}`
+    return `${formatDateNumeric(first)} – ${formatDateNumeric(last)}`
   }
 
   return (
@@ -52,24 +61,16 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
         gap: 20,
       }}
     >
-      <div>
+      <div style={{ textAlign: 'center' }}>
         <p
           style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', marginBottom: 4 }}
         >
           {data.planName}
         </p>
         <p style={{ fontSize: 12, color: '#6B7280' }}>
-          {new Date(data.startDate + 'T00:00:00').toLocaleDateString('es-AR', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-          })}
+          {formatDateNumeric(data.startDate)}
           {' → '}
-          {new Date(data.endDate + 'T00:00:00').toLocaleDateString('es-AR', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric',
-          })}
+          {formatDateNumeric(data.endDate)}
         </p>
       </div>
 
@@ -138,21 +139,6 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F0F0' }}>
             Semana {currentWeek} de {data.weeks}
-            {currentWeek === data.currentWeek && (
-              <span
-                style={{
-                  marginLeft: 8,
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: '#B5F23D',
-                  backgroundColor: 'rgba(181,242,61,0.12)',
-                  padding: '2px 7px',
-                  borderRadius: 9999,
-                }}
-              >
-                HOY
-              </span>
-            )}
           </p>
           {formatDateRange() && (
             <p style={{ fontSize: 11, color: '#6B7280', marginTop: 2 }}>
@@ -232,7 +218,7 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
                           : '#9CA3AF',
                   }}
                 >
-                  {DAY_SHORT[day.dayOfWeek]}
+                  {DAY_FULL[day.dayOfWeek]}
                   {day.status === 'today' && (
                     <span
                       style={{
@@ -247,7 +233,7 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
                   )}
                 </p>
                 <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
-                  {formatDateShort(day.dateISO)}
+                  {formatDateNumeric(day.dateISO)}
                 </p>
               </div>
               <DayStatusIcon status={day.status} />

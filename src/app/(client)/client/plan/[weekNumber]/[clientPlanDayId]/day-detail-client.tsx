@@ -6,13 +6,18 @@ import { startSessionAction } from '@/features/training/actions/start-session'
 import VideoModal from '@/components/ui/video-modal'
 import type { DayDetailData } from '@/features/training/types'
 
+function formatDateNumeric(iso: string): string {
+  const [year, month, day] = iso.split('-')
+  return `${Number(day)}/${Number(month)}/${year}`
+}
+
 export default function DayDetailClient({ data }: { data: DayDetailData }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
 
-  const todayISO = new Date().toISOString().split('T')[0]
-  const isToday = data.dateISO === todayISO
+  const isToday = data.dayStatus === 'today'
+  const isUpcoming = data.dayStatus === 'upcoming'
   const isCompleted = data.sessionStatus === 'completed'
   const isInProgress = data.sessionStatus === 'in_progress'
 
@@ -137,7 +142,7 @@ export default function DayDetailClient({ data }: { data: DayDetailData }) {
         </button>
       )}
 
-      {!isCompleted && data.exercises.length > 0 && (
+      {!isCompleted && !isUpcoming && data.exercises.length > 0 && (
         <button
           type="button"
           onClick={isInProgress ? handleResume : handleStart}
@@ -163,6 +168,27 @@ export default function DayDetailClient({ data }: { data: DayDetailData }) {
                 ? 'Empezar entrenamiento'
                 : 'Registrar entrenamiento'}
         </button>
+      )}
+
+      {isUpcoming && (
+        <div
+          style={{
+            marginTop: 8,
+            width: '100%',
+            padding: '12px 14px',
+            borderRadius: 12,
+            border: '1px dashed #2A2D34',
+            backgroundColor: '#111317',
+            textAlign: 'center',
+          }}
+        >
+          <p style={{ fontSize: 12, fontWeight: 700, color: '#9CA3AF' }}>
+            Aun no disponible
+          </p>
+          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>
+            Este entrenamiento se habilita el {formatDateNumeric(data.dateISO)}.
+          </p>
+        </div>
       )}
 
       {videoUrl && (

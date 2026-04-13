@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:iphone": "scripts\\dev-iphone.bat",
     "build": "next build",
     "start": "next start",
     "test": "jest",

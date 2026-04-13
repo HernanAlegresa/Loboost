@@ -1,14 +1,11 @@
 import type { DayStatus } from '../types'
 
-/**
- * Returns today's ISO date string (YYYY-MM-DD) adjusted for Argentina (UTC-3, no DST).
- * The server runs in UTC; without this adjustment, dates shift after 9 PM local time.
- * TODO: make timezone configurable via user profile preference.
- */
 export function getTodayISO(): string {
   const now = new Date()
-  const argentinaMs = now.getTime() - 3 * 60 * 60 * 1000
-  return new Date(argentinaMs).toISOString().split('T')[0]!
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 /**
@@ -16,10 +13,11 @@ export function getTodayISO(): string {
  * Returns 1 if today < startDate. Capped at totalWeeks.
  */
 export function getCurrentWeek(startDate: string, totalWeeks: number): number {
-  const start = new Date(startDate)
-  const today = new Date()
-  today.setUTCHours(0, 0, 0, 0)
-  start.setUTCHours(0, 0, 0, 0)
+  const [startYear, startMonth, startDay] = startDate.split('-').map(Number)
+  const todayISO = getTodayISO()
+  const [todayYear, todayMonth, todayDay] = todayISO.split('-').map(Number)
+  const start = new Date(startYear, startMonth - 1, startDay)
+  const today = new Date(todayYear, todayMonth - 1, todayDay)
   if (today <= start) return 1
   const daysSinceStart = Math.floor((today.getTime() - start.getTime()) / 86400000)
   return Math.min(Math.floor(daysSinceStart / 7) + 1, totalWeeks)

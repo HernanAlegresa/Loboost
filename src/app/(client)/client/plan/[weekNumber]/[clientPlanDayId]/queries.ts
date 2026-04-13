@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { computeDayDate } from '@/features/clients/utils/training-utils'
+import {
+  computeDayDate,
+  computeDayStatus,
+  getTodayISO,
+} from '@/features/clients/utils/training-utils'
 import type { DayDetailData, DayExerciseDetail } from '@/features/training/types'
 
 export async function getDayDetailData(
@@ -30,6 +34,7 @@ export async function getDayDetailData(
     dayRow.week_number,
     dayRow.day_of_week
   )
+  const todayISO = getTodayISO()
 
   const [exercisesResult, sessionResult] = await Promise.all([
     supabase
@@ -86,6 +91,11 @@ export async function getDayDetailData(
     weekNumber: dayRow.week_number,
     dayOfWeek: dayRow.day_of_week,
     dateISO,
+    dayStatus: computeDayStatus(
+      dateISO,
+      todayISO,
+      (sessionResult.data?.status as 'in_progress' | 'completed' | null) ?? null
+    ),
     exercises,
     sessionId: sessionResult.data?.id ?? null,
     sessionStatus:

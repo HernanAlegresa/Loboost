@@ -5,7 +5,12 @@ import { createClient } from '@/lib/supabase/server'
 import { loginSchema } from '@/features/auth/schemas'
 import { getUserRole } from '@/lib/auth/roles'
 
-export async function signIn(formData: FormData) {
+type SignInState = { error: string } | null
+
+export async function signIn(
+  _prevState: SignInState,
+  formData: FormData
+): Promise<SignInState> {
   const raw = {
     email: formData.get('email'),
     password: formData.get('password'),
