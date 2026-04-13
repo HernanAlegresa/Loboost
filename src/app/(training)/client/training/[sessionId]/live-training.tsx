@@ -372,9 +372,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
 
   const progressPct = flatSets.length ? (completedCount / flatSets.length) * 100 : 0
   const finishFooterContentHeight = 52
-  const setCardBottomPadding = allSetsDone
-    ? `calc(${SAFE_BOTTOM_NAV_HEIGHT} + 24px)`
-    : 'calc(28px + env(safe-area-inset-bottom, 0px))'
+  const setCardBottomPadding = 'calc(28px + env(safe-area-inset-bottom, 0px))'
 
   return (
     <div
@@ -1022,10 +1020,8 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
       {allSetsDone && (
         <div
           style={{
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            bottom: 0,
+            flexShrink: 0,
+            width: '100%',
             height: SAFE_BOTTOM_NAV_HEIGHT,
             paddingTop: SAFE_BOTTOM_NAV_PADDING_TOP,
             paddingBottom: SAFE_BOTTOM_NAV_PADDING_BOTTOM,
@@ -1037,11 +1033,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
             justifyContent: 'center',
             borderTop: `1px solid ${LT.border}`,
             backgroundColor: '#0A0A0A',
-            zIndex: 90,
-            overflow: 'hidden',
-            touchAction: 'manipulation',
-            WebkitTransform: 'translateZ(0)',
-            transform: 'translateZ(0)',
+            zIndex: 40,
           }}
         >
           <button
