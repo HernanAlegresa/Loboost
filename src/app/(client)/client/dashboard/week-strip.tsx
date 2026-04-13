@@ -24,12 +24,12 @@ function cellStyle(status: WeekStripDay['status']): CSSProperties {
     }
   }
   if (status === 'past_missed') {
-    return { color: '#6B7280', fontSize: 12 }
+    return { color: '#F0F0F0', fontSize: 12 }
   }
   if (status === 'rest') {
     return { color: '#2A2D34', fontSize: 11 }
   }
-  return { color: '#4B5563', fontSize: 12 }
+  return { color: '#F0F0F0', fontSize: 12 }
 }
 
 export default function WeekStrip({
@@ -65,6 +65,7 @@ export default function WeekStrip({
                 : d.status === 'rest'
                   ? '—'
                   : '○'
+        const isTrainingDay = d.status !== 'rest'
         const inner = (
           <div
             style={{
@@ -76,7 +77,13 @@ export default function WeekStrip({
               flex: 1,
             }}
           >
-            <span style={{ fontSize: 9, color: '#6B7280', fontWeight: 600 }}>
+            <span
+              style={{
+                fontSize: 9,
+                color: isTrainingDay ? '#B5F23D' : '#6B7280',
+                fontWeight: isTrainingDay ? 700 : 600,
+              }}
+            >
               {label}
             </span>
             <div
