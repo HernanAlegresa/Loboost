@@ -607,7 +607,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                   justifyContent: 'flex-start',
                   boxSizing: 'border-box',
                   backgroundColor: 'transparent',
-                  padding: '22px 20px 8px',
+                  padding: '12px 20px 8px',
                   border: 'none',
                   boxShadow: 'none',
                   transition: 'opacity 0.25s ease',
@@ -631,7 +631,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                   </div>
                   <p
                     style={{
-                      margin: '8px 0 0',
+                      margin: '14px 0 0',
                       fontSize: 26,
                       fontWeight: 800,
                       color: LT.text,
