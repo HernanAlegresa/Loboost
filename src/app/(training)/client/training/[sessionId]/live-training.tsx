@@ -1014,7 +1014,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
         <div
           style={{
             flexShrink: 0,
-            padding: '14px 20px calc(18px + env(safe-area-inset-bottom, 0px))',
+            padding: '6px 20px calc(8px + env(safe-area-inset-bottom, 0px))',
             borderTop: `1px solid ${LT.border}`,
             background: 'linear-gradient(0deg, rgba(181,242,61,0.06) 0%, transparent 100%), #0A0A0A',
           }}
@@ -1025,7 +1025,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
             disabled={isPending}
             style={{
               width: '100%',
-              padding: '18px 20px',
+              padding: '16px 20px',
               background: isPending
                 ? 'rgba(181,242,61,0.35)'
                 : `linear-gradient(180deg, ${LT.lime} 0%, #9FD82E 100%)`,
