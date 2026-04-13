@@ -371,8 +371,9 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   }
 
   const progressPct = flatSets.length ? (completedCount / flatSets.length) * 100 : 0
+  const finishFooterContentHeight = 52
   const setCardBottomPadding = allSetsDone
-    ? 'calc(140px + env(safe-area-inset-bottom, 0px))'
+    ? `calc(${SAFE_BOTTOM_NAV_HEIGHT} + 24px)`
     : 'calc(28px + env(safe-area-inset-bottom, 0px))'
 
   return (
@@ -1032,10 +1033,15 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
             paddingRight: 20,
             boxSizing: 'border-box',
             display: 'flex',
-            alignItems: 'stretch',
+            alignItems: 'center',
+            justifyContent: 'center',
             borderTop: `1px solid ${LT.border}`,
             backgroundColor: '#0A0A0A',
             zIndex: 90,
+            overflow: 'hidden',
+            touchAction: 'manipulation',
+            WebkitTransform: 'translateZ(0)',
+            transform: 'translateZ(0)',
           }}
         >
           <button
@@ -1044,7 +1050,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
             disabled={isPending}
             style={{
               width: '100%',
-              height: '100%',
+              height: finishFooterContentHeight,
               padding: '0 20px',
               background: isPending
                 ? 'rgba(181,242,61,0.35)'
