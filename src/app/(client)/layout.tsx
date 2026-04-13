@@ -4,7 +4,7 @@ import { getUserRole } from '@/lib/auth/roles'
 import ClientBottomNav from '@/components/ui/client-bottom-nav'
 import ClientNotificationBell from '@/components/ui/client-notification-bell'
 import { getClientNotificationData } from './queries'
-import { SAFE_HEADER_PADDING_TOP } from '@/lib/ui/safe-area'
+import { SAFE_BOTTOM_NAV_HEIGHT, SAFE_HEADER_PADDING_TOP } from '@/lib/ui/safe-area'
 
 export default async function ClientLayout({
   children,
@@ -22,8 +22,8 @@ export default async function ClientLayout({
   return (
     <div
       style={{
-        position: 'fixed',
-        inset: 0,
+        height: '100dvh',
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -73,6 +73,7 @@ export default async function ClientLayout({
           overflowY: 'auto',
           overflowX: 'hidden',
           overscrollBehaviorY: 'contain',
+          paddingBottom: SAFE_BOTTOM_NAV_HEIGHT,
         }}
       >
         {children}

@@ -22,7 +22,10 @@ export default function ClientBottomNav() {
   return (
     <nav
       style={{
-        flexShrink: 0,
+        position: 'fixed',
+        left: 0,
+        right: 0,
+        bottom: 0,
         width: '100%',
         height: SAFE_BOTTOM_NAV_HEIGHT,
         backgroundColor: '#0A0A0A',
@@ -32,7 +35,7 @@ export default function ClientBottomNav() {
         paddingTop: SAFE_BOTTOM_NAV_PADDING_TOP,
         paddingBottom: SAFE_BOTTOM_NAV_PADDING_BOTTOM,
         boxSizing: 'border-box',
-        zIndex: 50,
+        zIndex: 60,
       }}
     >
       {NAV_ITEMS.map(({ label, href, Icon }) => {
