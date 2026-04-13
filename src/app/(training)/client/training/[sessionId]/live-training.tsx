@@ -757,7 +757,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                     flexDirection: 'column',
                     justifyContent: 'flex-start',
                     alignItems: 'stretch',
-                    marginTop: 48,
+                    marginTop: 34,
                     gap: 12,
                   }}
                 >
@@ -907,7 +907,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                   ) : null}
 
                   {isActive ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 64, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 36, alignItems: 'center' }}>
                       <motion.div
                         style={{ display: 'flex', justifyContent: 'center', width: '100%' }}
                         animate={
