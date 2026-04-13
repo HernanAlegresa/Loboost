@@ -372,7 +372,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
 
   const progressPct = flatSets.length ? (completedCount / flatSets.length) * 100 : 0
   const setCardBottomPadding = allSetsDone
-    ? 'calc(92px + env(safe-area-inset-bottom, 0px))'
+    ? 'calc(140px + env(safe-area-inset-bottom, 0px))'
     : 'calc(28px + env(safe-area-inset-bottom, 0px))'
 
   return (
