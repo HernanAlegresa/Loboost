@@ -17,7 +17,12 @@ import { completeSessionAction } from '@/features/training/actions/complete-sess
 import { updateSetAction } from '@/features/training/actions/update-set'
 import VideoModal from '@/components/ui/video-modal'
 import type { LiveExercise, LiveSessionData } from '@/features/training/types'
-import { SAFE_HEADER_PADDING_TOP_COMPACT } from '@/lib/ui/safe-area'
+import {
+  SAFE_BOTTOM_NAV_HEIGHT,
+  SAFE_BOTTOM_NAV_PADDING_BOTTOM,
+  SAFE_BOTTOM_NAV_PADDING_TOP,
+  SAFE_HEADER_PADDING_TOP_COMPACT,
+} from '@/lib/ui/safe-area'
 
 type SetInputs = { weight: string; duration: string }
 
@@ -366,6 +371,9 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   }
 
   const progressPct = flatSets.length ? (completedCount / flatSets.length) * 100 : 0
+  const setCardBottomPadding = allSetsDone
+    ? 'calc(92px + env(safe-area-inset-bottom, 0px))'
+    : 'calc(28px + env(safe-area-inset-bottom, 0px))'
 
   return (
     <div
@@ -589,7 +597,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                 display: 'flex',
                 flexDirection: 'column',
                 minHeight: '100%',
-                padding: '12px 16px calc(28px + env(safe-area-inset-bottom, 0px))',
+                padding: `12px 16px ${setCardBottomPadding}`,
                 opacity: isFuture ? 0.44 : 1,
                 transition: 'opacity 0.35s ease',
               }}
@@ -1013,10 +1021,21 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
       {allSetsDone && (
         <div
           style={{
-            flexShrink: 0,
-            padding: '6px 20px calc(8px + env(safe-area-inset-bottom, 0px))',
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: SAFE_BOTTOM_NAV_HEIGHT,
+            paddingTop: SAFE_BOTTOM_NAV_PADDING_TOP,
+            paddingBottom: SAFE_BOTTOM_NAV_PADDING_BOTTOM,
+            paddingLeft: 20,
+            paddingRight: 20,
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'stretch',
             borderTop: `1px solid ${LT.border}`,
-            background: 'linear-gradient(0deg, rgba(181,242,61,0.06) 0%, transparent 100%), #0A0A0A',
+            backgroundColor: '#0A0A0A',
+            zIndex: 90,
           }}
         >
           <button
@@ -1025,7 +1044,8 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
             disabled={isPending}
             style={{
               width: '100%',
-              padding: '16px 20px',
+              height: '100%',
+              padding: '0 20px',
               background: isPending
                 ? 'rgba(181,242,61,0.35)'
                 : `linear-gradient(180deg, ${LT.lime} 0%, #9FD82E 100%)`,
