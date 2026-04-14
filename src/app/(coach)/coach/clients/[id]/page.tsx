@@ -7,6 +7,7 @@ import TrainingWeek from './training-week'
 import PlanCard from './plan-card'
 import PhysicalProfile from './physical-profile'
 import CoachNotes from './coach-notes'
+import ProgressOverview from './progress-overview'
 
 export default async function ClientProfilePage({
   params,
@@ -58,6 +59,8 @@ export default async function ClientProfilePage({
           daysSinceLastSession={profile.daysSinceLastSession}
           totalSessions={profile.totalSessions}
         />
+
+        <ProgressOverview points={profile.progressSeries} />
 
         <div>
           <p

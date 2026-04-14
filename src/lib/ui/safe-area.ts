@@ -15,3 +15,7 @@ export const SAFE_BOTTOM_NAV_HEIGHT = 'calc(64px + env(safe-area-inset-bottom, 0
 export const SAFE_BOTTOM_NAV_PADDING_BOTTOM =
   'env(safe-area-inset-bottom, 0px)'
 export const SAFE_BOTTOM_NAV_PADDING_TOP = '8px'
+
+/** Fin de scroll en listas del coach sobre la bottom nav (altura + respiro). */
+export const COACH_LIST_SCROLL_END_ABOVE_NAV =
+  'calc(72px + env(safe-area-inset-bottom, 0px))'

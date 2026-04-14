@@ -77,4 +77,8 @@ export type ClientProfileData = {
   activePlan: ActivePlanSummary | null
   currentWeekData: TrainingWeekData | null
   coachNote: string
+  progressSeries: Array<{
+    label: string
+    completed: number
+  }>
 }

@@ -15,6 +15,43 @@ import type {
   DayStatus,
 } from '@/features/clients/types'
 
+function startOfWeek(date: Date): Date {
+  const d = new Date(date)
+  const daysSinceMonday = (d.getDay() + 6) % 7
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() - daysSinceMonday)
+  return d
+}
+
+function buildProgressSeries(completedAtValues: Array<string | null>): Array<{ label: string; completed: number }> {
+  const now = new Date()
+  const currentWeekStart = startOfWeek(now)
+  const buckets: Array<{ label: string; completed: number; start: Date; end: Date }> = []
+
+  for (let i = 5; i >= 0; i--) {
+    const weekStart = new Date(currentWeekStart)
+    weekStart.setDate(weekStart.getDate() - i * 7)
+    const weekEnd = new Date(weekStart)
+    weekEnd.setDate(weekEnd.getDate() + 7)
+    const label = `${weekStart.getDate()}/${weekStart.getMonth() + 1}`
+    buckets.push({ label, completed: 0, start: weekStart, end: weekEnd })
+  }
+
+  for (const completedAt of completedAtValues) {
+    if (!completedAt) continue
+    const date = new Date(completedAt)
+    const time = date.getTime()
+    for (const bucket of buckets) {
+      if (time >= bucket.start.getTime() && time < bucket.end.getTime()) {
+        bucket.completed++
+        break
+      }
+    }
+  }
+
+  return buckets.map((b) => ({ label: b.label, completed: b.completed }))
+}
+
 export async function getClientProfileData(
   clientId: string,
   coachId: string
@@ -50,7 +87,7 @@ export async function getClientProfileData(
       .select('completed_at')
       .eq('client_id', clientId)
       .eq('status', 'completed')
-      .gte('completed_at', new Date(Date.now() - 14 * 86400000).toISOString())
+      .gte('completed_at', new Date(Date.now() - 56 * 86400000).toISOString())
       .order('completed_at', { ascending: false }),
     supabase
       .from('sessions')
@@ -72,6 +109,7 @@ export async function getClientProfileData(
   const cp = cpResult.data
   const plan = planResult.data
   const recentSessions = recentSessionsResult.data ?? []
+  const progressSeries = buildProgressSeries(recentSessions.map((s) => s.completed_at))
   const totalSessions = totalSessionsResult.count ?? 0
   const coachNote = noteResult.data?.content ?? ''
   const now = Date.now()
@@ -144,6 +182,7 @@ export async function getClientProfileData(
     activePlan,
     currentWeekData,
     coachNote,
+    progressSeries,
   }
 }
 

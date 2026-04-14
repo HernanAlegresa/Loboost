@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from './queries'
-import KpiStrip from './kpi-strip'
 import ClientList from './client-list'
 import Fab from './fab'
 
@@ -10,6 +9,9 @@ function getGreeting(hour: number): string {
   if (hour < 18) return 'Buenas tardes'
   return 'Buenas noches'
 }
+
+/** Igual al espacio saludo → filtros: paddingBottom saludo (22) + marginTop lista (26) + paddingTop tabs (6). */
+const HEADER_TO_GREETING_PX = 22 + 26 + 6
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -43,39 +45,22 @@ export default async function DashboardPage() {
         overflow: 'hidden',
       }}
     >
-      {/* Greeting */}
+      {/* Saludo: avatar anclado a la izquierda, copy alineado a la derecha */}
       <div
         style={{
-          padding: '20px 20px 24px',
+          padding: `${HEADER_TO_GREETING_PX}px 20px 22px`,
           display: 'flex',
-          alignItems: 'flex-start',
+          flexDirection: 'row',
+          alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 16,
           flexShrink: 0,
         }}
       >
-        <div>
-          <p style={{ fontSize: 16, color: '#F0F0F0' }}>{greeting},</p>
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#F0F0F0', lineHeight: 1.2 }}>
-            {firstName}
-          </p>
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: '#6B7280',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              marginTop: 4,
-            }}
-          >
-            {dateFormatted}
-          </p>
-        </div>
-        {/* Coach avatar placeholder */}
         <div
           style={{
-            width: 56,
-            height: 56,
+            width: 120,
+            height: 120,
             borderRadius: '50%',
             backgroundColor: '#1A1D22',
             border: '2px solid #B5F23D',
@@ -83,26 +68,69 @@ export default async function DashboardPage() {
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
+            marginLeft: 20,
           }}
         >
-          <span style={{ fontSize: 20, fontWeight: 600, color: '#B5F23D' }}>
+          <span style={{ fontSize: 26, fontWeight: 600, color: '#B5F23D' }}>
             {firstName[0]?.toUpperCase() ?? 'C'}
           </span>
         </div>
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            textAlign: 'right',
+            marginRight: 20,
+          }}
+        >
+          <p style={{ fontSize: 22, color: '#9CA3AF', lineHeight: 1.25, margin: 0 }}>{greeting},</p>
+          <p
+            style={{
+              fontSize: 36,
+              fontWeight: 700,
+              color: '#F0F0F0',
+              lineHeight: 1.1,
+              margin: 0,
+              marginTop: 6,
+              maxWidth: '100%',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {firstName}
+          </p>
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: 600,
+              color: '#6B7280',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+              margin: 0,
+              marginTop: 10,
+              lineHeight: 1.35,
+            }}
+          >
+            {dateFormatted}
+          </p>
+        </div>
       </div>
 
-      <div style={{ flexShrink: 0 }}>
-        <KpiStrip
-          totalClients={dashboardData.totalClients}
-          activeClients={dashboardData.activeClients}
-          momentumPercent={dashboardData.momentumPercent}
-          sparklineData={dashboardData.sparklineData}
-        />
-      </div>
-
-      {/* Client list with filter tabs — toma el espacio restante y scrollea internamente */}
-      <div style={{ flex: 1, overflow: 'hidden', minHeight: 0, marginTop: 24 }}>
-        <ClientList clients={dashboardData.clients} />
+      {/* Lista: marginBottom reserva zona del FAB; menor valor = contenedor más alto hacia abajo */}
+      <div
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          minHeight: 0,
+          marginTop: 26,
+          marginBottom: 185,
+        }}
+      >
+        <ClientList clients={dashboardData.clients} bottomPadding={96} />
       </div>
 
       {/* Bottom fade overlay */}

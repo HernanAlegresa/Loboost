@@ -1,12 +1,21 @@
 'use client'
 
-type FilterTabsProps = {
-  tabs: string[]
-  activeTab: string
-  onChange: (tab: string) => void
+export type FilterTabItem = {
+  id: string
+  label: string
+  /** Background when this tab is selected */
+  activeBackground: string
+  /** Text color when selected */
+  activeColor: string
 }
 
-export default function FilterTabs({ tabs, activeTab, onChange }: FilterTabsProps) {
+type FilterTabsProps = {
+  items: FilterTabItem[]
+  activeId: string
+  onChange: (id: string) => void
+}
+
+export default function FilterTabs({ items, activeId, onChange }: FilterTabsProps) {
   return (
     <div
       style={{
@@ -18,26 +27,31 @@ export default function FilterTabs({ tabs, activeTab, onChange }: FilterTabsProp
         msOverflowStyle: 'none',
       }}
     >
-      {tabs.map((tab) => {
-        const isActive = tab === activeTab
+      {items.map((item) => {
+        const isActive = item.id === activeId
+        const inactiveText = '#9CA3AF'
+        const inactiveBorder = 'rgba(107, 114, 128, 0.28)'
         return (
           <button
-            key={tab}
-            onClick={() => onChange(tab)}
+            key={item.id}
+            type="button"
+            onClick={() => onChange(item.id)}
             style={{
               flexShrink: 0,
               padding: '6px 14px',
               borderRadius: 9999,
               fontSize: 13,
               fontWeight: isActive ? 600 : 400,
-              color: isActive ? '#0A0A0A' : '#6B7280',
-              backgroundColor: isActive ? '#B5F23D' : 'transparent',
-              border: 'none',
+              color: isActive ? item.activeColor : inactiveText,
+              backgroundColor: isActive ? item.activeBackground : 'transparent',
+              border: isActive ? '1px solid transparent' : `1px solid ${inactiveBorder}`,
               cursor: 'pointer',
-              transition: 'background-color 150ms ease, color 150ms ease',
+              transition:
+                'background-color 150ms ease, color 150ms ease, box-shadow 150ms ease, border-color 150ms ease',
+              boxShadow: isActive ? `0 0 0 1px ${item.activeBackground}40` : 'none',
             }}
           >
-            {tab}
+            {item.label}
           </button>
         )
       })}

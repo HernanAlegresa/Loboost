@@ -3,17 +3,22 @@ import { calculateWeeklyCompliance } from '@/lib/analytics/compliance'
 import { getClientAlerts } from '@/lib/analytics/alerts'
 import type { AlertType } from '@/types/domain'
 
+/** Estado de lista coach: color y filtro 1:1 */
+export type CoachClientListState = 'al_dia' | 'atencion' | 'critico' | 'en_pausa' | 'inactivo'
+
 export type DashboardClientSummary = {
   id: string
   fullName: string
   goal: string | null
   daysPerWeek: number
   hasActivePlan: boolean
+  planStatus: 'active' | 'paused' | 'inactive'
+  trackingStatus: 'on_track' | 'attention' | 'critical' | null
   lastSessionDate: Date | null
   daysSinceLastSession: number | null
   weeklyCompliance: number
   alerts: AlertType[]
-  statusColor: 'active' | 'warning' | 'critical'
+  listState: CoachClientListState
 }
 
 export type DashboardData = {
@@ -45,7 +50,7 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
 
   const clientIds = profiles.map((p) => p.id)
 
-  const [clientProfilesResult, activePlansResult, sessionsResult] = await Promise.all([
+  const [clientProfilesResult, activePlansResult, allPlansResult, sessionsResult] = await Promise.all([
     supabase
       .from('client_profiles')
       .select('id, goal, days_per_week')
@@ -55,6 +60,11 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       .select('client_id')
       .in('client_id', clientIds)
       .eq('status', 'active'),
+    supabase
+      .from('client_plans')
+      .select('client_id, status, created_at')
+      .in('client_id', clientIds)
+      .order('created_at', { ascending: false }),
     supabase
       .from('sessions')
       .select('client_id, completed_at')
@@ -73,6 +83,12 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
   const activePlanClientIds = new Set(
     (activePlansResult.data ?? []).map((p) => p.client_id)
   )
+  const latestPlanStatusMap = new Map<string, 'active' | 'paused' | 'completed'>()
+  for (const plan of allPlansResult.data ?? []) {
+    if (!latestPlanStatusMap.has(plan.client_id)) {
+      latestPlanStatusMap.set(plan.client_id, plan.status as 'active' | 'paused' | 'completed')
+    }
+  }
 
   const now = Date.now()
   const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
@@ -112,6 +128,12 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
   const clients: DashboardClientSummary[] = profiles.map((profile) => {
     const cp = clientProfilesMap.get(profile.id)
     const hasActivePlan = activePlanClientIds.has(profile.id)
+    const latestPlanStatus = latestPlanStatusMap.get(profile.id)
+    const planStatus: 'active' | 'paused' | 'inactive' = hasActivePlan
+      ? 'active'
+      : latestPlanStatus === 'paused'
+      ? 'paused'
+      : 'inactive'
     const daysPerWeek = cp?.days_per_week ?? 3
 
     const clientSessions = allSessions.filter((s) => s.client_id === profile.id)
@@ -134,19 +156,31 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       completedDays: completedInLastWeek,
     })
 
+    const trackingStatus: 'on_track' | 'attention' | 'critical' | null = hasActivePlan
+      ? daysSinceLastSession === null || daysSinceLastSession > 7
+        ? 'critical'
+        : daysSinceLastSession > 3
+        ? 'attention'
+        : 'on_track'
+      : null
+
     const alerts = getClientAlerts({
       lastSessionDate,
       weeklyCompliance,
       hasActivePlan,
     })
 
-    let statusColor: 'active' | 'warning' | 'critical'
-    if (!hasActivePlan || (daysSinceLastSession !== null && daysSinceLastSession > 7)) {
-      statusColor = 'critical'
-    } else if (daysSinceLastSession !== null && daysSinceLastSession > 3) {
-      statusColor = 'warning'
+    let listState: CoachClientListState
+    if (planStatus === 'paused') {
+      listState = 'en_pausa'
+    } else if (planStatus === 'inactive') {
+      listState = 'inactivo'
+    } else if (trackingStatus === 'on_track') {
+      listState = 'al_dia'
+    } else if (trackingStatus === 'attention') {
+      listState = 'atencion'
     } else {
-      statusColor = 'active'
+      listState = 'critico'
     }
 
     return {
@@ -155,11 +189,13 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       goal: cp?.goal ?? null,
       daysPerWeek,
       hasActivePlan,
+      planStatus,
+      trackingStatus,
       lastSessionDate,
       daysSinceLastSession,
       weeklyCompliance,
       alerts,
-      statusColor,
+      listState,
     }
   })
 

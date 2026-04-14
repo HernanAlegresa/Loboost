@@ -35,6 +35,7 @@ export default async function CoachLayout({
           paddingRight: 20,
           paddingBottom: 16,
           paddingTop: SAFE_HEADER_PADDING_TOP,
+          borderBottom: '1px solid #1F2227',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',

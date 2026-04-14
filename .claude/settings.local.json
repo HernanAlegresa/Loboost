@@ -50,7 +50,9 @@
       "Bash(cmd.exe:*)",
       "Bash(powershell.exe:*)",
       "Bash(npx next:*)",
-      "Bash(taskkill /F /IM node.exe)"
+      "Bash(taskkill /F /IM node.exe)",
+      "mcp__plugin_supabase_supabase__list_migrations",
+      "Bash(npm test:*)"
     ]
   }
 }

@@ -75,8 +75,8 @@ export default function TrainingWeek({ initialData, clientPlanId, startDate, cli
   return (
     <div
       style={{
-        backgroundColor: '#111317',
-        border: '1px solid #1F2227',
+        background: 'linear-gradient(170deg, #12161C 0%, #0F1217 100%)',
+        border: '1px solid #252A31',
         borderRadius: 14,
         overflow: 'hidden',
       }}
@@ -96,9 +96,10 @@ export default function TrainingWeek({ initialData, clientPlanId, startDate, cli
           disabled={!canGoPrev || isPending}
           style={{
             background: 'none',
-            border: 'none',
+            border: '1px solid #2A2D34',
+            borderRadius: 10,
             cursor: canGoPrev && !isPending ? 'pointer' : 'default',
-            padding: 4,
+            padding: 6,
             color: canGoPrev && !isPending ? '#6B7280' : '#2A2D34',
             display: 'flex',
             alignItems: 'center',
@@ -118,7 +119,7 @@ export default function TrainingWeek({ initialData, clientPlanId, startDate, cli
           >
             Semana {weekData.weekNumber}
           </p>
-          <p style={{ fontSize: 11, color: '#6B7280', marginTop: 1 }}>de {weekData.totalWeeks} semanas</p>
+          <p style={{ fontSize: 11, color: '#6B7280', marginTop: 1 }}>Bloque {weekData.weekNumber}/{weekData.totalWeeks}</p>
         </div>
 
         <button
@@ -127,9 +128,10 @@ export default function TrainingWeek({ initialData, clientPlanId, startDate, cli
           disabled={!canGoNext || isPending}
           style={{
             background: 'none',
-            border: 'none',
+            border: '1px solid #2A2D34',
+            borderRadius: 10,
             cursor: canGoNext && !isPending ? 'pointer' : 'default',
-            padding: 4,
+            padding: 6,
             color: canGoNext && !isPending ? '#6B7280' : '#2A2D34',
             display: 'flex',
             alignItems: 'center',
@@ -143,7 +145,7 @@ export default function TrainingWeek({ initialData, clientPlanId, startDate, cli
         style={{
           display: 'flex',
           gap: 4,
-          padding: '12px 12px 4px',
+          padding: '12px 12px 6px',
           opacity: isPending ? 0.4 : 1,
           transition: 'opacity 0.2s',
         }}
@@ -180,7 +182,8 @@ export default function TrainingWeek({ initialData, clientPlanId, startDate, cli
                     cursor: 'pointer',
                     outline: 'none',
                     boxShadow: isSelected ? '0 0 0 2px #B5F23D' : 'none',
-                    transition: 'box-shadow 0.15s',
+                    transform: isSelected ? 'translateY(-1px)' : 'translateY(0)',
+                    transition: 'box-shadow 0.15s, transform 0.15s',
                   }}
                 >
                   {DAY_LABELS[day.dayOfWeek - 1]}
@@ -205,7 +208,7 @@ export default function TrainingWeek({ initialData, clientPlanId, startDate, cli
         })}
       </div>
 
-      <div style={{ padding: '8px 16px 16px' }}>
+      <div style={{ padding: '8px 16px 16px', borderTop: '1px solid #1A1D22' }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={`${weekData.weekNumber}-${selectedDay}`}
@@ -245,7 +248,7 @@ function DayDetail({ day }: { day: DayTrainingData }) {
     return (
       <div
         style={{
-          backgroundColor: 'rgba(242,82,82,0.06)',
+          backgroundColor: 'rgba(242,82,82,0.08)',
           border: '1px solid rgba(242,82,82,0.2)',
           borderRadius: 10,
           padding: '12px 14px',
@@ -254,7 +257,7 @@ function DayDetail({ day }: { day: DayTrainingData }) {
       >
         <p style={{ fontSize: 13, fontWeight: 600, color: '#F25252' }}>No registrado</p>
         <p style={{ fontSize: 12, color: '#6B7280', marginTop: 4 }}>
-          El cliente no registro esta sesion.
+          El cliente no registro esta sesion en la fecha esperada.
         </p>
       </div>
     )
@@ -266,7 +269,7 @@ function DayDetail({ day }: { day: DayTrainingData }) {
 
   if (day.status === 'upcoming' || day.status === 'today') {
     return (
-      <div style={{ marginTop: 8 }}>
+      <div style={{ marginTop: 8, backgroundColor: '#111317', borderRadius: 10, padding: '10px 12px' }}>
         <p style={SECTION_LABEL}>{day.status === 'today' ? 'Entrenamiento de hoy' : 'Planificado'}</p>
         {day.exercises.map((ex, i) => (
           <div

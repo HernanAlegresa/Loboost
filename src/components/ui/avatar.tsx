@@ -3,6 +3,10 @@ type AvatarSize = 'sm' | 'md' | 'lg'
 type AvatarProps = {
   fullName: string
   size?: AvatarSize
+  /**
+   * Color del estado (borde + iniciales). Si no se pasa, estilo neutro.
+   */
+  ringColor?: string
 }
 
 const SIZE_CONFIG: Record<AvatarSize, { px: number; fontSize: number }> = {
@@ -18,22 +22,35 @@ export function getInitials(fullName: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-export default function Avatar({ fullName, size = 'md' }: AvatarProps) {
+export default function Avatar({ fullName, size = 'md', ringColor }: AvatarProps) {
   const { px, fontSize } = SIZE_CONFIG[size]
+  const accent = ringColor ?? '#9CA3AF'
+  const hasState = Boolean(ringColor)
+
   return (
     <div
       style={{
         width: `${px}px`,
         height: `${px}px`,
         borderRadius: '50%',
-        backgroundColor: '#1A1D22',
+        backgroundColor: 'transparent',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
+        border: hasState ? `2px solid ${accent}` : '1px solid #3F4450',
+        boxShadow: hasState ? `0 0 14px ${accent}40` : 'none',
       }}
     >
-      <span style={{ fontSize, fontWeight: 600, color: '#B5F23D', lineHeight: 1 }}>
+      <span
+        style={{
+          fontSize,
+          fontWeight: 700,
+          color: accent,
+          lineHeight: 1,
+          letterSpacing: '0.04em',
+        }}
+      >
         {getInitials(fullName)}
       </span>
     </div>

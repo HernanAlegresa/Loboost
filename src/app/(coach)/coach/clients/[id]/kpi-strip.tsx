@@ -30,14 +30,14 @@ function KpiCard({
     <div
       style={{
         flex: 1,
-        backgroundColor: '#111317',
-        border: '1px solid #1F2227',
+        background: 'linear-gradient(160deg, #12161C 0%, #0F1217 100%)',
+        border: '1px solid #252A31',
         borderRadius: 14,
-        padding: '14px 12px',
+        padding: '14px 12px 12px',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        gap: 6,
+        alignItems: 'flex-start',
+        gap: 8,
       }}
     >
       <p
@@ -47,7 +47,6 @@ function KpiCard({
           color: '#6B7280',
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
-          textAlign: 'center',
           whiteSpace: 'nowrap',
         }}
       >
@@ -55,11 +54,10 @@ function KpiCard({
       </p>
       <p
         style={{
-          fontSize: 24,
+          fontSize: 26,
           fontWeight: 700,
           color: valueColor,
           lineHeight: 1,
-          textAlign: 'center',
         }}
       >
         {value}

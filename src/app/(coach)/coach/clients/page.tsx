@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from '../dashboard/queries'
 import ClientList from '../dashboard/client-list'
+import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 
 export default async function ClientsPage() {
   const supabase = await createClient()
@@ -32,33 +33,39 @@ export default async function ClientsPage() {
           flexShrink: 0,
         }}
       >
-        <div>
-          <p style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0' }}>Clientes</p>
-          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
-            {clients.length} {clients.length === 1 ? 'cliente' : 'clientes'}
-          </p>
+        <div style={{ paddingLeft: 100, minWidth: 0 }}>
+          <p style={{ fontSize: 35, fontWeight: 700, color: '#F0F0F0', lineHeight: 1.15 }}>Clientes</p>
         </div>
-        <Link
-          href="/coach/clients/new"
-          style={{
-            width: 36,
-            height: 36,
-            backgroundColor: '#B5F23D',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textDecoration: 'none',
-            flexShrink: 0,
-          }}
-        >
-          <Plus size={20} color="#0A0A0A" strokeWidth={2.5} />
-        </Link>
+        <div style={{ paddingRight: 10, flexShrink: 0 }}>
+          <Link
+            href="/coach/clients/new"
+            style={{
+              width: 36,
+              height: 36,
+              backgroundColor: '#B5F23D',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            <Plus size={20} color="#0A0A0A" strokeWidth={2.5} />
+          </Link>
+        </div>
       </div>
 
-      {/* List */}
-      <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
-        <ClientList clients={clients} />
+      {/* Lista: sin degradado (no hay FAB); margen inferior para no pegar al footer */}
+      <div
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          minHeight: 0,
+          marginTop: 22,
+          marginBottom: 88,
+        }}
+      >
+        <ClientList clients={clients} bottomPadding={COACH_LIST_SCROLL_END_ABOVE_NAV} />
       </div>
     </div>
   )

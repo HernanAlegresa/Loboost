@@ -20,6 +20,15 @@ const sectionLabel: CSSProperties = {
   marginBottom: 14,
 }
 
+const screenTitle: CSSProperties = {
+  margin: 0,
+  fontSize: 35,
+  fontWeight: 700,
+  color: '#F0F0F0',
+  lineHeight: 1.15,
+  textAlign: 'center',
+}
+
 export default async function CoachSettingsPage() {
   const supabase = await createClient()
   const {
@@ -46,64 +55,95 @@ export default async function CoachSettingsPage() {
       style={{
         height: '100%',
         minHeight: 0,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        overscrollBehaviorY: 'contain',
-        padding: '8px 20px 120px',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
-      <p style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', marginBottom: 4 }}>Ajustes</p>
-      <p style={{ fontSize: 12, color: '#6B7280', marginBottom: 24 }}>
-        Tu cuenta y preferencias básicas
-      </p>
+      <div
+        style={{
+          padding: '20px 20px 8px',
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
+          alignItems: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <div aria-hidden />
+        <p style={screenTitle}>Ajustes</p>
+        <div aria-hidden />
+      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <section style={cardStyle}>
-          <p style={sectionLabel}>Perfil</p>
-          <CoachSettingsForm initialFullName={fullName} />
-        </section>
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          overscrollBehaviorY: 'contain',
+          padding: '0 20px 120px',
+        }}
+      >
+        <p
+          style={{
+            fontSize: 13,
+            color: '#6B7280',
+            marginBottom: 24,
+            marginTop: 0,
+            textAlign: 'center',
+          }}
+        >
+          Tu cuenta y preferencias básicas
+        </p>
 
-        <section style={cardStyle}>
-          <p style={sectionLabel}>Correo</p>
-          <p style={{ fontSize: 15, fontWeight: 600, color: '#F0F0F0', wordBreak: 'break-all' }}>
-            {email || '—'}
-          </p>
-          <p style={{ fontSize: 12, color: '#6B7280', marginTop: 10, lineHeight: 1.45 }}>
-            El correo lo gestiona el inicio de sesión. Para cambiarlo, contactá soporte o usá el flujo
-            de recuperación de tu proveedor cuando esté disponible en la app.
-          </p>
-        </section>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <section style={cardStyle}>
+            <p style={sectionLabel}>Perfil</p>
+            <CoachSettingsForm initialFullName={fullName} />
+          </section>
 
-        <section style={cardStyle}>
-          <p style={sectionLabel}>Sesión</p>
-          <form action={signOut}>
-            <div
-              style={{
-                borderRadius: 14,
-                border: '1px solid rgba(242, 82, 82, 0.35)',
-                backgroundColor: 'rgba(242, 82, 82, 0.06)',
-                padding: 4,
-              }}
-            >
-              <button
-                type="submit"
+          <section style={cardStyle}>
+            <p style={sectionLabel}>Correo</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: '#F0F0F0', wordBreak: 'break-all' }}>
+              {email || '—'}
+            </p>
+            <p style={{ fontSize: 12, color: '#6B7280', marginTop: 10, lineHeight: 1.45 }}>
+              El correo lo gestiona el inicio de sesión. Para cambiarlo, contactá soporte o usá el flujo
+              de recuperación de tu proveedor cuando esté disponible en la app.
+            </p>
+          </section>
+
+          <section style={cardStyle}>
+            <p style={sectionLabel}>Sesión</p>
+            <form action={signOut}>
+              <div
                 style={{
-                  width: '100%',
-                  height: 48,
-                  borderRadius: 10,
-                  border: 'none',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: '#F25252',
-                  backgroundColor: 'rgba(242, 82, 82, 0.12)',
-                  cursor: 'pointer',
+                  borderRadius: 14,
+                  border: '1px solid rgba(242, 82, 82, 0.35)',
+                  backgroundColor: 'rgba(242, 82, 82, 0.06)',
+                  padding: 4,
                 }}
               >
-                Cerrar sesión
-              </button>
-            </div>
-          </form>
-        </section>
+                <button
+                  type="submit"
+                  style={{
+                    width: '100%',
+                    height: 48,
+                    borderRadius: 10,
+                    border: 'none',
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: '#F25252',
+                    backgroundColor: 'rgba(242, 82, 82, 0.12)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
       </div>
     </div>
   )
