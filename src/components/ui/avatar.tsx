@@ -22,10 +22,19 @@ export function getInitials(fullName: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
+/** Anillo blanco: sin halo (evita brillo/grumos en fondos oscuros). */
+function ringShouldGlow(ringColor: string | undefined): boolean {
+  if (!ringColor) return false
+  const c = ringColor.replace(/\s/g, '').toLowerCase()
+  if (c === '#fff' || c === '#ffffff' || c === 'white' || c === 'rgb(255,255,255)') return false
+  return true
+}
+
 export default function Avatar({ fullName, size = 'md', ringColor }: AvatarProps) {
   const { px, fontSize } = SIZE_CONFIG[size]
   const accent = ringColor ?? '#9CA3AF'
   const hasState = Boolean(ringColor)
+  const showRingGlow = hasState && ringShouldGlow(ringColor)
 
   return (
     <div
@@ -39,7 +48,7 @@ export default function Avatar({ fullName, size = 'md', ringColor }: AvatarProps
         justifyContent: 'center',
         flexShrink: 0,
         border: hasState ? `2px solid ${accent}` : '1px solid #3F4450',
-        boxShadow: hasState ? `0 0 14px ${accent}40` : 'none',
+        boxShadow: showRingGlow ? `0 0 14px ${accent}40` : 'none',
       }}
     >
       <span

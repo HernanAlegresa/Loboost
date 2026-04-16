@@ -23,7 +23,7 @@ const labelStyle: CSSProperties = {
   display: 'block',
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#F0F0F0',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   marginBottom: 8,
@@ -32,10 +32,11 @@ const labelStyle: CSSProperties = {
 const sectionTitleStyle: CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#B5F23D',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   marginBottom: 16,
+  textAlign: 'center',
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -56,7 +57,7 @@ export default function CreateExerciseForm() {
 
   useEffect(() => {
     if (state?.success) {
-      router.push('/coach/library/exercises')
+      router.push('/coach/library?tab=exercises')
     }
   }, [state, router])
 
@@ -70,7 +71,12 @@ export default function CreateExerciseForm() {
         overflow: 'hidden',
       }}
     >
-      <CoachSubpageHeader backHref="/coach/library/exercises" title="Nuevo ejercicio" />
+      <CoachSubpageHeader
+        backHref="/coach/library?tab=exercises"
+        title="Nuevo ejercicio"
+        backColor="#B5F23D"
+        titleSize={20}
+      />
 
       <form
         action={formAction}
@@ -165,6 +171,10 @@ export default function CreateExerciseForm() {
           type="submit"
           disabled={isPending}
           style={{
+            alignSelf: 'center',
+            width: 'fit-content',
+            minWidth: 0,
+            padding: '0 24px',
             height: 48,
             borderRadius: 12,
             border: 'none',

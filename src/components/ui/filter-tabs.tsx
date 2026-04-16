@@ -1,5 +1,7 @@
 'use client'
 
+import { motion } from 'framer-motion'
+
 export type FilterTabItem = {
   id: string
   label: string
@@ -32,10 +34,12 @@ export default function FilterTabs({ items, activeId, onChange }: FilterTabsProp
         const inactiveText = '#9CA3AF'
         const inactiveBorder = 'rgba(107, 114, 128, 0.28)'
         return (
-          <button
+          <motion.button
             key={item.id}
             type="button"
             onClick={() => onChange(item.id)}
+            whileTap={{ scale: 0.92 }}
+            transition={{ duration: 0.1 }}
             style={{
               flexShrink: 0,
               padding: '6px 14px',
@@ -52,7 +56,7 @@ export default function FilterTabs({ items, activeId, onChange }: FilterTabsProp
             }}
           >
             {item.label}
-          </button>
+          </motion.button>
         )
       })}
     </div>

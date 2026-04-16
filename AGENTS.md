@@ -6,63 +6,43 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ---
 
-# LoBoost — Contexto para agentes (Claude Code / Cursor)
+# LoBoost — Onboarding para agentes
 
-## Cómo retomar el trabajo
+Este archivo es onboarding humano + resumen operativo.  
+Las reglas ejecutables del agente viven en:
 
-1. Leer `docs/superpowers/handoffs/cursor-development-log.md` — registro vivo de qué hizo cada agente.
-2. `git log -10 --oneline` — ver commits recientes.
-3. Si hay un plan activo en `docs/superpowers/plans/`, ver qué checkboxes están pendientes.
-4. Seguir `CLAUDE.md` para convenciones de código.
+- `.cursor/rules/*.mdc` (fuente de verdad runtime)
+- `.cursor/skills/*/SKILL.md` (playbooks por responsabilidad)
+- `docs/decisions/*.md` (decisiones arquitectónicas/IA persistentes)
 
-## Stack
+## Cómo retomar trabajo en minutos
 
-- Next.js 16 App Router — `params` es `Promise<{...}>`, siempre `await params`.
-- TypeScript estricto, Supabase (auth + DB), Zod (validación), framer-motion (animaciones).
-- Inline styles (no Tailwind) en toda la UI nueva — ver componentes coach como referencia.
-- Server Components por defecto. `'use client'` solo cuando hay estado/interactividad.
+1. Leer `docs/superpowers/handoffs/cursor-development-log.md`.
+2. Revisar `git log -10 --oneline`.
+3. Si aplica, abrir plan activo en `docs/superpowers/plans/`.
+4. Validar decisiones vigentes en `docs/decisions/`.
 
-## Estructura de rutas
+## Contexto técnico rápido
 
-```
-src/app/
-  (coach)/coach/     → rutas del coach (dashboard, clients, library, settings)
-  (client)/client/   → rutas del cliente (dashboard, training, history)
-  (auth)/            → login, register
-```
+- Stack principal: Next.js App Router + TypeScript + Supabase + Zod.
+- Server Components por defecto; `'use client'` solo con interactividad real.
+- Rutas por dominio en `src/app/(coach)`, `src/app/(client)`, `src/app/(training)`, `src/app/(auth)`.
+- Lógica de negocio en `src/features/*`; infraestructura compartida en `src/lib/*`.
 
-## Dominio — distinción crítica
+## Invariantes de dominio (obligatorio)
 
-- `plans` + `plan_days` + `plan_day_exercises` = **template** del coach (nunca se edita desde flujo cliente)
-- `client_plans` + `client_plan_days` + `client_plan_day_exercises` = **copia** asignada al cliente
-- `sessions` + `session_sets` = registro de entrenamiento del cliente
-- `assignPlan()` siempre crea una copia completa, nunca una referencia al template.
+- `plans` son templates del coach.
+- `client_plans` son copias asignadas a clientes.
+- `assignPlan()` crea copia completa; nunca referencia mutable al template.
 
-## Design system (inline styles)
-
-```
-Background:  #0A0A0A (app), #111317 (cards)
-Border:      #1F2227
-Text:        #F0F0F0 (primary), #6B7280 (muted), #9CA3AF (secondary)
-Accent:      #B5F23D (lima/primary action)
-Warning:     #F2994A
-Error:       #F25252
-Border-r:    14px (cards grandes), 12px (chips), 9999px (pills/badges)
-```
-
-## Convenciones de código
+## Convenciones clave
 
 - Archivos: kebab-case. Componentes: PascalCase.
-- Schemas Zod en `features/[feature]/schemas.ts`.
-- Tipos de dominio en `features/[feature]/types.ts`.
-- DB types en `src/types/database.ts` — solo regenerar con Supabase CLI, nunca editar a mano.
-- Server Actions: `(prevState, formData)` si se usa con `useActionState`. String directo si se llama con `useTransition`.
-- `createClient()` de `@/lib/supabase/server` en Server Components y actions. Nunca en `'use client'`.
+- Schemas Zod: `src/features/<feature>/schemas.ts`.
+- Tipos de dominio: `src/features/<feature>/types.ts`.
+- Tipos DB: `src/types/database.ts` generado, no editable a mano.
+- Server-side Supabase desde `@/lib/supabase/server`.
 
-## Estado del proyecto al 2026-04-10
+## UI y producto
 
-**Coach (completo):** dashboard, clientes (lista/alta/perfil), ejercicios (CRUD), planes (builder/detalle/editar/asignar/borrar), ajustes, auth.
-
-**Cliente (pendiente):** layout placeholder existe en `(client)/client/dashboard`. Training actions ya implementados (`src/features/training/actions/`). Falta toda la UI: home con plan activo, entrenamiento en vivo, historial.
-
-**Próximo paso:** implementar lado cliente — home, live training, historial. Ver plan en `docs/superpowers/plans/` una vez que se cree.
+Seguir tokens y principios en `docs/design/DESIGN.md` (dark + lime, mobile-first, claridad por encima de ornamentación).

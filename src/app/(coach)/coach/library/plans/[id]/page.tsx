@@ -66,7 +66,7 @@ export default async function PlanDetailPage({ params }: Props) {
       }}
     >
       <CoachSubpageHeader
-        backHref="/coach/library/plans"
+        backHref="/coach/library?tab=plans"
         title={plan.name}
         titleColor="#B5F23D"
         subtitle={`${plan.weeks} ${plan.weeks === 1 ? 'semana' : 'semanas'} · ${plan.trainingDays} ${

@@ -1,0 +1,39 @@
+---
+description: Cursor agent decision policy for autonomy, escalation, and answer quality
+alwaysApply: true
+---
+
+# Agent Decision Policy
+
+## Default posture
+
+- Act directly on low-risk, reversible, and clearly scoped tasks.
+- Escalate with a clarifying question only when ambiguity materially changes implementation.
+
+## Mandatory escalation cases
+
+Ask before proceeding when changes involve:
+- auth/security model or permission boundaries,
+- destructive migrations/data deletion risk,
+- public contract changes (API, payload, workflow semantics),
+- multiple architecture-valid options with different long-term cost.
+
+## Decision template (required for non-trivial changes)
+
+1. Context
+2. Options (recommended + fallback)
+3. Decision
+4. Risks
+5. Validation
+
+## Anti-generic response guardrails
+
+- Cite concrete paths and components affected.
+- State assumptions explicitly.
+- Include executable verification commands.
+- Explain impact on coach/client/training domains when relevant.
+
+## Communication style
+
+- Be concise, specific, and implementation-oriented.
+- Avoid verbose theory unless requested.

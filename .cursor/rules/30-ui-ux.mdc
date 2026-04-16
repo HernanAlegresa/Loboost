@@ -1,0 +1,29 @@
+---
+description: LoBoost UI and UX consistency guardrails
+alwaysApply: true
+---
+
+# UI and UX Standards
+
+## Product visual system
+
+- Follow LoBoost dark-first palette and lime accent from `docs/design/DESIGN.md`.
+- Keep interactions mobile-first and readable on small screens.
+- Use accent color selectively for primary actions and high-signal states.
+
+## Composition guidance
+
+- Reuse existing product components/patterns before creating new ones.
+- Keep navigation and layout behavior consistent per route group.
+- Respect current implementation style used in each surface; avoid style-system thrash.
+
+## Accessibility and clarity
+
+- Keep labels and CTA text explicit and action-oriented.
+- Ensure contrast and disabled/loading states are obvious.
+- Avoid interaction dead-ends; provide clear back/cancel/retry paths.
+
+## Motion and feedback
+
+- Use subtle transitions for state changes.
+- Prioritize performance and clarity over decorative animation.

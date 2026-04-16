@@ -122,6 +122,10 @@ export default function CoachSettingsForm({ initialFullName }: Props) {
           type="submit"
           disabled={isPending || !dirty}
           style={{
+            alignSelf: 'center',
+            width: 'fit-content',
+            minWidth: 0,
+            padding: '0 24px',
             height: 46,
             borderRadius: 12,
             border: 'none',

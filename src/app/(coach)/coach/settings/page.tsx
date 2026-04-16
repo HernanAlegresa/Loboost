@@ -20,12 +20,13 @@ const sectionLabel: CSSProperties = {
   marginBottom: 14,
 }
 
+/** Misma jerarquía que títulos de tabs (Clientes / Biblioteca). */
 const screenTitle: CSSProperties = {
   margin: 0,
-  fontSize: 35,
+  fontSize: 20,
   fontWeight: 700,
   color: '#F0F0F0',
-  lineHeight: 1.15,
+  lineHeight: 1.2,
   textAlign: 'center',
 }
 

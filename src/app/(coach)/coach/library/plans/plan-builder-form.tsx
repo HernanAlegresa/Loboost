@@ -36,7 +36,7 @@ const labelStyle: CSSProperties = {
   display: 'block',
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#F0F0F0',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   marginBottom: 8,
@@ -45,10 +45,11 @@ const labelStyle: CSSProperties = {
 const sectionTitleStyle: CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#B5F23D',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   marginBottom: 16,
+  textAlign: 'center',
 }
 
 const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const
@@ -201,7 +202,7 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
       router.push(`/coach/library/plans/${initialPlan.planId}`)
       return
     }
-    router.push('/coach/library/plans')
+    router.push('/coach/library?tab=plans')
   }, [state, router, mode, initialPlan])
 
   function toggleDay(dow: number) {
@@ -270,8 +271,10 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
       }}
     >
       <CoachSubpageHeader
-        backHref="/coach/library/plans"
+        backHref="/coach/library?tab=plans"
         title={mode === 'edit' ? 'Editar plan' : 'Nuevo plan'}
+        backColor="#B5F23D"
+        titleSize={20}
       />
 
       <div
@@ -703,6 +706,10 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
             type="submit"
             disabled={isPending || exercises.length === 0}
             style={{
+              alignSelf: 'center',
+              width: 'fit-content',
+              minWidth: 0,
+              padding: '0 24px',
               height: 48,
               borderRadius: 12,
               border: 'none',

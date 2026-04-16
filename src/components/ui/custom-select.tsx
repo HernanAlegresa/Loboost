@@ -108,7 +108,7 @@ export default function CustomSelect(props: CustomSelectProps) {
           transition={{ duration: 0.15 }}
           style={{ flexShrink: 0, marginLeft: 8 }}
         >
-          <ChevronDown size={16} color={open ? '#B5F23D' : '#6B7280'} />
+          <ChevronDown size={16} color="#B5F23D" />
         </motion.span>
       </button>
 

@@ -1,0 +1,30 @@
+---
+description: Definition of Done and verification requirements
+alwaysApply: true
+---
+
+# Delivery and Verification
+
+## Definition of Done
+
+A task is done only when:
+- Code changes are applied and coherent with existing architecture.
+- Type and test checks for impacted scope pass.
+- Risks and trade-offs are stated for non-trivial decisions.
+
+## Verification defaults
+
+- Run TypeScript check (`npx tsc --noEmit`) for code changes.
+- Run targeted tests first; run broader test suites when risk is cross-cutting.
+- If verification cannot run, explain why and provide exact commands for user execution.
+
+## Change communication
+
+- Report what changed, where, and why.
+- Include any follow-up work or residual risks.
+- Do not claim success without evidence from executed checks.
+
+## Safety gates
+
+- Ask before destructive or irreversible operations.
+- Keep commits and PR scope focused when requested.

@@ -25,7 +25,7 @@ const labelStyle: CSSProperties = {
   display: 'block',
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#F0F0F0',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   marginBottom: 8,
@@ -34,10 +34,11 @@ const labelStyle: CSSProperties = {
 const sectionTitleStyle: CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#B5F23D',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   marginBottom: 16,
+  textAlign: 'center',
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -82,13 +83,18 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
 
   useEffect(() => {
     if (state?.success) {
-      router.push('/coach/library/exercises')
+      router.push('/coach/library?tab=exercises')
     }
   }, [state, router])
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader backHref="/coach/library/exercises" title="Editar ejercicio" />
+      <CoachSubpageHeader
+        backHref="/coach/library?tab=exercises"
+        title="Editar ejercicio"
+        backColor="#B5F23D"
+        titleSize={20}
+      />
 
       <div
         style={{
@@ -190,6 +196,10 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
             type="submit"
             disabled={isPending || !dirty}
             style={{
+              alignSelf: 'center',
+              width: 'fit-content',
+              minWidth: 0,
+              padding: '0 24px',
               height: 48,
               borderRadius: 12,
               border: 'none',
@@ -204,7 +214,7 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
           </button>
 
           <Link
-            href="/coach/library/exercises"
+            href="/coach/library?tab=exercises"
             style={{
               textAlign: 'center',
               fontSize: 14,

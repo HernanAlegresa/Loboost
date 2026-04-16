@@ -1,0 +1,32 @@
+---
+description: Codebase architecture boundaries and placement rules
+alwaysApply: true
+---
+
+# Architecture Boundaries
+
+## Route groups and domain ownership
+
+- `src/app/(coach)`: coach-facing flows and composition.
+- `src/app/(client)`: client-facing flows with client navigation layout.
+- `src/app/(training)`: immersive training flow without standard client nav.
+- `src/app/(auth)`: authentication screens.
+
+## Code placement
+
+- Put business/domain logic in `src/features/<feature>/`.
+- Put route-level fetching/composition in `src/app/**/queries.ts` and page/layout files.
+- Put reusable UI primitives in `src/components/ui/`.
+- Put cross-cutting infra/helpers in `src/lib/`.
+
+## Data contracts
+
+- Zod schemas belong in `src/features/<feature>/schemas.ts`.
+- Feature domain types belong in `src/features/<feature>/types.ts`.
+- DB-generated types live in `src/types/database.ts` and are never edited manually.
+
+## Domain invariants
+
+- `plans` are coach templates.
+- `client_plans` are assigned copies.
+- Assignment flows create copies, not mutable references.

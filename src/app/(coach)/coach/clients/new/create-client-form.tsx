@@ -27,7 +27,7 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#F0F0F0',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   marginBottom: 8,
@@ -36,10 +36,11 @@ const labelStyle: React.CSSProperties = {
 const sectionTitleStyle: React.CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
-  color: '#6B7280',
+  color: '#B5F23D',
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   marginBottom: 16,
+  textAlign: 'center',
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -83,9 +84,9 @@ export default function CreateClientForm() {
       >
         <div
           style={{
-            display: 'flex',
+            display: 'grid',
+            gridTemplateColumns: '44px 1fr 44px',
             alignItems: 'center',
-            gap: 8,
             padding: '16px 20px 24px',
             flexShrink: 0,
             backgroundColor: '#0A0A0A',
@@ -93,11 +94,21 @@ export default function CreateClientForm() {
         >
           <Link
             href="/coach/clients"
-            style={{ display: 'flex', alignItems: 'center', color: '#6B7280', textDecoration: 'none' }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              color: '#B5F23D',
+              textDecoration: 'none',
+              minHeight: 44,
+            }}
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={24} />
           </Link>
-          <span style={{ fontSize: 18, fontWeight: 700, color: '#F0F0F0' }}>Nuevo cliente</span>
+          <span style={{ fontSize: 20, fontWeight: 700, color: '#F0F0F0', textAlign: 'center' }}>
+            Nuevo cliente
+          </span>
+          <div aria-hidden />
         </div>
 
         <div
@@ -113,7 +124,7 @@ export default function CreateClientForm() {
             action={formAction}
             style={{ padding: '0 20px 120px', display: 'flex', flexDirection: 'column', gap: 32 }}
           >
-          {/* Sección 1: Datos del cliente */}
+          {/* Secci?n 1: Datos del cliente */}
           <div>
             <p style={sectionTitleStyle}>Datos del cliente</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -124,7 +135,7 @@ export default function CreateClientForm() {
                   type="text"
                   required
                   style={inputStyle}
-                  placeholder="Sofía Torres"
+                  placeholder="Sof?a Torres"
                 />
               </Field>
 
@@ -197,13 +208,13 @@ export default function CreateClientForm() {
                 />
               </Field>
 
-              <Field label="Días disponibles por semana">
+              <Field label="D?as disponibles por semana">
                 <CustomSelect
                   name="daysPerWeek"
                   required
                   options={[1, 2, 3, 4, 5, 6].map((d) => ({
                     value: String(d),
-                    label: `${d} ${d === 1 ? 'día' : 'días'}`,
+                    label: `${d} ${d === 1 ? 'd?a' : 'd?as'}`,
                   }))}
                 />
               </Field>
@@ -213,7 +224,7 @@ export default function CreateClientForm() {
                   name="injuries"
                   type="text"
                   style={inputStyle}
-                  placeholder='Ej: "Rodilla derecha" o dejar vacío si no hay'
+                  placeholder='Ej: "Rodilla derecha" o dejar vac?o si no hay'
                 />
               </Field>
             </div>
@@ -222,7 +233,7 @@ export default function CreateClientForm() {
           {/* Divider */}
           <div style={{ height: 1, backgroundColor: '#1F2227' }} />
 
-          {/* Sección 2: Cuenta del cliente */}
+          {/* Secci?n 2: Cuenta del cliente */}
           <div>
             <p style={sectionTitleStyle}>Cuenta del cliente</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -237,7 +248,7 @@ export default function CreateClientForm() {
                 />
               </Field>
 
-              <Field label="Contraseña">
+              <Field label="Contrase?a">
                 <div style={{ position: 'relative' }}>
                   <input
                     name="password"
@@ -245,7 +256,7 @@ export default function CreateClientForm() {
                     required
                     minLength={8}
                     style={{ ...inputStyle, paddingRight: 44 }}
-                    placeholder="Mínimo 8 caracteres"
+                    placeholder="M?nimo 8 caracteres"
                   />
                   <button
                     type="button"
@@ -294,7 +305,10 @@ export default function CreateClientForm() {
             type="submit"
             disabled={isPending}
             style={{
-              width: '100%',
+              alignSelf: 'center',
+              width: 'fit-content',
+              minWidth: 0,
+              padding: '0 24px',
               height: 52,
               backgroundColor: isPending ? '#8BA82B' : '#B5F23D',
               color: '#0A0A0A',
