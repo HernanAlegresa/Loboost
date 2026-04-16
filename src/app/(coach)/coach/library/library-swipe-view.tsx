@@ -31,6 +31,9 @@ type Props = {
   plans: PlanListRow[]
 }
 
+/** Alineado con Clientes: misma distancia texto-indicador. */
+const TAB_INDICATOR_MARGIN_TOP_PX = 3
+
 export default function LibrarySwipeView({ exercises, plans }: Props) {
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const tabsTrackRef = useRef<HTMLDivElement | null>(null)
@@ -134,71 +137,83 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
           padding: '10px 20px 0',
         }}
       >
-        <div
-          ref={tabsTrackRef}
-          style={{
-            position: 'relative',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 60,
-            minHeight: 46,
-          }}
-        >
-          {tabs.map((tab) => {
-            const isActive = tab === activeTab
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => scrollToTab(tab)}
-                style={{
-                  border: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: 'transparent',
-                  color: isActive ? '#F0F0F0' : '#6B7280',
-                  padding: '6px 0',
-                  fontSize: 20,
-                  fontWeight: 700,
-                  lineHeight: 1.2,
-                  transition: 'color 140ms ease',
-                  display: 'inline-flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <span
-                  ref={(node) => {
-                    tabTextRefs.current[tab] = node
-                  }}
-                >
-                  {TAB_LABELS[tab]}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        <div
-          style={{
-            marginTop: 8,
-            marginBottom: 0,
-            height: 2,
-            position: 'relative',
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <div style={{ width: 40, flexShrink: 0, minHeight: 46 }} aria-hidden />
           <div
+            ref={tabsTrackRef}
             style={{
-              position: 'absolute',
-              top: 0,
-              left: indicator.left,
-              height: 2,
-              width: indicator.width,
-              backgroundColor: '#B5F23D',
-              borderRadius: 9999,
-              transition: 'left 220ms ease, width 220ms ease',
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'stretch',
+              minWidth: 0,
+              minHeight: 46,
             }}
-          />
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 64,
+                minHeight: 46,
+              }}
+            >
+              {tabs.map((tab) => {
+                const isActive = tab === activeTab
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => scrollToTab(tab)}
+                    style={{
+                      border: 'none',
+                      cursor: 'pointer',
+                      backgroundColor: 'transparent',
+                      color: isActive ? '#F0F0F0' : '#6B7280',
+                      padding: '6px 0',
+                      fontSize: 20,
+                      fontWeight: 700,
+                      lineHeight: 1.2,
+                      transition: 'color 140ms ease',
+                    }}
+                  >
+                    <span
+                      ref={(node) => {
+                        tabTextRefs.current[tab] = node
+                      }}
+                    >
+                      {TAB_LABELS[tab]}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div
+              style={{
+                marginTop: TAB_INDICATOR_MARGIN_TOP_PX,
+                marginBottom: 0,
+                height: 2,
+                position: 'relative',
+                width: '100%',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: indicator.left,
+                  height: 2,
+                  width: indicator.width,
+                  backgroundColor: '#B5F23D',
+                  borderRadius: 9999,
+                  transition: 'left 220ms ease, width 220ms ease',
+                }}
+              />
+            </div>
+          </div>
+          <div style={{ width: 40, flexShrink: 0, minHeight: 46 }} aria-hidden />
         </div>
       </div>
 

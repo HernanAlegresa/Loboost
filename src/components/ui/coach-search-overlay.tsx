@@ -322,7 +322,7 @@ function OverlayContent({
             display: 'flex',
             alignItems: 'center',
             backgroundColor: '#111317',
-            border: '1px solid #2A2D34',
+            border: '1px solid #FFFFFF',
             borderRadius: 12,
             padding: '0 12px',
             minHeight: 42,

@@ -117,16 +117,7 @@ export default async function CoachSettingsPage() {
           <section style={cardStyle}>
             <p style={sectionLabel}>Sesión</p>
             <form action={signOut}>
-              <div
-                style={{
-                  borderRadius: 14,
-                  border: '1px solid rgba(242, 82, 82, 0.35)',
-                  backgroundColor: 'rgba(242, 82, 82, 0.06)',
-                  padding: 4,
-                  display: 'flex',
-                  justifyContent: 'center',
-                }}
-              >
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <button
                   type="submit"
                   style={{
