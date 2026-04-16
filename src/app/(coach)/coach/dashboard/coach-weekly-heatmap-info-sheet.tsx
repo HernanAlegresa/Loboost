@@ -24,7 +24,7 @@ const LEGEND_ROWS: LegendRow[] = [
   { key: 'prog', cell: { kind: 'in_progress', isToday: false }, label: 'En curso: falta cerrar la sesión.' },
   { key: 'miss', cell: { kind: 'missed', isToday: false }, label: 'Día pasado sin registro.' },
   { key: 'pend', cell: { kind: 'upcoming', isToday: false }, label: 'Pendiente o futuro.' },
-  { key: 'rest', cell: { kind: 'rest', isToday: false }, label: 'Sin entreno planificado ese día.' },
+  { key: 'rest', cell: { kind: 'rest', isToday: false }, label: 'Sin entreno planificado (X gris).' },
   { key: 'today', cell: { kind: 'upcoming', isToday: true }, label: 'Hoy (borde lima).' },
 ]
 

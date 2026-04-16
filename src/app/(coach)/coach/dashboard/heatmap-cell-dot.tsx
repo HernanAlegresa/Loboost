@@ -4,7 +4,7 @@ import type { WeeklyHeatmapCell, WeeklyHeatmapCellKind } from './weekly-heatmap-
 import { hmPx } from './heatmap-layout'
 
 const CELL_BG: Record<WeeklyHeatmapCellKind, string> = {
-  rest: '#14161A',
+  rest: 'transparent',
   completed: 'rgba(34, 197, 94, 0.38)',
   in_progress: 'rgba(234, 179, 8, 0.32)',
   missed: 'rgba(242, 82, 82, 0.28)',
@@ -13,7 +13,7 @@ const CELL_BG: Record<WeeklyHeatmapCellKind, string> = {
 }
 
 const CELL_BORDER: Record<WeeklyHeatmapCellKind, string> = {
-  rest: '#252830',
+  rest: 'transparent',
   completed: 'rgba(34, 197, 94, 0.85)',
   in_progress: 'rgba(234, 179, 8, 0.9)',
   missed: 'rgba(242, 82, 82, 0.85)',
@@ -40,18 +40,55 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
   const useBlackTodayLegendFill =
     !!panelTodayLegend && cell.kind === 'upcoming' && cell.isToday
 
+  if (cell.kind === 'rest') {
+    return (
+      <div
+        title={cell.isToday ? 'Descanso · hoy' : 'Descanso'}
+        style={{
+          width: DOT_SIZE,
+          height: DOT_SIZE,
+          borderRadius: DOT_RADIUS,
+          flexShrink: 0,
+          position: 'relative',
+          ...(cell.isToday ? { boxShadow: `0 0 0 ${TODAY_RING_PX}px ${TODAY_RING}` } : {}),
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: hmPx(14),
+            height: hmPx(2),
+            backgroundColor: '#6B7280',
+            borderRadius: 9999,
+            transform: 'translate(-50%, -50%) rotate(45deg)',
+            opacity: 0.9,
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            width: hmPx(14),
+            height: hmPx(2),
+            backgroundColor: '#6B7280',
+            borderRadius: 9999,
+            transform: 'translate(-50%, -50%) rotate(-45deg)',
+            opacity: 0.9,
+          }}
+        />
+      </div>
+    )
+  }
+
   const backgroundColor = useBlackTodayLegendFill ? '#0A0A0A' : CELL_BG[cell.kind]
   const borderColor = useBlackTodayLegendFill ? '#1F2227' : CELL_BORDER[cell.kind]
 
   return (
     <div
-      title={
-        cell.kind === 'rest'
-          ? cell.isToday
-            ? 'Descanso · hoy'
-            : 'Descanso'
-          : `${cell.kind}${cell.isToday ? ' · hoy' : ''}`
-      }
+      title={`${cell.kind}${cell.isToday ? ' · hoy' : ''}`}
       style={{
         width: DOT_SIZE,
         height: DOT_SIZE,

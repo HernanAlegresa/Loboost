@@ -173,7 +173,7 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
                       backgroundColor: 'transparent',
                       color: isActive ? '#F0F0F0' : '#6B7280',
                       padding: '6px 0',
-                      fontSize: 20,
+                      fontSize: isActive ? 20 : 18,
                       fontWeight: 700,
                       lineHeight: 1.2,
                       transition: 'color 140ms ease',
