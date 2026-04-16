@@ -344,7 +344,7 @@ function OverlayContent({
               background: 'none',
               border: 'none',
               outline: 'none',
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: 400,
               color: '#F0F0F0',
               caretColor: '#B5F23D',

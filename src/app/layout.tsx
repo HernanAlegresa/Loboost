@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import OrientationLock from '@/components/ui/orientation-lock'
 import SafeAreaSimulator from '@/components/ui/safe-area-simulator'
 import './globals.css'
 
@@ -10,6 +11,9 @@ export const viewport: Viewport = {
   themeColor: '#0A0A0A',
   width: 'device-width',
   initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: 'cover',
 }
 
@@ -36,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.className} bg-bg-base text-text-primary antialiased`}>
+        <OrientationLock />
         <SafeAreaSimulator />
         {children}
       </body>

@@ -461,7 +461,6 @@ export default function ClientsTabsContainer({ clients }: Props) {
               display: 'flex',
               justifyContent: 'center',
               padding: '24px 20px 12px',
-              borderBottom: '1px solid #1F2227',
               backgroundColor: '#0A0A0A',
             }}
           >
@@ -491,7 +490,6 @@ export default function ClientsTabsContainer({ clients }: Props) {
               flexShrink: 0,
               padding: `${FILTERS_VERTICAL_INSET_PX}px 20px ${FILTERS_VERTICAL_INSET_PX}px`,
               backgroundColor: '#0A0A0A',
-              borderBottom: '1px solid #1F2227',
             }}
           >
             <ClientsFilters
