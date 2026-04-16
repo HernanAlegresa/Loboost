@@ -76,6 +76,10 @@ export default function CoachSettingsForm({ initialFullName }: Props) {
             setEditing(true)
           }}
           style={{
+            alignSelf: 'center',
+            width: 'fit-content',
+            minWidth: 0,
+            padding: '0 20px',
             height: 46,
             borderRadius: 12,
             border: '1px solid #2A2D34',

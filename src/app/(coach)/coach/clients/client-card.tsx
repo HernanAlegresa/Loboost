@@ -8,12 +8,12 @@ export type ClientHealthState = 'en_riesgo' | 'atrasado' | 'al_dia' | 'sin_plan'
 
 const STATE_UI: Record<
   ClientHealthState,
-  { label: string; accent: string }
+  { accent: string }
 > = {
-  en_riesgo: { label: 'En riesgo', accent: '#F25252' },
-  atrasado: { label: 'Registro pendiente', accent: '#F2994A' },
-  al_dia: { label: 'Al día', accent: '#22C55E' },
-  sin_plan: { label: 'Sin plan', accent: '#9CA3AF' },
+  en_riesgo: { accent: '#F25252' },
+  atrasado: { accent: '#F2994A' },
+  al_dia: { accent: '#22C55E' },
+  sin_plan: { accent: '#9CA3AF' },
 }
 
 type Props = {
@@ -73,21 +73,6 @@ export default function ClientCard({
               }}
             >
               {fullName}
-            </p>
-            <p
-              style={{
-                fontSize: 11,
-                color: accent,
-                marginTop: 4,
-                fontWeight: 600,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                textTransform: 'uppercase',
-                letterSpacing: '0.07em',
-              }}
-            >
-              {stateUi.label}
             </p>
           </div>
           <div

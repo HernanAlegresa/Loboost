@@ -126,7 +126,7 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
                 >
                   {p.name}
                 </p>
-                <p style={{ fontSize: 12, color: '#F0F0F0', margin: '6px 0 0', lineHeight: 1.4 }}>
+                <p style={{ fontSize: 12, color: '#9CA3AF', margin: '6px 0 0', lineHeight: 1.4 }}>
                   {p.weeks} {p.weeks === 1 ? 'semana' : 'semanas'} · {p.trainingDays}{' '}
                   {p.trainingDays === 1 ? 'día' : 'días'} / semana
                 </p>

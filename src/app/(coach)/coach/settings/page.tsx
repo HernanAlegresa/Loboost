@@ -123,12 +123,16 @@ export default async function CoachSettingsPage() {
                   border: '1px solid rgba(242, 82, 82, 0.35)',
                   backgroundColor: 'rgba(242, 82, 82, 0.06)',
                   padding: 4,
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}
               >
                 <button
                   type="submit"
                   style={{
-                    width: '100%',
+                    width: 'fit-content',
+                    minWidth: 0,
+                    padding: '0 20px',
                     height: 48,
                     borderRadius: 10,
                     border: 'none',

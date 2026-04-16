@@ -108,7 +108,7 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
                 style={{
                   fontSize: 15,
                   fontWeight: 700,
-                  color: '#F0F0F0',
+                  color: '#B5F23D',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',

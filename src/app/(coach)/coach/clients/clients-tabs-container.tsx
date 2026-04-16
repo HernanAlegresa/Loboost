@@ -522,7 +522,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                 marginRight: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 8,
+                gap: 12,
               }}
             >
               <AnimatePresence mode="popLayout">

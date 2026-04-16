@@ -1,5 +1,7 @@
 'use client'
 
+import { AnimatePresence, motion } from 'framer-motion'
+
 type Props = {
   planName: string
   open: boolean
@@ -17,84 +19,93 @@ export default function DeletePlanDialog({
   onCancel,
   onConfirm,
 }: Props) {
-  if (!open) return null
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-plan-title"
-      onClick={() => {
-        if (!isPending) onCancel()
-      }}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.55)',
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: '100%',
-          maxWidth: 480,
-          backgroundColor: '#111317',
-          border: '1px solid #1F2227',
-          borderRadius: '16px 16px 0 0',
-          padding: '20px 20px 24px',
-          marginBottom: 64,
-        }}
-      >
-        <p id="delete-plan-title" style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0' }}>
-          ¿Eliminar este plan?
-        </p>
-        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
-          Se eliminará <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{planName}</span> de tu biblioteca
-          (días y ejercicios del plan base). No se borran copias ya asignadas a clientes.
-        </p>
-        {error && (
-          <p style={{ fontSize: 13, color: '#F25252', marginTop: 12, lineHeight: 1.45 }}>{error}</p>
-        )}
-        <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isPending}
+    <AnimatePresence>
+      {open ? (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-plan-title"
+          onClick={() => {
+            if (!isPending) onCancel()
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.16 }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            padding: 16,
+          }}
+        >
+          <motion.div
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#6B7280',
-              background: 'none',
-              border: 'none',
-              cursor: isPending ? 'default' : 'pointer',
-              padding: '10px 14px',
+              width: 'min(100%, 520px)',
+              backgroundColor: '#111317',
+              border: '1px solid #1F2227',
+              borderRadius: 16,
+              padding: '20px 20px 24px',
             }}
           >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isPending}
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: '#F0F0F0',
-              backgroundColor: isPending ? '#7A2C2C' : '#F25252',
-              border: 'none',
-              borderRadius: 10,
-              cursor: isPending ? 'not-allowed' : 'pointer',
-              padding: '10px 16px',
-            }}
-          >
-            {isPending ? 'Eliminando...' : 'Eliminar'}
-          </button>
-        </div>
-      </div>
-    </div>
+            <p id="delete-plan-title" style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0' }}>
+              ¿Eliminar este plan?
+            </p>
+            <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
+              Se eliminará <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{planName}</span> de tu biblioteca
+              (días y ejercicios del plan base). No se borran copias ya asignadas a clientes.
+            </p>
+            {error && (
+              <p style={{ fontSize: 13, color: '#F25252', marginTop: 12, lineHeight: 1.45 }}>{error}</p>
+            )}
+            <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={isPending}
+                style={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#6B7280',
+                  background: 'none',
+                  border: 'none',
+                  cursor: isPending ? 'default' : 'pointer',
+                  padding: '10px 14px',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={onConfirm}
+                disabled={isPending}
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: '#F0F0F0',
+                  backgroundColor: isPending ? '#7A2C2C' : '#F25252',
+                  border: 'none',
+                  borderRadius: 10,
+                  cursor: isPending ? 'not-allowed' : 'pointer',
+                  padding: '10px 16px',
+                }}
+              >
+                {isPending ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
   )
 }

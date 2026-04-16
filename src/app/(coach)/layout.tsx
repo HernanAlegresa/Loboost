@@ -42,7 +42,6 @@ export default async function CoachLayout({
           paddingRight: 20,
           paddingBottom: 16,
           paddingTop: SAFE_HEADER_PADDING_TOP,
-          borderBottom: '1px solid #1F2227',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -52,7 +51,7 @@ export default async function CoachLayout({
           <span style={{ color: '#B5F23D' }}>Lobo</span>
           <span style={{ color: '#F0F0F0' }}>ost</span>
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <CoachSearchOverlay coachId={user.id} clients={clientItems} />
           <CoachNotificationBell clientsNeedingAttention={clientsNeedingAttention} />
         </div>
