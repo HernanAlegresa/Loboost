@@ -21,10 +21,10 @@ type LegendRow = { key: string; cell: WeeklyHeatmapCell; label: string }
 /** Mismos cuadrados que el mapa + una línea de texto. */
 const LEGEND_ROWS: LegendRow[] = [
   { key: 'done', cell: { kind: 'completed', isToday: false }, label: 'Completado y registrado.' },
-  { key: 'prog', cell: { kind: 'in_progress', isToday: false }, label: 'En curso: falta cerrar la sesión.' },
+  { key: 'prog', cell: { kind: 'in_progress', isToday: false }, label: 'Hay registros, pero faltan algunos.' },
   { key: 'miss', cell: { kind: 'missed', isToday: false }, label: 'Día pasado sin registro.' },
   { key: 'pend', cell: { kind: 'upcoming', isToday: false }, label: 'Pendiente o futuro.' },
-  { key: 'rest', cell: { kind: 'rest', isToday: false }, label: 'Sin entreno planificado (X gris).' },
+  { key: 'rest', cell: { kind: 'rest', isToday: false }, label: 'Sin entreno planificado.' },
   { key: 'today', cell: { kind: 'upcoming', isToday: true }, label: 'Hoy (borde lima).' },
 ]
 

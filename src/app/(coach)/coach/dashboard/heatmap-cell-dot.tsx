@@ -95,7 +95,7 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
         borderRadius: DOT_RADIUS,
         flexShrink: 0,
         backgroundColor,
-        border: `1px solid ${borderColor}`,
+        border: cell.isToday ? `1px solid ${borderColor}` : 'none',
         boxSizing: 'border-box',
         ...(cell.isToday ? { boxShadow: `0 0 0 ${TODAY_RING_PX}px ${TODAY_RING}` } : {}),
       }}
