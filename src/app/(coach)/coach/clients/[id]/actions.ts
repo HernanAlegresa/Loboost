@@ -2,6 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { getWeekTrainingData as _getWeekTrainingData } from './queries'
+import {
+  getPlanFollowupStatusSummary as _getPlanFollowupStatusSummary,
+  type PlanFollowupStatusSummary,
+} from './queries'
 import type { TrainingWeekData } from '@/features/clients/types'
 
 export async function getWeekTrainingData(
@@ -12,6 +16,22 @@ export async function getWeekTrainingData(
   clientId: string
 ): Promise<TrainingWeekData> {
   return _getWeekTrainingData(clientPlanId, weekNumber, startDate, totalWeeks, clientId)
+}
+
+export async function getPlanFollowupStatusSummary(
+  clientPlanId: string,
+  startDate: string,
+  totalWeeks: number,
+  currentWeek: number,
+  clientId: string
+): Promise<PlanFollowupStatusSummary> {
+  return _getPlanFollowupStatusSummary(
+    clientPlanId,
+    startDate,
+    totalWeeks,
+    currentWeek,
+    clientId
+  )
 }
 
 export async function saveCoachNoteAction(

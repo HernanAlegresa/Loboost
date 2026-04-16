@@ -323,3 +323,44 @@ export async function getWeekTrainingData(
 
   return { weekNumber, totalWeeks, days }
 }
+
+export type PlanFollowupIssue = {
+  weekNumber: number
+  dayOfWeek: number
+}
+
+export type PlanFollowupStatusSummary = {
+  missed: PlanFollowupIssue[]
+  inProgress: PlanFollowupIssue[]
+}
+
+export async function getPlanFollowupStatusSummary(
+  clientPlanId: string,
+  startDate: string,
+  totalWeeks: number,
+  currentWeek: number,
+  clientId: string
+): Promise<PlanFollowupStatusSummary> {
+  const upperWeek = Math.max(1, Math.min(currentWeek, totalWeeks))
+  const weekNumbers = Array.from({ length: upperWeek }, (_, idx) => idx + 1)
+  const weeks = await Promise.all(
+    weekNumbers.map((weekNumber) =>
+      getWeekTrainingData(clientPlanId, weekNumber, startDate, totalWeeks, clientId)
+    )
+  )
+
+  const missed: PlanFollowupIssue[] = []
+  const inProgress: PlanFollowupIssue[] = []
+
+  for (const week of weeks) {
+    for (const day of week.days) {
+      if (day.status === 'past_missed') {
+        missed.push({ weekNumber: week.weekNumber, dayOfWeek: day.dayOfWeek })
+      } else if (day.status === 'in_progress') {
+        inProgress.push({ weekNumber: week.weekNumber, dayOfWeek: day.dayOfWeek })
+      }
+    }
+  }
+
+  return { missed, inProgress }
+}
