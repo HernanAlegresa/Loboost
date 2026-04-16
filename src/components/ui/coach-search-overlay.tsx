@@ -313,8 +313,6 @@ function OverlayContent({
           backgroundColor: '#0A0A0A',
         }}
       >
-        <Search size={24} color="#FFFFFF" strokeWidth={2.25} style={{ flexShrink: 0 }} />
-
         <div
           style={{
             flex: 1,
@@ -323,7 +321,7 @@ function OverlayContent({
             alignItems: 'center',
             backgroundColor: '#111317',
             border: '1px solid #FFFFFF',
-            borderRadius: 12,
+            borderRadius: 9999,
             padding: '0 12px',
             minHeight: 42,
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',

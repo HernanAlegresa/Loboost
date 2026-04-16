@@ -25,6 +25,7 @@ const TAB_ADD_HREF: Record<LibraryTab, string> = {
 
 const PANEL_BOTTOM_PADDING_PX = 120
 const LIBRARY_LIST_BOTTOM_GAP_PX = 28
+const LIBRARY_LIST_TOP_INSET_PX = 22
 
 type Props = {
   exercises: ExerciseRow[]
@@ -275,7 +276,7 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
             overflowY: 'auto',
             overflowX: 'hidden',
             overscrollBehaviorY: 'contain',
-            padding: `10px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
+            padding: `${LIBRARY_LIST_TOP_INSET_PX}px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
             backgroundColor: '#0A0A0A',
           }}
         >
@@ -291,7 +292,7 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
             overflowY: 'auto',
             overflowX: 'hidden',
             overscrollBehaviorY: 'contain',
-            padding: `10px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
+            padding: `${LIBRARY_LIST_TOP_INSET_PX}px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
             backgroundColor: '#0A0A0A',
           }}
         >
