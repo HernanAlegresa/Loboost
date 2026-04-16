@@ -1,4 +1,4 @@
-type AvatarSize = 'sm' | 'md' | 'lg'
+type AvatarSize = 'sm' | 'md' | 'lg' | 'xl'
 
 type AvatarProps = {
   fullName: string
@@ -13,6 +13,7 @@ const SIZE_CONFIG: Record<AvatarSize, { px: number; fontSize: number }> = {
   sm: { px: 28, fontSize: 11 },
   md: { px: 40, fontSize: 13 },
   lg: { px: 52, fontSize: 16 },
+  xl: { px: 130, fontSize: 40 },
 }
 
 export function getInitials(fullName: string): string {

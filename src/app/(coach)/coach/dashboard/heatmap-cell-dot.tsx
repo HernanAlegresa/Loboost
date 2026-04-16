@@ -23,7 +23,7 @@ const CELL_BORDER: Record<WeeklyHeatmapCellKind, string> = {
 const TODAY_RING = '#B5F23D'
 
 const DOT_SIZE = hmPx(24)
-const DOT_RADIUS = hmPx(8)
+const DOT_RADIUS = 9999
 /** Anillo lima “hoy”: 1px para que no compita con el borde de la celda. */
 const TODAY_RING_PX = 1
 
@@ -41,6 +41,7 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
     !!panelTodayLegend && cell.kind === 'upcoming' && cell.isToday
 
   if (cell.kind === 'rest') {
+    const restXColor = cell.isToday ? TODAY_RING : '#6B7280'
     return (
       <div
         title={cell.isToday ? 'Descanso · hoy' : 'Descanso'}
@@ -50,7 +51,6 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
           borderRadius: DOT_RADIUS,
           flexShrink: 0,
           position: 'relative',
-          ...(cell.isToday ? { boxShadow: `0 0 0 ${TODAY_RING_PX}px ${TODAY_RING}` } : {}),
         }}
       >
         <div
@@ -60,7 +60,7 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
             top: '50%',
             width: hmPx(14),
             height: hmPx(2),
-            backgroundColor: '#6B7280',
+            backgroundColor: restXColor,
             borderRadius: 9999,
             transform: 'translate(-50%, -50%) rotate(45deg)',
             opacity: 0.9,
@@ -73,7 +73,7 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
             top: '50%',
             width: hmPx(14),
             height: hmPx(2),
-            backgroundColor: '#6B7280',
+            backgroundColor: restXColor,
             borderRadius: 9999,
             transform: 'translate(-50%, -50%) rotate(-45deg)',
             opacity: 0.9,
