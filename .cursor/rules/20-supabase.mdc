@@ -1,0 +1,35 @@
+---
+description: Supabase access, auth, and migration safety policy
+alwaysApply: true
+---
+
+# Supabase Policy
+
+## Client creation patterns
+
+- Server contexts use `@/lib/supabase/server`.
+- Browser contexts use `@/lib/supabase/client`.
+- Middleware/session refresh follows `@/lib/supabase/middleware`.
+- Privileged operations should use the centralized admin pattern in `@/lib/supabase/admin`.
+
+## Security and authorization
+
+- Enforce ownership checks in server-side actions and queries for coach/client boundaries.
+- Treat RLS as primary guardrail and action-level checks as defense in depth.
+- Never leak service-role credentials to client components.
+
+## Schema and migrations
+
+- Schema changes must be represented through SQL migrations in `supabase/migrations/`.
+- Never rely on dashboard-only schema edits without migration files.
+- Regenerate DB types after migration changes; do not hand-edit generated types.
+
+## Query quality
+
+- Prefer explicit selects and typed mapping over broad untyped payloads.
+- Keep data reads scoped to minimum required columns.
+
+## Multi-entity consistency
+
+- When one domain action updates multiple related entities, prefer atomic transaction/RPC patterns.
+- Avoid partial-update flows that can leave lifecycle state inconsistent across tables.

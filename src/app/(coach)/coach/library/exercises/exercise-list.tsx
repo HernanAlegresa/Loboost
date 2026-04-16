@@ -3,15 +3,11 @@
 import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { Pencil, Trash2 } from 'lucide-react'
 import { deleteExerciseAction } from '@/features/exercises/actions/delete-exercise'
 import type { ExerciseRow } from './queries'
 import DeleteExerciseDialog from './delete-exercise-dialog'
-
-const TYPE_LABEL: Record<string, string> = {
-  strength: 'Fuerza',
-  cardio: 'Cardio',
-}
 
 export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }) {
   const router = useRouter()
@@ -89,19 +85,22 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
         onCancel={closeDelete}
         onConfirm={confirmDelete}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {exercises.map((ex) => (
-          <div
+          <motion.div
             key={ex.id}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: isPending && pendingId === ex.id ? 0.55 : 1, y: 0 }}
+            transition={{ duration: 0.18 }}
+            whileTap={{ scale: 0.985 }}
             style={{
               backgroundColor: '#111317',
               border: '1px solid #1F2227',
-              borderRadius: 16,
-              padding: '16px 14px',
+              borderRadius: 14,
+              padding: '14px 12px 14px 16px',
               display: 'flex',
-              alignItems: 'flex-start',
+              alignItems: 'center',
               gap: 12,
-              opacity: isPending && pendingId === ex.id ? 0.55 : 1,
             }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -109,7 +108,7 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
                 style={{
                   fontSize: 15,
                   fontWeight: 700,
-                  color: '#B5F23D',
+                  color: '#F0F0F0',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
@@ -121,32 +120,31 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
               <p
                 style={{
                   fontSize: 12,
-                  color: '#6B7280',
-                  margin: '8px 0 0',
+                  color: '#9CA3AF',
+                  margin: '5px 0 0',
                   lineHeight: 1.45,
                 }}
               >
-                <span style={{ color: '#9CA3AF' }}>{ex.muscle_group}</span>
-                {' · '}
                 {ex.category}
-                {' · '}
-                <span style={{ color: '#B5F23D', fontWeight: 600 }}>
-                  {TYPE_LABEL[ex.type] ?? ex.type}
-                </span>
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
               <Link
                 href={`/coach/library/exercises/${ex.id}/edit`}
                 aria-label={`Editar ${ex.name}`}
                 style={{
                   display: 'flex',
-                  padding: 8,
-                  color: '#B5F23D',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 44,
+                  minHeight: 44,
+                  color: '#9CA3AF',
                   textDecoration: 'none',
+                  borderRadius: 8,
+                  transition: 'color 150ms ease',
                 }}
               >
-                <Pencil size={20} />
+                <Pencil size={18} />
               </Link>
               <button
                 type="button"
@@ -156,15 +154,20 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
                 style={{
                   background: 'none',
                   border: 'none',
-                  padding: 8,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 44,
+                  minHeight: 44,
                   cursor: isPending ? 'default' : 'pointer',
                   color: '#F25252',
+                  borderRadius: 8,
                 }}
               >
-                <Trash2 size={20} />
+                <Trash2 size={18} />
               </button>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </>

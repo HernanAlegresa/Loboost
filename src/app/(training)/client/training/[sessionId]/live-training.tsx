@@ -18,6 +18,8 @@ import { updateSetAction } from '@/features/training/actions/update-set'
 import VideoModal from '@/components/ui/video-modal'
 import type { LiveExercise, LiveSessionData } from '@/features/training/types'
 import {
+  SAFE_AREA_BOTTOM,
+  SAFE_AREA_TOP,
   SAFE_BOTTOM_NAV_HEIGHT,
   SAFE_BOTTOM_NAV_PADDING_BOTTOM,
   SAFE_BOTTOM_NAV_PADDING_TOP,
@@ -305,7 +307,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
           paddingLeft: 40,
           paddingRight: 40,
           paddingBottom: 40,
-          paddingTop: 'calc(40px + env(safe-area-inset-top, 0px))',
+          paddingTop: `calc(40px + ${SAFE_AREA_TOP})`,
           gap: 16,
           textAlign: 'center',
         }}
@@ -341,7 +343,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
           paddingLeft: 24,
           paddingRight: 24,
           paddingBottom: 40,
-          paddingTop: 'calc(40px + env(safe-area-inset-top, 0px))',
+          paddingTop: `calc(40px + ${SAFE_AREA_TOP})`,
           gap: 20,
           textAlign: 'center',
         }}
@@ -372,7 +374,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
 
   const progressPct = flatSets.length ? (completedCount / flatSets.length) * 100 : 0
   const finishFooterContentHeight = 52
-  const setCardBottomPadding = 'calc(28px + env(safe-area-inset-bottom, 0px))'
+  const setCardBottomPadding = `calc(28px + ${SAFE_AREA_BOTTOM})`
 
   return (
     <div

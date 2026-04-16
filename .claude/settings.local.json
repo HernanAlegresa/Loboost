@@ -52,7 +52,12 @@
       "Bash(npx next:*)",
       "Bash(taskkill /F /IM node.exe)",
       "mcp__plugin_supabase_supabase__list_migrations",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(winget search *)",
+      "Bash(winget install *)",
+      "Bash(ngrok version *)",
+      "Bash(/c/Users/herna/AppData/Local/Microsoft/WinGet/Packages/Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe/ngrok.exe version *)",
+      "Bash(/c/Users/herna/AppData/Local/Microsoft/WinGet/Packages/Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe/ngrok.exe config *)"
     ]
   }
 }

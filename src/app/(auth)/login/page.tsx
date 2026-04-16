@@ -1,11 +1,16 @@
 import Link from 'next/link'
 import { LoginForm } from '@/features/auth/components/login-form'
+import { SAFE_AREA_BOTTOM, SAFE_AREA_TOP } from '@/lib/ui/safe-area'
 
 export default function LoginPage() {
   return (
     <main
-      className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4"
-      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      className="min-h-dvh bg-[#0a0a0a] flex flex-col items-center justify-center px-4"
+      style={{
+        paddingTop: `calc(max(32px, ${SAFE_AREA_TOP}))`,
+        paddingBottom: `calc(max(32px, ${SAFE_AREA_BOTTOM}))`,
+        overflowY: 'auto',
+      }}
     >
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">

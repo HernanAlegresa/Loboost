@@ -1,114 +1,42 @@
-Perfecto, estuve revisando y pensando bien todo el lado cliente de la app antes de seguir avanzando, y quiero compartirte cómo lo estoy viendo a nivel producto para que me des tu opinión.
+I want you to act as a senior frontend engineer with strong experience in mobile-first web apps and iOS Safari behavior.
 
-La idea general es que la app del cliente sea simple, clara y enfocada en lo más importante: que el cliente entrene, sepa qué tiene que hacer y pueda registrar su progreso sin fricción.
+Context:
+I'm building a mobile-first web app using Next.js (App Router), React, TypeScript, and Tailwind CSS.
 
-Te resumo cómo estoy pensando cada parte:
+Currently, I'm using Responsively App on my PC to preview my app at mobile sizes (iPhone viewport). However, I noticed that the layout does NOT match what I see on a real iPhone device.
 
-Dashboard (home del cliente):
-Quiero que sea una pantalla muy simple y enfocada en el día actual.
+Specifically:
+On a real iPhone (e.g. iPhone 13 mini), there are top and bottom safe areas due to:
+- Notch / status bar (top)
+- Home indicator (bottom)
 
-* Header con saludo + nombre + avatar del usuario
-* Bloque de plan activo con:
+This causes my UI (header and bottom navigation) to be pushed inward, creating spacing that does NOT appear in my desktop/mobile emulator.
 
-  * nombre del plan
-  * progreso
-  * semana actual (ej: Semana 2 de 6)
-  * botón “Ver plan” para ir a la vista completa
-* Bloque principal centrado en el día de hoy:
+Problem:
+In my local environment (localhost + Responsively), these safe areas are NOT being applied, so my layout looks different compared to a real iPhone.
 
-  * mostrar fecha completa (ej: Viernes 10 de abril)
-  * indicar si es día de entrenamiento o descanso
-  * si es entrenamiento:
+Goal:
+I want my local development environment to visually match (as closely as possible) how the app renders on a real iPhone.
 
-    * mostrar un pequeño contexto (ej: grupo muscular o cantidad de ejercicios)
-    * botón principal “Empezar entrenamiento”
-  * si es descanso:
+What I want from you:
+1. Explain the correct way to handle iOS safe areas in a modern web app (Next.js + Tailwind)
+2. Implement a proper solution using CSS env(safe-area-inset-*) variables
+3. Add fallback values so it also works in environments that don't support safe areas (like desktop browsers / Responsively)
+4. Ensure the solution is clean, scalable, and applied at the correct layout level (not per-component hacks)
+5. Make sure it works correctly with:
+   - fixed headers
+   - bottom navigation bars
+   - full-height layouts (min-h-screen)
 
-    * mostrar un estado visual claro (icono + mensaje)
-* No quiero mostrar días anteriores ni siguientes en esta pantalla, solo foco en hoy
+IMPORTANT:
+- Add the required meta tag (viewport-fit=cover) if missing
+- Avoid breaking existing layout structure
+- Keep everything consistent with Tailwind conventions
 
-Vista de plan:
-Estoy de acuerdo con tener una pantalla donde el cliente pueda ver el plan completo.
+Bonus (if possible):
+- Add a temporary "debug mode" (optional class or flag) that visually shows safe area boundaries for development purposes
 
-* Navegación por semanas
-* Cada semana con sus días
-* Estado de cada día (completado, hoy, pendiente)
-* Al entrar a un día:
+Goal summary:
+I want to code → save → instantly see a layout in localhost that closely matches a real iPhone (including safe areas), without needing to constantly check on my physical device.
 
-  * ver ejercicios, sets y videos de cada ejercicio
-
-Live training (la más importante):
-Acá quiero una experiencia muy clara y usable en el gym.
-
-* Un ejercicio por pantalla
-* Mostrar:
-
-  * nombre del ejercicio
-  * indicador tipo “Ejercicio 2 de 5”
-* Por cada serie:
-
-  * input para peso (o tiempo si es cardio)
-  * botón o check para marcar como completado
-* Cuando completa todas las series:
-
-  * permitir avanzar al siguiente ejercicio
-* Navegación controlada (no scroll libre entre ejercicios)
-* Al terminar todo:
-
-  * mensaje tipo “Entrenamiento completado”
-* Importante:
-
-  * que el usuario pueda retomar si sale de la app
-  * acceso fácil a ver el video del ejercicio (modal o similar, sin romper el flujo)
-
-Historial:
-No quiero historial por día, sino por semana.
-
-* Lista de semanas completadas
-* Cada semana con:
-
-  * porcentaje de cumplimiento
-  * cantidad de días completados
-* Al entrar a una semana:
-
-  * ver detalle de días y lo que hizo
-
-Nutrición:
-Por ahora la dejaría simple.
-
-* Pantalla existente pero con estado vacío si no hay contenido
-* Mensaje tipo: “Tu coach aún no cargó recomendaciones de nutrición”
-* Más adelante la idea es que el coach agregue tips o comentarios
-
-Ajustes:
-Pantalla simple, sin sobrecargar.
-
-* Foto de perfil (editable)
-* Nombre visible (no editable por ahora)
-* Notificaciones (toggles para recordatorios, mensajes del coach, etc.)
-* Botón de cerrar sesión
-
-Perfil:
-Pantalla básica con información del cliente.
-
-* Foto
-* Nombre
-* Objetivo
-* Plan actual
-* Opcional más adelante: datos motivacionales como racha o mejor semana
-
-En general, lo que busco es:
-
-* no sobrecargar las pantallas
-* que todo sea rápido de entender
-* que el foco esté en entrenar y registrar
-* separar bien: ver → hacer → revisar
-
-Quiero que lo mires como producto y me digas:
-
-* si la estructura tiene sentido
-* si ves algo que sobra o falta
-* si mejorarías algo a nivel UX, especialmente en live training y dashboard
-* si hay algo importante que no estamos considerando
-
-Después de alinear esto, avanzamos con el plan de implementación.
+Take your time and implement this cleanly in the codebase.

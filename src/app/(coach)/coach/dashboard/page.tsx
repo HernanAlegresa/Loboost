@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardData } from './queries'
-import ClientList from './client-list'
-import Fab from './fab'
+import CoachDashboardHeatmapFabSection from './coach-dashboard-heatmap-fab-section'
 
 function getGreeting(hour: number): string {
   if (hour < 12) return 'Buenos días'
@@ -10,8 +9,9 @@ function getGreeting(hour: number): string {
   return 'Buenas noches'
 }
 
-/** Igual al espacio saludo → filtros: paddingBottom saludo (22) + marginTop lista (26) + paddingTop tabs (6). */
-const HEADER_TO_GREETING_PX = 22 + 26 + 6
+/** Variante compacta: acerca saludo/lista al header sin perder aire visual. */
+const HEADER_TO_GREETING_PX = 28
+const GREETING_BOTTOM_PADDING_PX = 16
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -23,6 +23,7 @@ export default async function DashboardPage() {
     getDashboardData(user.id),
   ])
 
+  const { weeklyHeatmap } = dashboardData
   const fullName = profileResult.data?.full_name ?? 'Coach'
   const firstName = fullName.split(' ')[0]
 
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
       {/* Saludo: avatar anclado a la izquierda, copy alineado a la derecha */}
       <div
         style={{
-          padding: `${HEADER_TO_GREETING_PX}px 20px 22px`,
+          padding: `${HEADER_TO_GREETING_PX}px 20px ${GREETING_BOTTOM_PADDING_PX}px`,
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
@@ -120,18 +121,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Lista: marginBottom reserva zona del FAB; menor valor = contenedor más alto hacia abajo */}
-      <div
-        style={{
-          flex: 1,
-          overflow: 'hidden',
-          minHeight: 0,
-          marginTop: 26,
-          marginBottom: 185,
-        }}
-      >
-        <ClientList clients={dashboardData.clients} bottomPadding={96} />
-      </div>
+      <CoachDashboardHeatmapFabSection weeklyHeatmap={weeklyHeatmap} />
 
       {/* Bottom fade overlay */}
       <div
@@ -146,9 +136,6 @@ export default async function DashboardPage() {
           zIndex: 10,
         }}
       />
-
-      {/* FAB Speed Dial */}
-      <Fab />
     </div>
   )
 }

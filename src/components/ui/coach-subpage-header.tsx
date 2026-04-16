@@ -29,6 +29,8 @@ type Props = {
   rightSlot?: ReactNode
   /** e.g. accent lime for plan/exercise titles */
   titleColor?: string
+  backColor?: string
+  titleSize?: number
 }
 
 export default function CoachSubpageHeader({
@@ -37,16 +39,18 @@ export default function CoachSubpageHeader({
   subtitle,
   rightSlot,
   titleColor = '#F0F0F0',
+  backColor = '#6B7280',
+  titleSize = 17,
 }: Props) {
   return (
     <header style={grid}>
-      <Link href={backHref} style={backLink} aria-label="Volver">
+      <Link href={backHref} style={{ ...backLink, color: backColor }} aria-label="Volver">
         <ChevronLeft size={24} />
       </Link>
       <div style={{ textAlign: 'center', minWidth: 0 }}>
         <h1
           style={{
-            fontSize: 17,
+            fontSize: titleSize,
             fontWeight: 700,
             color: titleColor,
             margin: 0,

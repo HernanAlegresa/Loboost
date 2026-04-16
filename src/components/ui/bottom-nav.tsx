@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { Home, Users, BookOpen, Settings } from 'lucide-react'
 import {
   SAFE_BOTTOM_NAV_HEIGHT,
@@ -40,23 +41,30 @@ export default function BottomNav() {
       {NAV_ITEMS.map(({ label, href, Icon }) => {
         const isActive = pathname === href || pathname.startsWith(href + '/')
         return (
-          <Link
+          <motion.div
             key={href}
-            href={href}
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 4,
-              textDecoration: 'none',
-              color: isActive ? '#B5F23D' : '#6B7280',
-            }}
+            whileTap={{ scale: 0.82, opacity: 0.65 }}
+            transition={{ duration: 0.1 }}
+            style={{ flex: 1 }}
           >
-            <Icon size={22} />
-            <span style={{ fontSize: 10, fontWeight: 500 }}>{label}</span>
-          </Link>
+            <Link
+              href={href}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 4,
+                textDecoration: 'none',
+                color: isActive ? '#B5F23D' : '#6B7280',
+                height: '100%',
+                transition: 'color 150ms ease',
+              }}
+            >
+              <Icon size={22} />
+              <span style={{ fontSize: 10, fontWeight: 500 }}>{label}</span>
+            </Link>
+          </motion.div>
         )
       })}
     </nav>

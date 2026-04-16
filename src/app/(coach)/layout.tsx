@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import BottomNav from '@/components/ui/bottom-nav'
-import { Bell, Search } from 'lucide-react'
+import CoachNotificationBell from '@/components/ui/coach-notification-bell'
+import CoachSearchOverlay from '@/components/ui/coach-search-overlay'
 import { SAFE_HEADER_PADDING_TOP } from '@/lib/ui/safe-area'
+import { getDashboardData, countCoachClientsNeedingAttention } from './coach/dashboard/queries'
 
 export default async function CoachLayout({
   children,
@@ -12,6 +14,11 @@ export default async function CoachLayout({
   const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) redirect('/login')
+
+  const { clients } = await getDashboardData(user.id)
+  const clientsNeedingAttention = countCoachClientsNeedingAttention(clients)
+
+  const clientItems = clients.map((c) => ({ id: c.id, fullName: c.fullName }))
 
   return (
     <div
@@ -45,13 +52,9 @@ export default async function CoachLayout({
           <span style={{ color: '#B5F23D' }}>Lobo</span>
           <span style={{ color: '#F0F0F0' }}>ost</span>
         </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ cursor: 'pointer' }}>
-            <Search size={20} color="#E5E7EB" />
-          </div>
-          <div style={{ position: 'relative', cursor: 'pointer' }}>
-            <Bell size={20} color="#E5E7EB" />
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <CoachSearchOverlay coachId={user.id} clients={clientItems} />
+          <CoachNotificationBell clientsNeedingAttention={clientsNeedingAttention} />
         </div>
       </header>
 

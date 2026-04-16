@@ -176,6 +176,10 @@ export default function AssignPlanForm({ planId, planName, planWeeks, clients }:
           type="submit"
           disabled={isPending || !canSubmit}
           style={{
+            alignSelf: 'center',
+            width: 'fit-content',
+            minWidth: 0,
+            padding: '0 24px',
             height: 48,
             borderRadius: 12,
             border: 'none',

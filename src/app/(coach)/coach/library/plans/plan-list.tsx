@@ -126,12 +126,12 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
                 >
                   {p.name}
                 </p>
-                <p style={{ fontSize: 12, color: '#6B7280', margin: '6px 0 0', lineHeight: 1.4 }}>
+                <p style={{ fontSize: 12, color: '#F0F0F0', margin: '6px 0 0', lineHeight: 1.4 }}>
                   {p.weeks} {p.weeks === 1 ? 'semana' : 'semanas'} · {p.trainingDays}{' '}
                   {p.trainingDays === 1 ? 'día' : 'días'} / semana
                 </p>
               </div>
-              <ChevronRight size={20} color="#6B7280" style={{ flexShrink: 0 }} aria-hidden />
+              <ChevronRight size={24} strokeWidth={2.6} color="#F0F0F0" style={{ flexShrink: 0 }} aria-hidden />
             </Link>
 
             <button
