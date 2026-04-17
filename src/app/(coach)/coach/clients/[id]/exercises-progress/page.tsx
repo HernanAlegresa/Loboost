@@ -76,15 +76,16 @@ export default async function ExercisesProgressPage({
         }}
       >
         {/* Summary */}
-        <div style={{ padding: '16px 20px 4px' }}>
+        <div style={{ padding: '20px 20px 24px', textAlign: 'center' }}>
           <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>
-            <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{exercisesWithData.length}</span>
-            {' '}{exercisesWithData.length === 1 ? 'ejercicio' : 'ejercicios'} con historial en{' '}
-            <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{activePlan.name}</span>
+            Ejercicios realizados por{' '}
+            <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{fullName}</span>
+            {': '}
+            <span style={{ color: '#B5F23D', fontWeight: 700 }}>{exercisesWithData.length}</span>
           </p>
           {exercisesWithData.length > 0 && (
-            <p style={{ fontSize: 11, color: '#4B5563', margin: '4px 0 0' }}>
-              Toca cada ejercicio para ver la evolución de carga
+            <p style={{ fontSize: 11, color: '#4B5563', margin: '6px 0 0' }}>
+              Tocá un grupo para ver los ejercicios
             </p>
           )}
         </div>

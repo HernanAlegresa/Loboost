@@ -6,69 +6,18 @@ import { ChevronRight } from 'lucide-react'
 import type { ExerciseProgressData } from '../progress-queries'
 import { muscleGroupLabel, MUSCLE_GROUP_ORDER } from '@/features/exercises/muscle-groups'
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function computePctChange(values: (number | null)[]): number | null {
-  const filled = values.filter((v): v is number => v !== null)
-  if (filled.length < 2) return null
-  const prev = filled[filled.length - 2]
-  const last = filled[filled.length - 1]
-  if (prev === 0) return null
-  return Math.round(((last - prev) / prev) * 100)
-}
-
-function isBodyweight(ex: ExerciseProgressData): boolean {
-  return ex.lastTopSetKg === null && ex.peakTopSetKg === null
-}
-
-// ── Trend badge ───────────────────────────────────────────────────────────────
-
-function TrendBadge({ ex }: { ex: ExerciseProgressData }) {
-  const bw = isBodyweight(ex)
-
-  const pct = bw
-    ? computePctChange(ex.sessions.map((s) => s.completedSets))
-    : computePctChange(ex.sessions.map((s) => s.topSetKg))
-
-  const trend = bw
-    ? (() => {
-        if (ex.sessions.length < 2) return 'none' as const
-        const prev = ex.sessions[ex.sessions.length - 2].completedSets
-        const last = ex.sessions[ex.sessions.length - 1].completedSets
-        if (last > prev) return 'up' as const
-        if (last < prev) return 'down' as const
-        return 'stable' as const
-      })()
-    : ex.trend
-
-  if (trend === 'none') return null
-
-  const map = {
-    up:     { symbol: '↑', color: '#B5F23D', bg: 'rgba(181,242,61,0.1)' },
-    down:   { symbol: '↓', color: '#F25252', bg: 'rgba(242,82,82,0.1)' },
-    stable: { symbol: '→', color: '#9CA3AF', bg: 'rgba(156,163,175,0.08)' },
-  } as const
-
-  const { symbol, color, bg } = map[trend]
-  const pctLabel = pct !== null && pct !== 0 ? ` ${pct > 0 ? '+' : ''}${pct}%` : ''
-
-  return (
-    <span style={{ fontSize: 11, fontWeight: 700, color, background: bg, borderRadius: 6, padding: '2px 7px', lineHeight: 1, whiteSpace: 'nowrap' }}>
-      {symbol}{pctLabel}
-    </span>
-  )
-}
-
-// ── Exercise row (navegable a subpage) ────────────────────────────────────────
+// ── Exercise row ──────────────────────────────────────────────────────────────
 
 function ExerciseRow({ ex, clientId }: { ex: ExerciseProgressData; clientId: string }) {
-  const bw = isBodyweight(ex)
+  const bw = ex.lastTopSetKg === null && ex.peakTopSetKg === null
 
   return (
     <Link href={`/coach/clients/${clientId}/exercises-progress/${ex.exerciseId}`} style={{ textDecoration: 'none', display: 'block' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 0', borderBottom: '1px solid #1A1E24' }}>
+
+        {/* Left: name + session count */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 15, fontWeight: 600, color: '#F0F0F0', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#B5F23D', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {ex.exerciseName}
           </p>
           <p style={{ fontSize: 12, color: '#6B7280', margin: '3px 0 0' }}>
@@ -77,25 +26,20 @@ function ExerciseRow({ ex, clientId }: { ex: ExerciseProgressData; clientId: str
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <div style={{ textAlign: 'right' }}>
-            {bw ? (
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#9CA3AF' }}>
-                {ex.sessions.length > 0 ? `${ex.sessions[ex.sessions.length - 1].completedSets} series` : '—'}
-              </span>
-            ) : ex.lastTopSetKg !== null ? (
-              <>
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#F0F0F0' }}>{ex.lastTopSetKg} kg</span>
-                {ex.peakTopSetKg !== null && ex.peakTopSetKg !== ex.lastTopSetKg && (
-                  <p style={{ fontSize: 10, color: '#4B5563', margin: '2px 0 0' }}>pico {ex.peakTopSetKg} kg</p>
-                )}
-              </>
-            ) : (
-              <span style={{ fontSize: 13, color: '#4B5563' }}>—</span>
-            )}
-          </div>
-          <TrendBadge ex={ex} />
-          <ChevronRight size={16} color="#4B5563" strokeWidth={2} />
+        {/* Right: PR or sets + chevron */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+          {bw ? (
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#9CA3AF' }}>
+              {ex.sessions.length > 0 ? `${ex.sessions[ex.sessions.length - 1].completedSets} series` : '—'}
+            </span>
+          ) : ex.peakTopSetKg !== null ? (
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#10B981' }}>
+              PR: {ex.peakTopSetKg} kg
+            </span>
+          ) : (
+            <span style={{ fontSize: 13, color: '#4B5563' }}>—</span>
+          )}
+          <ChevronRight size={20} color="#B5F23D" strokeWidth={2.5} />
         </div>
       </div>
     </Link>
@@ -105,7 +49,7 @@ function ExerciseRow({ ex, clientId }: { ex: ExerciseProgressData; clientId: str
 // ── Muscle group card ─────────────────────────────────────────────────────────
 
 function MuscleGroupCard({ group, exercises, clientId }: { group: string; exercises: ExerciseProgressData[]; clientId: string }) {
-  const [expanded, setExpanded] = useState(exercises.length <= 4)
+  const [expanded, setExpanded] = useState(false)
   const totalSessions = exercises.reduce((s, ex) => s + ex.sessionCount, 0)
   const improving     = exercises.filter((ex) => ex.trend === 'up').length
 
@@ -120,7 +64,7 @@ function MuscleGroupCard({ group, exercises, clientId }: { group: string; exerci
             <span style={{ fontSize: 13, fontWeight: 700, color: '#F0F0F0', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {muscleGroupLabel(group)}
             </span>
-            <span style={{ fontSize: 11, fontWeight: 600, color: '#6B7280', background: '#1A1E24', borderRadius: 9999, padding: '2px 8px' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: '#F0F0F0', background: '#1A1E24', borderRadius: 9999, padding: '2px 8px' }}>
               {exercises.length}
             </span>
           </div>
@@ -130,11 +74,20 @@ function MuscleGroupCard({ group, exercises, clientId }: { group: string; exerci
           </p>
         </div>
 
-        <div style={{ width: 28, height: 28, borderRadius: 8, background: expanded ? 'rgba(181,242,61,0.1)' : 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.15s' }}>
-          <span style={{ fontSize: 14, color: expanded ? '#B5F23D' : '#6B7280', display: 'inline-block', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
-            ▾
-          </span>
-        </div>
+        {/* Arrow — no container, white when closed, lime when open */}
+        <span
+          style={{
+            fontSize: 22,
+            color: expanded ? '#B5F23D' : '#FFFFFF',
+            display: 'inline-block',
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s, color 0.15s',
+            lineHeight: 1,
+            flexShrink: 0,
+          }}
+        >
+          ▾
+        </span>
       </button>
 
       {expanded && (
