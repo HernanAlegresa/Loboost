@@ -218,7 +218,7 @@ export async function getExerciseProgressData(
 
   const { data: planDayExercises } = await supabase
     .from('client_plan_day_exercises')
-    .select('id, client_plan_day_id, exercise_id, exercises(id, name, muscle_group)')
+    .select('id, client_plan_day_id, exercise_id, exercises(id, name, muscle_group, type)')
     .in('client_plan_day_id', planDayIds)
 
   if (!planDayExercises || planDayExercises.length === 0) return []
@@ -248,8 +248,9 @@ export async function getExerciseProgressData(
   const exerciseInfoById = new Map<string, { name: string; muscleGroup: string }>()
 
   for (const pde of planDayExercises) {
-    const exRef = pde.exercises as { id: string; name: string; muscle_group: string } | null
-    if (exRef) {
+    const exRef = pde.exercises as { id: string; name: string; muscle_group: string; type: string } | null
+    // Solo ejercicios de fuerza — el progreso de cardio no aplica
+    if (exRef && exRef.type === 'strength') {
       exerciseIdByPdeId.set(pde.id, exRef.id)
       exerciseInfoById.set(exRef.id, { name: exRef.name, muscleGroup: exRef.muscle_group })
     }

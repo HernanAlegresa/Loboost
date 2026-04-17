@@ -91,9 +91,7 @@ export default async function ExercisesProgressPage({
         </div>
 
         {/* List */}
-        <div style={{ padding: '0 20px' }}>
-          <ExercisesProgressList exercises={exercisesWithData} clientId={id} />
-        </div>
+        <ExercisesProgressList exercises={exercisesWithData} clientId={id} />
       </div>
     </div>
   )
