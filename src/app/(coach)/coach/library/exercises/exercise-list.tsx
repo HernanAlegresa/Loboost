@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useTransition } from 'react'
+import { muscleGroupLabel } from '@/features/exercises/muscle-groups'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -125,7 +126,7 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
                   lineHeight: 1.45,
                 }}
               >
-                {ex.category}
+                {muscleGroupLabel(ex.muscle_group)}
               </p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>

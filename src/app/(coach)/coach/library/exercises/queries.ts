@@ -1,18 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 
 export type ExerciseRow = {
-  id: string
-  name: string
+  id:           string
+  name:         string
   muscle_group: string
-  category: string
-  type: string
+  type:         string
 }
 
 export async function getCoachExercises(coachId: string): Promise<ExerciseRow[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('exercises')
-    .select('id, name, muscle_group, category, type')
+    .select('id, name, muscle_group, type')
     .eq('coach_id', coachId)
     .order('name')
 
@@ -29,7 +28,7 @@ export async function getExerciseForEdit(
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('exercises')
-    .select('id, name, muscle_group, category, type, video_url')
+    .select('id, name, muscle_group, type, video_url')
     .eq('id', exerciseId)
     .eq('coach_id', coachId)
     .single()

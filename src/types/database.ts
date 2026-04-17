@@ -313,7 +313,7 @@ export type Database = {
       }
       exercises: {
         Row: {
-          category: string
+          category: string | null
           coach_id: string
           created_at: string
           id: string
@@ -323,7 +323,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
-          category: string
+          category?: string | null
           coach_id: string
           created_at?: string
           id?: string
@@ -333,7 +333,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
-          category?: string
+          category?: string | null
           coach_id?: string
           created_at?: string
           id?: string

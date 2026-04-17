@@ -3,6 +3,7 @@
 import { useActionState, useEffect, type CSSProperties, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { createExerciseAction, type CreateExerciseState } from '@/features/exercises/actions/create-exercise'
+import { MUSCLE_GROUP_OPTIONS } from '@/features/exercises/muscle-groups'
 import CustomSelect from '@/components/ui/custom-select'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 
@@ -56,21 +57,11 @@ export default function CreateExerciseForm() {
   )
 
   useEffect(() => {
-    if (state?.success) {
-      router.push('/coach/library?tab=exercises')
-    }
+    if (state?.success) router.push('/coach/library?tab=exercises')
   }, [state, router])
 
   return (
-    <div
-      style={{
-        height: '100%',
-        minHeight: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <CoachSubpageHeader
         backHref="/coach/library?tab=exercises"
         title="Nuevo ejercicio"
@@ -107,24 +98,11 @@ export default function CreateExerciseForm() {
             </Field>
 
             <Field label="Grupo muscular">
-              <input
+              <CustomSelect
                 name="muscleGroup"
-                type="text"
                 required
-                style={inputStyle}
-                placeholder="Pecho"
-                autoComplete="off"
-              />
-            </Field>
-
-            <Field label="Categoría">
-              <input
-                name="category"
-                type="text"
-                required
-                style={inputStyle}
-                placeholder="Empuje, tirón, piernas…"
-                autoComplete="off"
+                placeholder="Seleccioná el grupo muscular"
+                options={MUSCLE_GROUP_OPTIONS}
               />
             </Field>
 
