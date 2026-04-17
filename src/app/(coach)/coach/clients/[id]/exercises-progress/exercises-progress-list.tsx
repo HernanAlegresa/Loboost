@@ -26,18 +26,29 @@ function ExerciseRow({ ex, clientId }: { ex: ExerciseProgressData; clientId: str
           </p>
         </div>
 
-        {/* Right: PR or sets + chevron */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+        {/* Right: PR or sets + chevron
+            ↳ Para ajustar el espacio entre el badge y la flecha: cambiá el valor de marginRight abajo.
+              Actualmente: marginRight: 28. Más número = más separación. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
           {bw ? (
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#9CA3AF' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#9CA3AF', marginRight: 28 }}>
               {ex.sessions.length > 0 ? `${ex.sessions[ex.sessions.length - 1].completedSets} series` : '—'}
             </span>
           ) : ex.peakTopSetKg !== null ? (
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#10B981' }}>
+            <span style={{
+              fontSize: 14,
+              fontWeight: 800,
+              color: '#10B981',
+              background: '#FFFFFF',
+              border: '1.5px solid #000000',
+              borderRadius: 8,
+              padding: '4px 10px',
+              marginRight: 28, /* ← ajustá este número para mover el badge más lejos o cerca de la flecha */
+            }}>
               PR: {ex.peakTopSetKg} kg
             </span>
           ) : (
-            <span style={{ fontSize: 13, color: '#4B5563' }}>—</span>
+            <span style={{ fontSize: 13, color: '#4B5563', marginRight: 28 }}>—</span>
           )}
           <ChevronRight size={20} color="#B5F23D" strokeWidth={2.5} />
         </div>
