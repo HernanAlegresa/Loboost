@@ -20,10 +20,9 @@ export async function updateExerciseAction(
 
   const videoRaw = formData.get('videoUrl')
   const raw = {
-    name: formData.get('name'),
+    name:        formData.get('name'),
     muscleGroup: formData.get('muscleGroup'),
-    category: formData.get('category'),
-    type: formData.get('type'),
+    type:        formData.get('type'),
     videoUrl:
       typeof videoRaw === 'string' && videoRaw.trim() === '' ? undefined : videoRaw || undefined,
   }
@@ -34,25 +33,22 @@ export async function updateExerciseAction(
   }
 
   const supabase = await createClient()
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) return { success: false, error: 'No autenticado' }
 
   const { error } = await supabase
     .from('exercises')
     .update({
-      name: result.data.name,
+      name:         result.data.name,
       muscle_group: result.data.muscleGroup,
-      category: result.data.category,
-      type: result.data.type,
-      video_url: result.data.videoUrl ?? null,
+      type:         result.data.type,
+      video_url:    result.data.videoUrl ?? null,
     })
     .eq('id', exerciseId)
     .eq('coach_id', user.id)
 
   if (error) return { success: false, error: 'Error al actualizar el ejercicio' }
 
+  revalidatePath('/coach/library')
   return { success: true }
 }
