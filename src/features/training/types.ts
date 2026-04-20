@@ -165,6 +165,7 @@ export type WeekHistorySummary = {
 
 export type WeekDetailSet = {
   setNumber: number
+  repsPerformed: number | null
   weightKg: number | null
   durationSeconds: number | null
   completed: boolean

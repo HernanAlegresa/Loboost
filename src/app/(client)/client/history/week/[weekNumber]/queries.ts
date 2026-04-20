@@ -57,7 +57,7 @@ export async function getWeekDetailData(
   const { data: setsData } = await supabase
     .from('session_sets')
     .select(
-      `session_id, set_number, weight_kg, duration_seconds, completed, client_plan_day_exercise_id,
+      `session_id, set_number, weight_kg, reps_performed, duration_seconds, completed, client_plan_day_exercise_id,
        client_plan_day_exercises (
          order, sets, reps_min, reps_max, duration_seconds,
          exercises (name, muscle_group, type)
@@ -70,6 +70,7 @@ export async function getWeekDetailData(
     session_id: string
     set_number: number
     weight_kg: number | null
+    reps_performed: number | null
     duration_seconds: number | null
     completed: boolean
     client_plan_day_exercise_id: string
@@ -115,6 +116,7 @@ export async function getWeekDetailData(
           .sort((a, b) => a.set_number - b.set_number)
           .map((r) => ({
             setNumber: r.set_number,
+            repsPerformed: r.reps_performed ?? null,
             weightKg: r.weight_kg,
             durationSeconds: r.duration_seconds,
             completed: r.completed,
