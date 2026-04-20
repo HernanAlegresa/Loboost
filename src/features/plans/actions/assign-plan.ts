@@ -25,7 +25,10 @@ export async function assignPlanAction(
   }
 
   const supabase = await createClient()
-  const { data: { user: coachUser }, error: authError } = await supabase.auth.getUser()
+  const {
+    data: { user: coachUser },
+    error: authError,
+  } = await supabase.auth.getUser()
   if (authError || !coachUser) return { success: false, error: 'No autenticado' }
 
   const { data: clientProfile, error: clientError } = await supabase
@@ -39,15 +42,17 @@ export async function assignPlanAction(
     return { success: false, error: 'Cliente no válido' }
   }
 
-  // Obtener el plan template con días y ejercicios
   const { data: plan, error: planError } = await supabase
     .from('plans')
     .select(`
       id, name, weeks,
-      plan_days (
-        id, day_of_week, order,
-        plan_day_exercises (
-          id, exercise_id, order, sets, reps, duration_seconds, rest_seconds
+      plan_weeks (
+        id, week_number,
+        plan_days (
+          id, day_of_week, order,
+          plan_day_exercises (
+            id, exercise_id, order, sets, reps_min, reps_max, duration_seconds, rest_seconds
+          )
         )
       )
     `)
@@ -57,29 +62,33 @@ export async function assignPlanAction(
 
   if (planError || !plan) return { success: false, error: 'Plan no encontrado' }
 
-  const planDays = (plan.plan_days ?? []) as Array<{
+  const planWeeks = (plan.plan_weeks ?? []) as Array<{
     id: string
-    day_of_week: number
-    order: number
-    plan_day_exercises: Array<{
+    week_number: number
+    plan_days: Array<{
       id: string
-      exercise_id: string
+      day_of_week: number
       order: number
-      sets: number
-      reps: number | null
-      duration_seconds: number | null
-      rest_seconds: number | null
+      plan_day_exercises: Array<{
+        id: string
+        exercise_id: string
+        order: number
+        sets: number
+        reps_min: number | null
+        reps_max: number | null
+        duration_seconds: number | null
+        rest_seconds: number | null
+      }>
     }>
   }>
 
-  if (planDays.length === 0) {
-    return { success: false, error: 'Este plan no tiene días configurados' }
+  if (planWeeks.length === 0) {
+    return { success: false, error: 'Este plan no tiene semanas configuradas' }
   }
 
   const startDate = new Date(result.data.startDate)
   const endDate = calculateEndDate(startDate, plan.weeks)
 
-  // Marcar plan activo anterior como completado
   await supabase
     .from('client_plans')
     .update({ status: 'completed' })
@@ -87,7 +96,6 @@ export async function assignPlanAction(
     .eq('coach_id', coachUser.id)
     .eq('status', 'active')
 
-  // Crear client_plan
   const { data: clientPlan, error: clientPlanError } = await supabase
     .from('client_plans')
     .insert({
@@ -103,24 +111,30 @@ export async function assignPlanAction(
     .select('id')
     .single()
 
-  if (clientPlanError || !clientPlan) return { success: false, error: 'Error al asignar el plan' }
+  if (clientPlanError || !clientPlan) {
+    return { success: false, error: 'Error al asignar el plan' }
+  }
 
-  const sortedDays = [...planDays].sort((a, b) => a.order - b.order)
+  const sortedWeeks = [...planWeeks].sort((a, b) => a.week_number - b.week_number)
 
-  for (let week = 1; week <= plan.weeks; week++) {
+  for (const week of sortedWeeks) {
+    const sortedDays = [...(week.plan_days ?? [])].sort((a, b) => a.order - b.order)
+
     for (const day of sortedDays) {
       const { data: clientDay, error: dayError } = await supabase
         .from('client_plan_days')
         .insert({
           client_plan_id: clientPlan.id,
-          week_number: week,
+          week_number: week.week_number,
           day_of_week: day.day_of_week,
           order: day.order,
         })
         .select('id')
         .single()
 
-      if (dayError || !clientDay) return { success: false, error: 'Error al copiar los días del plan' }
+      if (dayError || !clientDay) {
+        return { success: false, error: 'Error al copiar los días del plan' }
+      }
 
       const sortedExercises = [...(day.plan_day_exercises ?? [])].sort(
         (a, b) => a.order - b.order
@@ -134,12 +148,15 @@ export async function assignPlanAction(
             exercise_id: exercise.exercise_id,
             order: exercise.order,
             sets: exercise.sets,
-            reps: exercise.reps ?? null,
+            reps_min: exercise.reps_min ?? null,
+            reps_max: exercise.reps_max ?? null,
             duration_seconds: exercise.duration_seconds ?? null,
             rest_seconds: exercise.rest_seconds ?? null,
           })
 
-        if (exError) return { success: false, error: 'Error al copiar ejercicios del plan' }
+        if (exError) {
+          return { success: false, error: 'Error al copiar ejercicios del plan' }
+        }
       }
     }
   }
