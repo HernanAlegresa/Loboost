@@ -203,3 +203,39 @@ export type NotificationPrefs = {
   reminders: boolean
   coachMsgs: boolean
 }
+
+// ── Client progress types ──────────────────────────────────────────────────
+
+export type ExercisePR = {
+  exerciseId: string
+  exerciseName: string
+  muscleGroup: string
+  bestWeightKg: number | null
+  bestRepsAtBestWeight: number | null
+  totalCompletedSets: number
+  lastLoggedAt: string | null
+}
+
+export type ExerciseHistoryPoint = {
+  sessionDate: string
+  weekNumber: number
+  setNumber: number
+  weightKg: number | null
+  repsPerformed: number | null
+  durationSeconds: number | null
+}
+
+export type ExerciseProgressSeries = {
+  exerciseId: string
+  exerciseName: string
+  muscleGroup: string
+  history: ExerciseHistoryPoint[]
+}
+
+export type ClientProgressData = {
+  prs: ExercisePR[]
+  bodyMeasurements: Array<{
+    date: string
+    weightKg: number
+  }>
+}
