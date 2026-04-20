@@ -56,7 +56,8 @@ export type Database = {
           exercise_id: string
           id: string
           order: number
-          reps: number | null
+          reps_max: number | null
+          reps_min: number | null
           rest_seconds: number | null
           sets: number
         }
@@ -66,7 +67,8 @@ export type Database = {
           exercise_id: string
           id?: string
           order: number
-          reps?: number | null
+          reps_max?: number | null
+          reps_min?: number | null
           rest_seconds?: number | null
           sets: number
         }
@@ -76,7 +78,8 @@ export type Database = {
           exercise_id?: string
           id?: string
           order?: number
-          reps?: number | null
+          reps_max?: number | null
+          reps_min?: number | null
           rest_seconds?: number | null
           sets?: number
         }
@@ -237,38 +240,6 @@ export type Database = {
           },
         ]
       }
-      notification_preferences: {
-        Row: {
-          client_id: string
-          coach_msgs: boolean
-          id: string
-          reminders: boolean
-          updated_at: string | null
-        }
-        Insert: {
-          client_id: string
-          coach_msgs?: boolean
-          id?: string
-          reminders?: boolean
-          updated_at?: string | null
-        }
-        Update: {
-          client_id?: string
-          coach_msgs?: boolean
-          id?: string
-          reminders?: boolean
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_preferences_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       coach_notes: {
         Row: {
           client_id: string
@@ -352,6 +323,38 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          client_id: string
+          coach_msgs: boolean
+          id: string
+          reminders: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          coach_msgs?: boolean
+          id?: string
+          reminders?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          coach_msgs?: boolean
+          id?: string
+          reminders?: boolean
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plan_day_exercises: {
         Row: {
           duration_seconds: number | null
@@ -359,7 +362,8 @@ export type Database = {
           id: string
           order: number
           plan_day_id: string
-          reps: number | null
+          reps_max: number | null
+          reps_min: number | null
           rest_seconds: number | null
           sets: number
         }
@@ -369,7 +373,8 @@ export type Database = {
           id?: string
           order: number
           plan_day_id: string
-          reps?: number | null
+          reps_max?: number | null
+          reps_min?: number | null
           rest_seconds?: number | null
           sets: number
         }
@@ -379,7 +384,8 @@ export type Database = {
           id?: string
           order?: number
           plan_day_id?: string
-          reps?: number | null
+          reps_max?: number | null
+          reps_min?: number | null
           rest_seconds?: number | null
           sets?: number
         }
@@ -406,22 +412,67 @@ export type Database = {
           id: string
           order: number
           plan_id: string
+          plan_week_id: string
         }
         Insert: {
           day_of_week: number
           id?: string
           order: number
           plan_id: string
+          plan_week_id: string
         }
         Update: {
           day_of_week?: number
           id?: string
           order?: number
           plan_id?: string
+          plan_week_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "plan_days_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_days_plan_week_id_fkey"
+            columns: ["plan_week_id"]
+            isOneToOne: false
+            referencedRelation: "plan_weeks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_weeks: {
+        Row: {
+          created_at: string
+          id: string
+          plan_id: string
+          week_name: string | null
+          week_number: number
+          week_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_id: string
+          week_name?: string | null
+          week_number: number
+          week_type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_id?: string
+          week_name?: string | null
+          week_number?: number
+          week_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_weeks_plan_id_fkey"
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "plans"
@@ -506,6 +557,7 @@ export type Database = {
           duration_seconds: number | null
           id: string
           logged_at: string
+          reps_performed: number | null
           session_id: string
           set_number: number
           weight_kg: number | null
@@ -516,6 +568,7 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           logged_at?: string
+          reps_performed?: number | null
           session_id: string
           set_number: number
           weight_kg?: number | null
@@ -526,6 +579,7 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           logged_at?: string
+          reps_performed?: number | null
           session_id?: string
           set_number?: number
           weight_kg?: number | null
@@ -554,6 +608,8 @@ export type Database = {
           completed_at: string | null
           date: string
           id: string
+          notes: string | null
+          rpe: number | null
           started_at: string
           status: string
         }
@@ -563,6 +619,8 @@ export type Database = {
           completed_at?: string | null
           date: string
           id?: string
+          notes?: string | null
+          rpe?: number | null
           started_at?: string
           status?: string
         }
@@ -572,6 +630,8 @@ export type Database = {
           completed_at?: string | null
           date?: string
           id?: string
+          notes?: string | null
+          rpe?: number | null
           started_at?: string
           status?: string
         }
