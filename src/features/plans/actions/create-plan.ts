@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import {
-  insertPlanDayTree,
+  insertPlanWeekTree,
   validatePlanBuilderForCoach,
 } from '@/features/plans/plan-builder-persist'
 
@@ -37,7 +37,7 @@ export async function createPlanAction(
 
   const validated = await validatePlanBuilderForCoach(supabase, user.id, parsedJson)
   if (!validated.ok) return { success: false, error: validated.error }
-  const { sortedDays, payload } = validated.data
+  const { payload } = validated.data
 
   const { data: plan, error: planError } = await supabase
     .from('plans')
@@ -52,7 +52,7 @@ export async function createPlanAction(
 
   if (planError || !plan) return { success: false, error: 'Error al crear el plan' }
 
-  const inserted = await insertPlanDayTree(supabase, plan.id, user.id, sortedDays)
+  const inserted = await insertPlanWeekTree(supabase, plan.id, payload.planWeeks)
   if (!inserted.ok) {
     await supabase.from('plans').delete().eq('id', plan.id).eq('coach_id', user.id)
     return { success: false, error: inserted.error }
