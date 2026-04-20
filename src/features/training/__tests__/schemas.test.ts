@@ -1,33 +1,81 @@
-import { completeSetSchema } from '@/features/training/schemas'
+import { describe, it, expect } from 'vitest'
+import { completeSetSchema, completeSessionSchema } from '../schemas'
+
+const SESSION_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+const EXERCISE_ID = 'b2c3d4e5-f6a7-8901-bcde-f12345678901'
 
 describe('completeSetSchema', () => {
-  it('accepts strength set with weight', () => {
+  it('accepts strength set with weight and reps', () => {
     const result = completeSetSchema.safeParse({
-      sessionId: '123e4567-e89b-12d3-a456-426614174000',
-      clientPlanDayExerciseId: '123e4567-e89b-12d3-a456-426614174001',
+      sessionId: SESSION_ID,
+      clientPlanDayExerciseId: EXERCISE_ID,
       setNumber: 1,
       weightKg: 80,
+      repsPerformed: 8,
     })
     expect(result.success).toBe(true)
   })
 
-  it('accepts cardio set with duration', () => {
+  it('accepts cardio set with durationSeconds only', () => {
     const result = completeSetSchema.safeParse({
-      sessionId: '123e4567-e89b-12d3-a456-426614174000',
-      clientPlanDayExerciseId: '123e4567-e89b-12d3-a456-426614174001',
+      sessionId: SESSION_ID,
+      clientPlanDayExerciseId: EXERCISE_ID,
       setNumber: 1,
-      durationSeconds: 1800,
+      durationSeconds: 60,
     })
     expect(result.success).toBe(true)
   })
 
-  it('rejects set_number less than 1', () => {
+  it('accepts set with only setNumber (minimal completion)', () => {
     const result = completeSetSchema.safeParse({
-      sessionId: '123e4567-e89b-12d3-a456-426614174000',
-      clientPlanDayExerciseId: '123e4567-e89b-12d3-a456-426614174001',
-      setNumber: 0,
-      weightKg: 80,
+      sessionId: SESSION_ID,
+      clientPlanDayExerciseId: EXERCISE_ID,
+      setNumber: 1,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects repsPerformed = 0', () => {
+    const result = completeSetSchema.safeParse({
+      sessionId: SESSION_ID,
+      clientPlanDayExerciseId: EXERCISE_ID,
+      setNumber: 1,
+      repsPerformed: 0,
     })
     expect(result.success).toBe(false)
+  })
+})
+
+describe('completeSessionSchema', () => {
+  it('accepts session completion with RPE', () => {
+    const result = completeSessionSchema.safeParse({
+      sessionId: SESSION_ID,
+      rpe: 8,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts session without RPE', () => {
+    const result = completeSessionSchema.safeParse({ sessionId: SESSION_ID })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects RPE = 0', () => {
+    const result = completeSessionSchema.safeParse({ sessionId: SESSION_ID, rpe: 0 })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects RPE = 11', () => {
+    const result = completeSessionSchema.safeParse({ sessionId: SESSION_ID, rpe: 11 })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts notes', () => {
+    const result = completeSessionSchema.safeParse({
+      sessionId: SESSION_ID,
+      rpe: 7,
+      notes: 'Sentí las piernas pesadas',
+    })
+    expect(result.success).toBe(true)
   })
 })

@@ -8,6 +8,7 @@ export async function completeSetAction(formData: FormData) {
     sessionId: formData.get('sessionId'),
     clientPlanDayExerciseId: formData.get('clientPlanDayExerciseId'),
     setNumber: formData.get('setNumber'),
+    repsPerformed: formData.get('repsPerformed') || undefined,
     weightKg: formData.get('weightKg') || undefined,
     durationSeconds: formData.get('durationSeconds') || undefined,
   }
@@ -19,7 +20,6 @@ export async function completeSetAction(formData: FormData) {
 
   const supabase = await createClient()
 
-  // Upsert: si ya existe esa serie la actualiza, si no la crea
   const { error } = await supabase
     .from('session_sets')
     .upsert(
@@ -27,6 +27,7 @@ export async function completeSetAction(formData: FormData) {
         session_id: result.data.sessionId,
         client_plan_day_exercise_id: result.data.clientPlanDayExerciseId,
         set_number: result.data.setNumber,
+        reps_performed: result.data.repsPerformed ?? null,
         weight_kg: result.data.weightKg ?? null,
         duration_seconds: result.data.durationSeconds ?? null,
         completed: true,
