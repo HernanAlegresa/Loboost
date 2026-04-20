@@ -1,73 +1,128 @@
-import { createPlanSchema, planBuilderPayloadSchema, planDayExerciseSchema } from '@/features/plans/schemas'
+import { describe, it, expect } from 'vitest'
+import {
+  planDayExerciseSchema,
+  planBuilderPayloadSchema,
+  updateClientPlanExerciseSchema,
+} from '../schemas'
 
-describe('createPlanSchema', () => {
-  it('accepts valid plan', () => {
-    const result = createPlanSchema.safeParse({ name: 'Plan fuerza 8 semanas', weeks: 8 })
-    expect(result.success).toBe(true)
-  })
-
-  it('rejects weeks > 12', () => {
-    const result = createPlanSchema.safeParse({ name: 'Plan', weeks: 13 })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects weeks < 1', () => {
-    const result = createPlanSchema.safeParse({ name: 'Plan', weeks: 0 })
-    expect(result.success).toBe(false)
-  })
-
-  it('rejects empty name', () => {
-    const result = createPlanSchema.safeParse({ name: '', weeks: 4 })
-    expect(result.success).toBe(false)
-  })
-})
+const EXERCISE_ID = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
 
 describe('planDayExerciseSchema', () => {
-  it('accepts strength exercise with reps', () => {
+  it('accepts fixed reps (repsMin = repsMax)', () => {
     const result = planDayExerciseSchema.safeParse({
-      exerciseId: '123e4567-e89b-12d3-a456-426614174000',
+      exerciseId: EXERCISE_ID,
       order: 1,
-      sets: 4,
-      reps: 10,
-      restSeconds: 90,
+      sets: 3,
+      repsMin: 8,
+      repsMax: 8,
     })
     expect(result.success).toBe(true)
   })
 
-  it('accepts cardio exercise with duration', () => {
+  it('accepts rep range (repsMin < repsMax)', () => {
     const result = planDayExerciseSchema.safeParse({
-      exerciseId: '123e4567-e89b-12d3-a456-426614174000',
+      exerciseId: EXERCISE_ID,
       order: 1,
-      sets: 1,
-      durationSeconds: 1800,
+      sets: 3,
+      repsMin: 8,
+      repsMax: 12,
     })
     expect(result.success).toBe(true)
+  })
+
+  it('accepts cardio exercise with durationSeconds and no reps', () => {
+    const result = planDayExerciseSchema.safeParse({
+      exerciseId: EXERCISE_ID,
+      order: 1,
+      sets: 1,
+      durationSeconds: 60,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts exercise with neither reps nor duration (AMRAP / coach decides)', () => {
+    const result = planDayExerciseSchema.safeParse({
+      exerciseId: EXERCISE_ID,
+      order: 1,
+      sets: 3,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects repsMax < repsMin at schema level when both provided', () => {
+    const result = planDayExerciseSchema.safeParse({
+      exerciseId: EXERCISE_ID,
+      order: 1,
+      sets: 3,
+      repsMin: 10,
+      repsMax: 8,
+    })
+    expect(result.success).toBe(false)
   })
 })
 
-describe('planBuilderPayloadSchema', () => {
-  const exId = '123e4567-e89b-12d3-a456-426614174000'
+describe('planBuilderPayloadSchema — multi-week structure', () => {
+  const validWeek = (weekNumber: number) => ({
+    weekNumber,
+    weekName: `Semana ${weekNumber}`,
+    weekType: 'normal',
+    days: [
+      {
+        dayOfWeek: 1,
+        exercises: [
+          { exerciseId: EXERCISE_ID, order: 1, sets: 3, repsMin: 8, repsMax: 10 },
+        ],
+      },
+    ],
+  })
 
-  it('accepts minimal valid builder payload', () => {
+  it('accepts a plan with 2 independent weeks', () => {
     const result = planBuilderPayloadSchema.safeParse({
-      name: 'Fuerza full body',
-      weeks: 4,
-      days: [
-        {
-          dayOfWeek: 1,
-          exercises: [{ exerciseId: exId, order: 1, sets: 3, reps: 10 }],
-        },
-      ],
+      name: 'Plan Fuerza',
+      weeks: 2,
+      planWeeks: [validWeek(1), validWeek(2)],
     })
     expect(result.success).toBe(true)
   })
 
-  it('rejects empty days array', () => {
+  it('rejects plan with planWeeks count different from weeks', () => {
     const result = planBuilderPayloadSchema.safeParse({
-      name: 'Plan',
-      weeks: 4,
-      days: [],
+      name: 'Plan Fuerza',
+      weeks: 3,
+      planWeeks: [validWeek(1)],
     })
     expect(result.success).toBe(false)
+  })
+
+  it('accepts deload week type', () => {
+    const week = { ...validWeek(1), weekType: 'deload' }
+    const result = planBuilderPayloadSchema.safeParse({
+      name: 'Plan',
+      weeks: 1,
+      planWeeks: [week],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects unknown weekType', () => {
+    const week = { ...validWeek(1), weekType: 'rest' }
+    const result = planBuilderPayloadSchema.safeParse({
+      name: 'Plan',
+      weeks: 1,
+      planWeeks: [week],
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe('updateClientPlanExerciseSchema', () => {
+  it('accepts repsMin update', () => {
+    const result = updateClientPlanExerciseSchema.safeParse({ repsMin: 6 })
+    expect(result.success).toBe(true)
+  })
+
+  it('accepts repsMax update', () => {
+    const result = updateClientPlanExerciseSchema.safeParse({ repsMin: 6, repsMax: 8 })
+    expect(result.success).toBe(true)
   })
 })
