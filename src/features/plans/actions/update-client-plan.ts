@@ -12,7 +12,8 @@ export async function updateClientPlanExerciseAction(
 ) {
   const raw = {
     sets: formData.get('sets') || undefined,
-    reps: formData.get('reps') || undefined,
+    repsMin: formData.get('repsMin') || undefined,
+    repsMax: formData.get('repsMax') || undefined,
     durationSeconds: formData.get('durationSeconds') || undefined,
     restSeconds: formData.get('restSeconds') || undefined,
     order: formData.get('order') || undefined,
@@ -27,14 +28,14 @@ export async function updateClientPlanExerciseAction(
 
   const updates: ClientPlanDayExerciseUpdate = {}
   if (result.data.sets !== undefined) updates.sets = result.data.sets
-  if (result.data.reps !== undefined) updates.reps = result.data.reps
+  if (result.data.repsMin !== undefined) updates.reps_min = result.data.repsMin
+  if (result.data.repsMax !== undefined) updates.reps_max = result.data.repsMax
   if (result.data.durationSeconds !== undefined) updates.duration_seconds = result.data.durationSeconds
   if (result.data.restSeconds !== undefined) updates.rest_seconds = result.data.restSeconds
   if (result.data.order !== undefined) updates.order = result.data.order
 
   if (Object.keys(updates).length === 0) return { success: true }
 
-  // RLS garantiza que solo el coach dueño del plan puede actualizar
   const { error } = await supabase
     .from('client_plan_day_exercises')
     .update(updates)

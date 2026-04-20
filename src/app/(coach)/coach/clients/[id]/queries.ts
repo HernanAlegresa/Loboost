@@ -224,7 +224,7 @@ export async function getWeekTrainingData(
     supabase
       .from('client_plan_day_exercises')
       .select(
-        'id, client_plan_day_id, order, sets, reps, duration_seconds, rest_seconds, exercises(id, name)'
+        'id, client_plan_day_id, order, sets, reps_min, reps_max, duration_seconds, rest_seconds, exercises(id, name)'
       )
       .in('client_plan_day_id', planDayIds)
       .order('order'),
@@ -282,7 +282,8 @@ export async function getWeekTrainingData(
       name: exerciseRef?.name ?? 'Ejercicio',
       order: ex.order,
       plannedSets: ex.sets,
-      plannedReps: ex.reps ?? null,
+      plannedRepsMin: ex.reps_min ?? null,
+      plannedRepsMax: ex.reps_max ?? null,
       plannedDurationSeconds: ex.duration_seconds ?? null,
       restSeconds: ex.rest_seconds ?? null,
       sessionSets: sets,

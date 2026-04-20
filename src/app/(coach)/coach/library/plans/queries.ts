@@ -113,7 +113,8 @@ export type PlanBuilderInitialDay = {
     exerciseId: string
     order: number
     sets: number
-    reps: number | null
+    repsMin: number | null
+    repsMax: number | null
     durationSeconds: number | null
     restSeconds: number | null
   }>
@@ -140,7 +141,7 @@ export async function getPlanForBuilderEdit(
       plan_days (
         day_of_week,
         plan_day_exercises (
-          exercise_id, order, sets, reps, duration_seconds, rest_seconds
+          exercise_id, order, sets, reps_min, reps_max, duration_seconds, rest_seconds
         )
       )
     `
@@ -157,7 +158,8 @@ export async function getPlanForBuilderEdit(
       exercise_id: string
       order: number
       sets: number
-      reps: number | null
+      reps_min: number | null
+      reps_max: number | null
       duration_seconds: number | null
       rest_seconds: number | null
     }>
@@ -173,7 +175,8 @@ export async function getPlanForBuilderEdit(
           exerciseId: e.exercise_id,
           order: e.order,
           sets: e.sets,
-          reps: e.reps,
+          repsMin: e.reps_min,
+          repsMax: e.reps_max,
           durationSeconds: e.duration_seconds,
           restSeconds: e.rest_seconds,
         })),

@@ -5,7 +5,8 @@ export type TodayExercise = {
   name: string
   order: number
   plannedSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
 }
 
@@ -54,6 +55,7 @@ export type ClientDashboardData = {
 
 export type SetLog = {
   setNumber: number
+  repsPerformed: number | null
   weightKg: number | null
   durationSeconds: number | null
   completed: boolean
@@ -67,7 +69,8 @@ export type LiveExercise = {
   type: 'strength' | 'cardio'
   order: number
   plannedSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   restSeconds: number | null
   videoUrl: string | null
@@ -131,7 +134,8 @@ export type DayExerciseDetail = {
   type: 'strength' | 'cardio'
   order: number
   plannedSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   restSeconds: number | null
   videoUrl: string | null
@@ -171,7 +175,8 @@ export type WeekDetailExercise = {
   name: string
   muscleGroup: string
   type: 'strength' | 'cardio'
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   sets: WeekDetailSet[]
 }

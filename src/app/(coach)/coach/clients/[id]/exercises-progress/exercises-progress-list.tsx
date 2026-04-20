@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 import type { ExerciseProgressData } from '../progress-queries'
 import { muscleGroupLabel, MUSCLE_GROUP_ORDER } from '@/features/exercises/muscle-groups'
+import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 
 // ── Tab bar ───────────────────────────────────────────────────────────────────
 
@@ -12,105 +13,60 @@ function TabBar({
   groups,
   activeGroup,
   onSelect,
-  countByGroup,
 }: {
   groups: string[]
   activeGroup: string
   onSelect: (g: string) => void
-  countByGroup: Map<string, number>
 }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
-
-  // Center the active tab whenever it changes
-  useEffect(() => {
-    const idx = groups.indexOf(activeGroup)
-    tabRefs.current[idx]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'center',
-    })
-  }, [activeGroup, groups])
+  const idx = groups.indexOf(activeGroup)
+  const prevGroup = idx > 0 ? groups[idx - 1] : null
+  const nextGroup = idx < groups.length - 1 ? groups[idx + 1] : null
 
   return (
     <div
-      ref={containerRef}
       style={{
-        display: 'flex',
-        overflowX: 'auto',
-        scrollbarWidth: 'none',
-        msOverflowStyle: 'none',
-        WebkitOverflowScrolling: 'touch',
-        paddingBottom: 4,
-      } as React.CSSProperties}
+        flexShrink: 0,
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'flex-end',
+        padding: '20px 20px 15px',
+        gap: 50,
+      }}
     >
-      {/* Spacer so first tab can center */}
-      <div style={{ flex: '0 0 38vw', minWidth: '38vw' }} />
-
-      {groups.map((group, i) => {
-        const isActive = group === activeGroup
-        const count = countByGroup.get(group) ?? 0
-        return (
+      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        {prevGroup ? (
           <button
-            key={group}
-            ref={(el) => { tabRefs.current[i] = el }}
-            onClick={() => onSelect(group)}
-            style={{
-              flex: '0 0 auto',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 4,
-              padding: '10px 18px 0',
-              margin: '0 2px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              opacity: isActive ? 1 : 0.4,
-              transition: 'opacity 0.2s',
-            }}
+            onClick={() => onSelect(prevGroup)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'right', opacity: 0.4 }}
           >
-            <span
-              style={{
-                fontSize: isActive ? 15 : 12,
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#B5F23D' : '#9CA3AF',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                whiteSpace: 'nowrap',
-                transition: 'font-size 0.15s, color 0.15s',
-              }}
-            >
-              {muscleGroupLabel(group)}
-            </span>
-            <span style={{ fontSize: 10, color: isActive ? '#6B7280' : '#4B5563', transition: 'color 0.15s' }}>
-              {count} {count === 1 ? 'ejercicio' : 'ejercicios'}
-            </span>
-            {/* Active underline indicator */}
-            <div
-              style={{
-                marginTop: 6,
-                height: 3,
-                width: isActive ? 28 : 0,
-                borderRadius: 2,
-                background: '#B5F23D',
-                transition: 'width 0.2s',
-              }}
-            />
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#9CA3AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+              {muscleGroupLabel(prevGroup)}
+            </p>
           </button>
-        )
-      })}
+        ) : <div />}
+      </div>
 
-      {/* Spacer so last tab can center */}
-      <div style={{ flex: '0 0 38vw', minWidth: '38vw' }} />
+      <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+        <span style={{ fontSize: 22, fontWeight: 700, color: '#B5F23D', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+          {muscleGroupLabel(activeGroup)}
+        </span>
+        <div style={{ width: '100%', height: 3, borderRadius: 2, background: '#B5F23D', marginTop: 2 }} />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+        {nextGroup ? (
+          <button
+            onClick={() => onSelect(nextGroup)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', opacity: 0.4 }}
+          >
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#9CA3AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+              {muscleGroupLabel(nextGroup)}
+            </p>
+          </button>
+        ) : <div />}
+      </div>
     </div>
   )
-}
-
-// ── Divider ───────────────────────────────────────────────────────────────────
-
-function Divider() {
-  return <div style={{ height: 1, background: '#1A1E24', margin: '0 0 16px' }} />
 }
 
 // ── Exercise card ─────────────────────────────────────────────────────────────
@@ -123,54 +79,21 @@ function ExerciseCard({ ex, clientId }: { ex: ExerciseProgressData; clientId: st
       href={`/coach/clients/${clientId}/exercises-progress/${ex.exerciseId}`}
       style={{ textDecoration: 'none', display: 'block', marginBottom: 8 }}
     >
-      <div
-        style={{
-          background: 'linear-gradient(160deg,#12161C 0%,#0F1217 100%)',
-          border: '1px solid #252A31',
-          borderRadius: 14,
-          padding: '14px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-        }}
-      >
-        {/* Left: name + sessions */}
+      <div style={{ background: 'linear-gradient(160deg,#12161C 0%,#0F1217 100%)', border: '1px solid #252A31', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-end', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p
-            style={{
-              fontSize: 15,
-              fontWeight: 600,
-              color: '#B5F23D',
-              margin: 0,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <p style={{ fontSize: 18, fontWeight: 400, color: '#B5F23D', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {ex.exerciseName}
           </p>
           <p style={{ fontSize: 12, color: '#6B7280', margin: '3px 0 0' }}>
             {ex.sessionCount} {ex.sessionCount === 1 ? 'sesión' : 'sesiones'}
           </p>
-        </div>
-
-        {/* Right: PR + chevron */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
           {!bw && ex.peakTopSetKg !== null ? (
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: '#B5F23D',
-                WebkitTextStroke: '0.6px #000000',
-                marginRight: 14,
-              } as React.CSSProperties}
-            >
-              PR: {ex.peakTopSetKg} kg
-            </span>
-          ) : bw ? (
-            <span style={{ fontSize: 12, color: '#4B5563', marginRight: 14 }}>Sin carga</span>
+            <p style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', margin: '4px 0 0' }}>
+              {ex.peakTopSetKg} kg
+            </p>
           ) : null}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <ChevronRight size={20} color="#B5F23D" strokeWidth={2.5} />
         </div>
       </div>
@@ -207,24 +130,74 @@ export default function ExercisesProgressList({
 
   const [activeGroup, setActiveGroup] = useState(() => sortedGroups[0] ?? '')
 
-  const countByGroup = useMemo(() => {
-    const m = new Map<string, number>()
-    for (const [g, exs] of grouped) m.set(g, exs.length)
-    return m
-  }, [grouped])
+  const viewportRef = useRef<HTMLDivElement>(null)
+  // Refs for use inside native event listeners (avoid stale closures)
+  const sortedGroupsRef = useRef(sortedGroups)
+  sortedGroupsRef.current = sortedGroups
+  const startIdxRef = useRef(0)
 
-  // Exercises for active group, sorted alphabetically
-  const activeExercises = useMemo(() => {
-    const exs = grouped.get(activeGroup) ?? []
-    return [...exs].sort((a, b) =>
-      a.exerciseName.localeCompare(b.exerciseName, 'es', { sensitivity: 'base' })
-    )
-  }, [grouped, activeGroup])
+  // Enforce sequential navigation: record the panel index at touch start,
+  // then on scrollend correct if the user jumped more than ±1 panel.
+  useEffect(() => {
+    const vp = viewportRef.current
+    if (!vp) return
+
+    function onTouchStart() {
+      const width = vp!.clientWidth
+      if (width <= 0) return
+      startIdxRef.current = Math.round(vp!.scrollLeft / width)
+    }
+
+    function onScrollEnd() {
+      const groups = sortedGroupsRef.current
+      const width = vp!.clientWidth
+      if (width <= 0) return
+
+      const rawIdx = Math.round(vp!.scrollLeft / width)
+      const startIdx = startIdxRef.current
+
+      // Clamp to at most ±1 from where the gesture began
+      const sequential = Math.max(startIdx - 1, Math.min(startIdx + 1, rawIdx))
+      const clamped = Math.max(0, Math.min(groups.length - 1, sequential))
+
+      if (clamped !== rawIdx) {
+        vp!.scrollTo({ left: clamped * width, behavior: 'smooth' })
+      }
+
+      const group = groups[clamped]
+      if (group) setActiveGroup(group)
+    }
+
+    vp.addEventListener('touchstart', onTouchStart, { passive: true })
+    vp.addEventListener('scrollend', onScrollEnd, { passive: true })
+    return () => {
+      vp.removeEventListener('touchstart', onTouchStart)
+      vp.removeEventListener('scrollend', onScrollEnd)
+    }
+  }, [])
+
+  function handleScroll() {
+    const vp = viewportRef.current
+    if (!vp) return
+    const width = vp.clientWidth
+    if (width <= 0) return
+    const idx = Math.round(vp.scrollLeft / width)
+    const group = sortedGroups[Math.max(0, Math.min(idx, sortedGroups.length - 1))]
+    if (group && group !== activeGroup) setActiveGroup(group)
+  }
+
+  function scrollToGroup(group: string) {
+    const idx = sortedGroups.indexOf(group)
+    const vp = viewportRef.current
+    if (!vp || idx < 0) return
+    vp.scrollTo({ left: idx * vp.clientWidth, behavior: 'smooth' })
+    setActiveGroup(group)
+  }
 
   if (exercises.length === 0) {
     return (
-      <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-        <p style={{ fontSize: 14, color: '#4B5563' }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <p style={{ fontSize: 14, color: '#4B5563', textAlign: 'center' }}>
           Sin sesiones de fuerza completadas aún.
         </p>
       </div>
@@ -232,18 +205,50 @@ export default function ExercisesProgressList({
   }
 
   return (
-    <div>
-      <TabBar
-        groups={sortedGroups}
-        activeGroup={activeGroup}
-        onSelect={setActiveGroup}
-        countByGroup={countByGroup}
-      />
-      <Divider />
-      <div style={{ padding: '0 20px' }}>
-        {activeExercises.map((ex) => (
-          <ExerciseCard key={ex.exerciseId} ex={ex} clientId={clientId} />
-        ))}
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <TabBar groups={sortedGroups} activeGroup={activeGroup} onSelect={scrollToGroup} />
+
+      <div
+        ref={viewportRef}
+        onScroll={handleScroll}
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          display: 'flex',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          overscrollBehaviorX: 'contain',
+        } as React.CSSProperties}
+      >
+        {sortedGroups.map((group) => {
+          const exs = [...(grouped.get(group) ?? [])].sort((a, b) =>
+            a.exerciseName.localeCompare(b.exerciseName, 'es', { sensitivity: 'base' })
+          )
+          return (
+            <section
+              key={group}
+              aria-label={muscleGroupLabel(group)}
+              style={{
+                flex: '0 0 100%',
+                minWidth: 0,
+                scrollSnapAlign: 'start',
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                overscrollBehaviorY: 'contain',
+                WebkitOverflowScrolling: 'touch',
+                padding: `12px 60px ${COACH_LIST_SCROLL_END_ABOVE_NAV}`,
+              } as React.CSSProperties}
+            >
+{exs.map((ex) => (
+                <ExerciseCard key={ex.exerciseId} ex={ex} clientId={clientId} />
+              ))}
+            </section>
+          )
+        })}
       </div>
     </div>
   )

@@ -58,7 +58,8 @@ type ExerciseLine = {
   id: string
   exerciseId: string
   sets: string
-  reps: string
+  repsMin: string
+  repsMax: string
   durationSeconds: string
   restSeconds: string
 }
@@ -85,7 +86,8 @@ function daysFromInitial(initial: PlanBuilderInitial): Record<number, DayDraft> 
         id: crypto.randomUUID(),
         exerciseId: e.exerciseId,
         sets: String(e.sets),
-        reps: e.reps != null ? String(e.reps) : '10',
+        repsMin: e.repsMin != null ? String(e.repsMin) : '10',
+        repsMax: e.repsMax != null ? String(e.repsMax) : '',
         durationSeconds: e.durationSeconds != null ? String(e.durationSeconds) : '600',
         restSeconds: e.restSeconds != null ? String(e.restSeconds) : '',
       })),
@@ -99,7 +101,8 @@ function newLine(): ExerciseLine {
     id: crypto.randomUUID(),
     exerciseId: '',
     sets: '3',
-    reps: '10',
+    repsMin: '10',
+    repsMax: '',
     durationSeconds: '600',
     restSeconds: '90',
   }
@@ -167,20 +170,15 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     const payloadDays = enabledDays.map(({ dow, draft }) => {
       const lines = draft.exercises.map((line, idx) => {
         const ex = exerciseById.get(line.exerciseId)
+        const isCardio = ex?.type === 'cardio'
         const base = {
           exerciseId: line.exerciseId,
           order: idx + 1,
           sets: Number(line.sets),
-          reps: undefined as number | undefined,
-          durationSeconds: undefined as number | undefined,
+          repsMin: isCardio ? undefined : (line.repsMin.trim() ? Number(line.repsMin) : undefined),
+          repsMax: isCardio ? undefined : (line.repsMax.trim() ? Number(line.repsMax) : undefined),
+          durationSeconds: isCardio ? Number(line.durationSeconds) : undefined,
           restSeconds: line.restSeconds.trim() === '' ? undefined : Number(line.restSeconds),
-        }
-        if (ex?.type === 'cardio') {
-          base.reps = undefined
-          base.durationSeconds = Number(line.durationSeconds)
-        } else {
-          base.reps = Number(line.reps)
-          base.durationSeconds = undefined
         }
         return base
       })
@@ -596,9 +594,9 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                                 <div>
                                   <label style={{ ...labelStyle, marginBottom: 6 }}>Reps</label>
                                   <input
-                                    value={line.reps}
+                                    value={line.repsMin}
                                     onChange={(e) =>
-                                      updateLine(activeDow, line.id, { reps: e.target.value })
+                                      updateLine(activeDow, line.id, { repsMin: e.target.value })
                                     }
                                     inputMode="numeric"
                                     style={inputStyle}

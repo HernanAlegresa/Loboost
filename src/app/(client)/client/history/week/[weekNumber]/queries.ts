@@ -59,7 +59,7 @@ export async function getWeekDetailData(
     .select(
       `session_id, set_number, weight_kg, duration_seconds, completed, client_plan_day_exercise_id,
        client_plan_day_exercises (
-         order, sets, reps, duration_seconds,
+         order, sets, reps_min, reps_max, duration_seconds,
          exercises (name, muscle_group, type)
        )`
     )
@@ -76,7 +76,8 @@ export async function getWeekDetailData(
     client_plan_day_exercises: {
       order: number
       sets: number
-      reps: number | null
+      reps_min: number | null
+      reps_max: number | null
       duration_seconds: number | null
       exercises: { name: string; muscle_group: string; type: string } | null
     } | null
@@ -123,7 +124,8 @@ export async function getWeekDetailData(
           name: exInfo?.exercises?.name ?? 'Ejercicio',
           muscleGroup: exInfo?.exercises?.muscle_group ?? '',
           type: (exInfo?.exercises?.type as 'strength' | 'cardio') ?? 'strength',
-          plannedReps: exInfo?.reps ?? null,
+          plannedRepsMin: exInfo?.reps_min ?? null,
+          plannedRepsMax: exInfo?.reps_max ?? null,
           plannedDurationSeconds: exInfo?.duration_seconds ?? null,
           sets,
         }

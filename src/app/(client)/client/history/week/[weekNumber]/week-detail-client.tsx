@@ -106,9 +106,16 @@ function SessionCard({ session }: { session: WeekDetailSession }) {
                     </span>
                     <span style={{ fontSize: 13, color: '#9CA3AF', flex: 1 }}>
                       {ex.type === 'strength'
-                        ? set.weightKg != null
-                          ? `${set.weightKg} kg × ${ex.plannedReps ?? '—'} reps`
-                          : `— × ${ex.plannedReps ?? '—'} reps`
+                        ? (() => {
+                            const reps = ex.plannedRepsMin != null
+                              ? ex.plannedRepsMax != null && ex.plannedRepsMax !== ex.plannedRepsMin
+                                ? `${ex.plannedRepsMin}–${ex.plannedRepsMax}`
+                                : String(ex.plannedRepsMin)
+                              : '—'
+                            return set.weightKg != null
+                              ? `${set.weightKg} kg × ${reps} reps`
+                              : `— × ${reps} reps`
+                          })()
                         : set.durationSeconds != null
                           ? `${set.durationSeconds} seg`
                           : '—'}

@@ -18,7 +18,8 @@ export type ExerciseWithSets = {
   name: string
   order: number
   plannedSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   restSeconds: number | null
   sessionSets: SessionSetData[]

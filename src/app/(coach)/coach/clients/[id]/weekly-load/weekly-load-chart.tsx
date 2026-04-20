@@ -66,6 +66,7 @@ function BarChart({
         WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'],
         scrollbarWidth: 'none' as React.CSSProperties['scrollbarWidth'],
         msOverflowStyle: 'none' as React.CSSProperties['msOverflowStyle'],
+        touchAction: 'pan-x',
       }}
     >
       {data.map((week) => {

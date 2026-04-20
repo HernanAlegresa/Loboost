@@ -10,7 +10,6 @@ const grid: CSSProperties = {
   flexShrink: 0,
   flexGrow: 0,
   backgroundColor: '#0A0A0A',
-  borderBottom: '1px solid #1F2227',
 }
 
 const backLink: CSSProperties = {

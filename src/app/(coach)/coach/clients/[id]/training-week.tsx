@@ -292,8 +292,10 @@ function DayDetail({ day }: { day: DayTrainingData }) {
               }}
             >
               {ex.plannedSets} ×{' '}
-              {ex.plannedReps != null
-                ? `${ex.plannedReps} reps`
+              {ex.plannedRepsMin != null
+                ? ex.plannedRepsMax != null && ex.plannedRepsMax !== ex.plannedRepsMin
+                  ? `${ex.plannedRepsMin}–${ex.plannedRepsMax} reps`
+                  : `${ex.plannedRepsMin} reps`
                 : ex.plannedDurationSeconds != null
                   ? `${ex.plannedDurationSeconds}s`
                   : '—'}
@@ -365,8 +367,10 @@ function DayDetail({ day }: { day: DayTrainingData }) {
               const repPart =
                 set.durationSeconds != null
                   ? `${set.durationSeconds}s`
-                  : ex.plannedReps != null
-                    ? `${ex.plannedReps} reps`
+                  : ex.plannedRepsMin != null
+                    ? ex.plannedRepsMax != null && ex.plannedRepsMax !== ex.plannedRepsMin
+                      ? `${ex.plannedRepsMin}–${ex.plannedRepsMax} reps`
+                      : `${ex.plannedRepsMin} reps`
                     : ''
               const separator = weightPart && repPart ? ' × ' : ''
 

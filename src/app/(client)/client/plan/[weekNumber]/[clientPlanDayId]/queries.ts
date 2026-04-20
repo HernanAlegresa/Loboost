@@ -40,7 +40,7 @@ export async function getDayDetailData(
     supabase
       .from('client_plan_day_exercises')
       .select(
-        'id, exercise_id, order, sets, reps, duration_seconds, rest_seconds, exercises(id, name, muscle_group, type, video_url)'
+        'id, exercise_id, order, sets, reps_min, reps_max, duration_seconds, rest_seconds, exercises(id, name, muscle_group, type, video_url)'
       )
       .eq('client_plan_day_id', clientPlanDayId)
       .order('order'),
@@ -58,7 +58,8 @@ export async function getDayDetailData(
     exercise_id: string
     order: number
     sets: number
-    reps: number | null
+    reps_min: number | null
+    reps_max: number | null
     duration_seconds: number | null
     rest_seconds: number | null
     exercises: {
@@ -80,7 +81,8 @@ export async function getDayDetailData(
     type: (ex.exercises?.type as 'strength' | 'cardio') ?? 'strength',
     order: ex.order,
     plannedSets: ex.sets,
-    plannedReps: ex.reps ?? null,
+    plannedRepsMin: ex.reps_min ?? null,
+    plannedRepsMax: ex.reps_max ?? null,
     plannedDurationSeconds: ex.duration_seconds ?? null,
     restSeconds: ex.rest_seconds ?? null,
     videoUrl: ex.exercises?.video_url ?? null,

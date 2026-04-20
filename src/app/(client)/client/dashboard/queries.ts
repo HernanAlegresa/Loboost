@@ -164,7 +164,7 @@ export async function getClientDashboardData(
   const [exercisesResult, sessionResult] = await Promise.all([
     supabase
       .from('client_plan_day_exercises')
-      .select('id, order, sets, reps, duration_seconds, exercises(name)')
+      .select('id, order, sets, reps_min, reps_max, duration_seconds, exercises(name)')
       .eq('client_plan_day_id', todayPlanDay.id)
       .order('order'),
     supabase
@@ -187,7 +187,8 @@ export async function getClientDashboardData(
       name,
       order: ex.order,
       plannedSets: ex.sets,
-      plannedReps: ex.reps ?? null,
+      plannedRepsMin: ex.reps_min ?? null,
+      plannedRepsMax: ex.reps_max ?? null,
       plannedDurationSeconds: ex.duration_seconds ?? null,
     }
   })

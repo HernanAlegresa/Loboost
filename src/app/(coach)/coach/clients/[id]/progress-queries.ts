@@ -404,31 +404,50 @@ export async function getWeeklyLoadData(
   })
 }
 
-// ── Exercise session history ───────────────────────────────────────────────────
+// ── Exercise weekly history (grid) ────────────────────────────────────────────
 
-export type ExerciseSessionPoint = {
-  sessionId:     string
-  date:          string
-  weekNumber:    number
-  topSetKg:      number | null
-  completedSets: number
-  isPR:          boolean
+export type ExerciseSetDetail = {
+  setNumber: number
+  weightKg: number | null
 }
 
-export type ExerciseSessionHistory = {
-  exerciseId:   string
+export type ExerciseDayData = {
+  date: string
+  dayLabel: string // e.g. "Lun 15/01"
+  sets: ExerciseSetDetail[]
+}
+
+export type ExerciseWeekGrid = {
+  weekNumber: number
+  days: ExerciseDayData[]
+  maxSets: number
+}
+
+export type ExerciseWeeklyHistory = {
+  exerciseId: string
   exerciseName: string
-  muscleGroup:  string
-  sessions:     ExerciseSessionPoint[]
+  muscleGroup: string
   peakTopSetKg: number | null
   isBodyweight: boolean
+  currentPlanWeek: number
+  weeks: ExerciseWeekGrid[] // only current + past weeks that have data
 }
 
-export async function getExerciseSessionHistory(
+const WEEK_DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+
+function formatDayLabel(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00Z')
+  const name = WEEK_DAY_NAMES[d.getUTCDay()]
+  const dd = dateStr.slice(8, 10)
+  const mm = dateStr.slice(5, 7)
+  return `${name} ${dd}/${mm}`
+}
+
+export async function getExerciseWeeklyHistory(
   clientId: string,
   exerciseId: string,
   activePlan: ActivePlanSummary
-): Promise<ExerciseSessionHistory | null> {
+): Promise<ExerciseWeeklyHistory | null> {
   const supabase = await createClient()
 
   const { data: exerciseInfo } = await supabase
@@ -439,23 +458,26 @@ export async function getExerciseSessionHistory(
 
   if (!exerciseInfo) return null
 
-  const empty = (peakTopSetKg: number | null = null): ExerciseSessionHistory => ({
+  const empty: ExerciseWeeklyHistory = {
     exerciseId,
     exerciseName: exerciseInfo.name,
-    muscleGroup:  exerciseInfo.muscle_group,
-    sessions:     [],
-    peakTopSetKg,
+    muscleGroup: exerciseInfo.muscle_group,
+    peakTopSetKg: null,
     isBodyweight: true,
-  })
+    currentPlanWeek: activePlan.currentWeek,
+    weeks: [],
+  }
 
+  // Only fetch plan days up to and including the current week
   const { data: planDays } = await supabase
     .from('client_plan_days')
     .select('id, week_number')
     .eq('client_plan_id', activePlan.id)
+    .lte('week_number', activePlan.currentWeek)
 
-  if (!planDays || planDays.length === 0) return empty()
+  if (!planDays || planDays.length === 0) return empty
 
-  const planDayIds  = planDays.map((d) => d.id)
+  const planDayIds = planDays.map((d) => d.id)
   const weekByDayId = new Map(planDays.map((d) => [d.id, d.week_number]))
 
   const { data: pdes } = await supabase
@@ -464,10 +486,9 @@ export async function getExerciseSessionHistory(
     .in('client_plan_day_id', planDayIds)
     .eq('exercise_id', exerciseId)
 
-  if (!pdes || pdes.length === 0) return empty()
+  if (!pdes || pdes.length === 0) return empty
 
   const pdeIds = pdes.map((p) => p.id)
-  const planDayByPde = new Map(pdes.map((p) => [p.id, p.client_plan_day_id]))
 
   const { data: sessions } = await supabase
     .from('sessions')
@@ -476,68 +497,69 @@ export async function getExerciseSessionHistory(
     .in('client_plan_day_id', planDayIds)
     .eq('status', 'completed')
 
-  if (!sessions || sessions.length === 0) return empty()
+  if (!sessions || sessions.length === 0) return empty
 
-  const sessionIds         = sessions.map((s) => s.id)
-  const dateBySessionId    = new Map(sessions.map((s) => [s.id, s.date]))
+  const sessionIds = sessions.map((s) => s.id)
+  const dateBySessionId = new Map(sessions.map((s) => [s.id, s.date]))
   const planDayBySessionId = new Map(sessions.map((s) => [s.id, s.client_plan_day_id]))
 
   const { data: sets } = await supabase
     .from('session_sets')
-    .select('session_id, client_plan_day_exercise_id, weight_kg')
+    .select('session_id, client_plan_day_exercise_id, weight_kg, set_number')
     .in('session_id', sessionIds)
     .in('client_plan_day_exercise_id', pdeIds)
     .eq('completed', true)
+    .order('set_number', { ascending: true })
 
-  if (!sets || sets.length === 0) return empty()
+  if (!sets || sets.length === 0) return empty
 
-  type Agg = { topSetKg: number | null; completedSets: number; date: string; weekNumber: number }
-  const aggBySession = new Map<string, Agg>()
+  // weekNumber → date → setNumber → weightKg
+  const weekMap = new Map<number, Map<string, Map<number, number | null>>>()
+  let peakTopSetKg: number | null = null
 
   for (const set of sets) {
-    const date      = dateBySessionId.get(set.session_id)
+    const date = dateBySessionId.get(set.session_id)
     const planDayId = planDayBySessionId.get(set.session_id)
     if (!date || !planDayId) continue
     const weekNumber = weekByDayId.get(planDayId) ?? 0
+    if (weekNumber === 0) continue
 
-    if (!aggBySession.has(set.session_id)) {
-      aggBySession.set(set.session_id, { topSetKg: null, completedSets: 0, date, weekNumber })
-    }
-    const agg = aggBySession.get(set.session_id)!
-    agg.completedSets++
-    if (set.weight_kg != null) {
-      const kg = Number(set.weight_kg)
-      if (agg.topSetKg === null || kg > agg.topSetKg) agg.topSetKg = kg
-    }
+    if (!weekMap.has(weekNumber)) weekMap.set(weekNumber, new Map())
+    const dayMap = weekMap.get(weekNumber)!
+    if (!dayMap.has(date)) dayMap.set(date, new Map())
+    const setMap = dayMap.get(date)!
+
+    const kg = set.weight_kg != null ? Number(set.weight_kg) : null
+    // Keep existing value if already set for this set_number
+    if (!setMap.has(set.set_number)) setMap.set(set.set_number, kg)
+
+    if (kg !== null && (peakTopSetKg === null || kg > peakTopSetKg)) peakTopSetKg = kg
   }
 
-  // Unused planDayByPde — only needed to check exercise relevance via pdeIds filter above
-  void planDayByPde
-
-  const sorted = Array.from(aggBySession.entries()).sort(([, a], [, b]) =>
-    a.date.localeCompare(b.date)
-  )
-
-  const peakTopSetKg = sorted.reduce<number | null>((max, [, agg]) => {
-    if (agg.topSetKg === null) return max
-    return max === null || agg.topSetKg > max ? agg.topSetKg : max
-  }, null)
-
-  const sessionPoints: ExerciseSessionPoint[] = sorted.map(([sessionId, agg]) => ({
-    sessionId,
-    date:          agg.date,
-    weekNumber:    agg.weekNumber,
-    topSetKg:      agg.topSetKg,
-    completedSets: agg.completedSets,
-    isPR:          agg.topSetKg !== null && agg.topSetKg === peakTopSetKg,
-  }))
+  const weeks: ExerciseWeekGrid[] = Array.from(weekMap.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([weekNumber, dayMap]) => {
+      const days: ExerciseDayData[] = Array.from(dayMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, setMap]) => {
+          const maxSetNum = Math.max(...setMap.keys())
+          const sets: ExerciseSetDetail[] = Array.from({ length: maxSetNum }, (_, i) => ({
+            setNumber: i + 1,
+            weightKg: setMap.get(i + 1) ?? null,
+          }))
+          return { date, dayLabel: formatDayLabel(date), sets }
+        })
+      const maxSets = days.reduce((m, d) => Math.max(m, d.sets.length), 0)
+      return { weekNumber, days, maxSets }
+    })
 
   return {
     exerciseId,
     exerciseName: exerciseInfo.name,
-    muscleGroup:  exerciseInfo.muscle_group,
-    sessions:     sessionPoints,
+    muscleGroup: exerciseInfo.muscle_group,
     peakTopSetKg,
     isBodyweight: peakTopSetKg === null,
+    currentPlanWeek: activePlan.currentWeek,
+    weeks,
   }
 }

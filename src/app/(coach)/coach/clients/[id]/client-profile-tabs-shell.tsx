@@ -33,6 +33,27 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
   const [panelWidth, setPanelWidth] = useState(0)
   const [indicator, setIndicator] = useState({ left: 0, width: 0 })
 
+  // On mount: if ?tab=progress is in the URL, jump to the progress panel instantly
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('tab') !== 'progress') return
+    setActiveTab('progress')
+    // Double rAF so layout has settled before we set scrollLeft
+    let r1: number
+    let r2: number
+    r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => {
+        const vp = viewportRef.current
+        if (vp && vp.clientWidth > 0) vp.scrollLeft = vp.clientWidth
+      })
+    })
+    return () => {
+      cancelAnimationFrame(r1)
+      cancelAnimationFrame(r2)
+    }
+  }, [])
+
   const tabs = useMemo(() => TABS, [])
 
   useEffect(() => {

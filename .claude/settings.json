@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit*)",
+      "Bash(npx vitest run*)",
+      "Bash(npx jest*)",
+      "Bash(npx supabase gen types*)"
+    ],
+    "deny": []
+  }
+}

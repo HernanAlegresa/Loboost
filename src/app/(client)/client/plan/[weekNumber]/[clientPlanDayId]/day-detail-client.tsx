@@ -110,8 +110,10 @@ export default function DayDetailClient({ data }: { data: DayDetailData }) {
             </div>
             <p style={{ fontSize: 13, color: '#9CA3AF' }}>
               {ex.plannedSets} series ×{' '}
-              {ex.plannedReps != null
-                ? `${ex.plannedReps} reps`
+              {ex.plannedRepsMin != null
+                ? ex.plannedRepsMax != null && ex.plannedRepsMax !== ex.plannedRepsMin
+                  ? `${ex.plannedRepsMin}–${ex.plannedRepsMax} reps`
+                  : `${ex.plannedRepsMin} reps`
                 : ex.plannedDurationSeconds != null
                   ? `${ex.plannedDurationSeconds}s`
                   : '—'}

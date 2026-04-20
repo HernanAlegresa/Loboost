@@ -57,7 +57,14 @@
       "Bash(winget install *)",
       "Bash(ngrok version *)",
       "Bash(/c/Users/herna/AppData/Local/Microsoft/WinGet/Packages/Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe/ngrok.exe version *)",
-      "Bash(/c/Users/herna/AppData/Local/Microsoft/WinGet/Packages/Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe/ngrok.exe config *)"
+      "Bash(/c/Users/herna/AppData/Local/Microsoft/WinGet/Packages/Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe/ngrok.exe config *)",
+      "Bash(xargs cat *)",
+      "Bash(npx vitest *)",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs -I{} sh -c 'python3 -c \" import json, sys try: for line in open\\(sys.argv[1]\\): try: obj = json.loads\\(line\\) if obj.get\\(\\\\\"type\\\\\"\\) == \\\\\"assistant\\\\\": for c in obj.get\\(\\\\\"message\\\\\", {}\\).get\\(\\\\\"content\\\\\", []\\): if isinstance\\(c, dict\\) and c.get\\(\\\\\"type\\\\\"\\) == \\\\\"tool_use\\\\\": name = c.get\\(\\\\\"name\\\\\", \\\\\"\\\\\"\\) if name == \\\\\"Bash\\\\\": cmd = c.get\\(\\\\\"input\\\\\", {}\\).get\\(\\\\\"command\\\\\", \\\\\"\\\\\"\\) print\\(\\\\\"BASH:\\\\\", cmd.split\\(\\)[0] if cmd.split\\(\\) else \\\\\"\\\\\"\\) elif name.startswith\\(\\\\\"mcp__\\\\\"\\): print\\(\\\\\"MCP:\\\\\", name\\) except: pass \" \"$1\" 2>/dev/null' -- {})",
+      "Bash(npx supabase *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

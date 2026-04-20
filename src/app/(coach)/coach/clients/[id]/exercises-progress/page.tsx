@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import { getClientBasicForCoach, getExerciseProgressData } from '../progress-queries'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 import Avatar from '@/components/ui/avatar'
-import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 import ExercisesProgressList from './exercises-progress-list'
 
 function ClientAvatarSlot({ fullName }: { fullName: string }) {
@@ -67,32 +66,8 @@ export default async function ExercisesProgressPage({
         rightSlot={<ClientAvatarSlot fullName={fullName} />}
       />
 
-      <div
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'],
-          paddingBottom: COACH_LIST_SCROLL_END_ABOVE_NAV,
-        }}
-      >
-        {/* Summary */}
-        <div style={{ padding: '20px 20px 24px', textAlign: 'center' }}>
-          <p style={{ fontSize: 13, color: '#6B7280', margin: 0 }}>
-            Ejercicios realizados por{' '}
-            <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{fullName}</span>
-            {': '}
-            <span style={{ color: '#B5F23D', fontWeight: 700 }}>{exercisesWithData.length}</span>
-          </p>
-          {exercisesWithData.length > 0 && (
-            <p style={{ fontSize: 11, color: '#4B5563', margin: '6px 0 0' }}>
-              Tocá un grupo para ver los ejercicios
-            </p>
-          )}
-        </div>
-
-        {/* List */}
-        <ExercisesProgressList exercises={exercisesWithData} clientId={id} />
-      </div>
+      {/* List — toma el alto restante con su propio scroll horizontal */}
+      <ExercisesProgressList exercises={exercisesWithData} clientId={id} />
     </div>
   )
 }

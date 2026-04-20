@@ -37,7 +37,8 @@ type FlatSet = {
   type: 'strength' | 'cardio'
   setNumber: number
   totalSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   restSeconds: number | null
   clientPlanDayExerciseId: string
@@ -61,7 +62,8 @@ function buildFlatSets(exercises: LiveExercise[]): FlatSet[] {
         type: ex.type,
         setNumber,
         totalSets: ex.plannedSets,
-        plannedReps: ex.plannedReps,
+        plannedRepsMin: ex.plannedRepsMin,
+        plannedRepsMax: ex.plannedRepsMax,
         plannedDurationSeconds: ex.plannedDurationSeconds,
         restSeconds: ex.restSeconds,
         clientPlanDayExerciseId: ex.clientPlanDayExerciseId,
