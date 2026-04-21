@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import ClientAvatar from '@/components/ui/client-avatar'
 import NotificationToggles from './notification-toggles'
+import LogWeightForm from './log-weight-form'
 import { signOut } from '@/features/auth/actions/sign-out'
 import type { NotificationPrefs } from '@/features/training/types'
 
@@ -88,6 +89,11 @@ export default async function SettingsPage() {
             <p style={{ fontSize: 13, color: '#9CA3AF' }}>{user.email ?? '—'}</p>
           </div>
         </div>
+      </div>
+
+      <div>
+        <p style={SECTION_LABEL}>Peso corporal</p>
+        <LogWeightForm />
       </div>
 
       <div>
