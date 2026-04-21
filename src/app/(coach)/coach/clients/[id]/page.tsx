@@ -42,6 +42,7 @@ export default async function ClientProfilePage({
         statusColor={profile.statusColor}
       />
       <ClientProfileTabsShell
+        clientId={profile.id}
         profileContent={
           <>
             <ClientProfileHeroCard

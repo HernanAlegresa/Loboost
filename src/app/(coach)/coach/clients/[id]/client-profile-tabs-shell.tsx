@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 
 type ClientProfileTab = 'profile' | 'progress'
@@ -18,11 +19,13 @@ const PROFILE_SECTION_GAP_PX = 32
 const PROGRESS_SECTION_GAP_PX = 24
 
 type Props = {
+  clientId: string
   profileContent: React.ReactNode
   progressContent: React.ReactNode
 }
 
-export default function ClientProfileTabsShell({ profileContent, progressContent }: Props) {
+export default function ClientProfileTabsShell({ clientId, profileContent, progressContent }: Props) {
+  const router = useRouter()
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const tabsTrackRef = useRef<HTMLDivElement | null>(null)
   const tabTextRefs = useRef<Record<ClientProfileTab, HTMLSpanElement | null>>({
@@ -174,6 +177,23 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
                   </button>
                 )
               })}
+              <button
+                type="button"
+                onClick={() => router.push(`/coach/clients/${clientId}/sessions`)}
+                style={{
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: '#6B7280',
+                  padding: '6px 0',
+                  fontSize: 18,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  transition: 'color 140ms ease',
+                }}
+              >
+                Sesiones
+              </button>
             </div>
 
             <div
