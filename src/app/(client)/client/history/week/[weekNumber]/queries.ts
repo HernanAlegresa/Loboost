@@ -5,6 +5,7 @@ import type {
   WeekDetailSession,
   WeekDetailExercise,
   WeekDetailSet,
+  PlannedDayWithoutSession,
 } from '@/features/training/types'
 
 export async function getWeekDetailData(
@@ -43,12 +44,34 @@ export async function getWeekDetailData(
   const dateRangeStart = computeDayDate(plan.start_date, weekNumber, 1)
   const dateRangeEnd = computeDayDate(plan.start_date, weekNumber, 7)
 
+  const completedDayIds = new Set((sessions ?? []).map((s) => s.client_plan_day_id))
+
+  const { data: exerciseCounts } = await supabase
+    .from('client_plan_day_exercises')
+    .select('client_plan_day_id')
+    .in('client_plan_day_id', dayIds)
+
+  const countByDay = new Map<string, number>()
+  for (const row of exerciseCounts ?? []) {
+    countByDay.set(row.client_plan_day_id, (countByDay.get(row.client_plan_day_id) ?? 0) + 1)
+  }
+
+  const plannedDaysWithoutSession: PlannedDayWithoutSession[] = days
+    .filter((d) => !completedDayIds.has(d.id))
+    .map((d) => ({
+      clientPlanDayId: d.id,
+      dayOfWeek: d.day_of_week,
+      dateISO: computeDayDate(plan.start_date, weekNumber, d.day_of_week),
+      exerciseCount: countByDay.get(d.id) ?? 0,
+    }))
+
   if (!sessions || sessions.length === 0) {
     return {
       weekNumber,
       dateRangeStart,
       dateRangeEnd,
       sessions: [],
+      plannedDaysWithoutSession,
     }
   }
 
@@ -153,5 +176,6 @@ export async function getWeekDetailData(
     dateRangeStart,
     dateRangeEnd,
     sessions: detailSessions,
+    plannedDaysWithoutSession,
   }
 }

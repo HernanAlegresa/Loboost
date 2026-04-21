@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { WeekDetailData, WeekDetailSession } from '@/features/training/types'
 
@@ -134,7 +135,7 @@ function SessionCard({ session }: { session: WeekDetailSession }) {
   )
 }
 
-export default function WeekDetailClient({ data }: { data: WeekDetailData }) {
+export default function WeekDetailClient({ data, weekNumber }: { data: WeekDetailData; weekNumber: number }) {
   function formatRange(): string {
     const s = new Date(data.dateRangeStart + 'T00:00:00').toLocaleDateString('es-AR', {
       day: 'numeric',
@@ -150,12 +151,57 @@ export default function WeekDetailClient({ data }: { data: WeekDetailData }) {
   return (
     <div style={{ padding: '16px 20px 120px', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <p style={{ fontSize: 12, color: '#6B7280' }}>{formatRange()}</p>
-      {data.sessions.length === 0 ? (
+      {data.sessions.length === 0 && data.plannedDaysWithoutSession.length === 0 ? (
         <p style={{ fontSize: 13, color: '#4B5563', textAlign: 'center', padding: 20 }}>
-          Sin sesiones completadas esta semana.
+          Sin sesiones esta semana.
         </p>
       ) : (
-        data.sessions.map((sess) => <SessionCard key={sess.sessionId} session={sess} />)
+        <>
+          {data.sessions.map((sess) => <SessionCard key={sess.sessionId} session={sess} />)}
+          {data.plannedDaysWithoutSession.map((day) => (
+            <div
+              key={day.clientPlanDayId}
+              style={{
+                backgroundColor: '#111317',
+                border: '1px solid #1F2227',
+                borderRadius: 14,
+                padding: '14px 16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F0', margin: 0 }}>
+                  {DAY_NAMES[day.dayOfWeek]}
+                </p>
+                <p style={{ fontSize: 12, color: '#6B7280', marginTop: 2 }}>
+                  {new Date(day.dateISO + 'T00:00:00').toLocaleDateString('es-AR', {
+                    day: 'numeric',
+                    month: 'long',
+                  })}
+                  {' · '}
+                  {day.exerciseCount} {day.exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}
+                </p>
+              </div>
+              <Link
+                href={`/client/history/week/${weekNumber}/log/${day.clientPlanDayId}`}
+                style={{
+                  padding: '8px 14px',
+                  backgroundColor: 'rgba(181,242,61,0.1)',
+                  border: '1px solid rgba(181,242,61,0.3)',
+                  borderRadius: 8,
+                  color: '#B5F23D',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                Registrar
+              </Link>
+            </div>
+          ))}
+        </>
       )}
     </div>
   )

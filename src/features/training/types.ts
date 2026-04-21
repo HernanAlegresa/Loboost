@@ -191,11 +191,19 @@ export type WeekDetailSession = {
   exercises: WeekDetailExercise[]
 }
 
+export type PlannedDayWithoutSession = {
+  clientPlanDayId: string
+  dayOfWeek: number
+  dateISO: string
+  exerciseCount: number
+}
+
 export type WeekDetailData = {
   weekNumber: number
   dateRangeStart: string
   dateRangeEnd: string
   sessions: WeekDetailSession[]
+  plannedDaysWithoutSession: PlannedDayWithoutSession[]
 }
 
 // ── Notification prefs ─────────────────────────────────────────────────────
