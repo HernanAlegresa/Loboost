@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getClientProfileData } from './queries'
 import { getProgressKPIs } from './progress-queries'
+import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import ClientProfileHeader from './client-profile-header'
 import ClientProfileTabsShell from './client-profile-tabs-shell'
 import ClientProfileHeroCard from './client-profile-hero-card'
@@ -57,6 +58,7 @@ export default async function ClientProfilePage({
               heightCm={profile.heightCm}
               daysPerWeek={profile.daysPerWeek}
               injuries={profile.injuries}
+              planExpired={isPlanExpired(profile.activePlan?.endDate ?? null)}
             />
             <EditClientForm
               clientId={profile.id}

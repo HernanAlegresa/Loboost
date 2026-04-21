@@ -10,6 +10,7 @@ type Props = {
   heightCm: number | null
   daysPerWeek: number
   injuries: string | null
+  planExpired: boolean
 }
 
 type HeroStat = {
@@ -44,6 +45,7 @@ export default function ClientProfileHeroCard({
   heightCm,
   daysPerWeek,
   injuries,
+  planExpired,
 }: Props) {
   const ringColor =
     statusColor === 'active' ? '#22C55E' : statusColor === 'warning' ? '#F2994A' : '#F25252'
@@ -61,6 +63,30 @@ export default function ClientProfileHeroCard({
 
   return (
     <div>
+      {planExpired && (
+        <div
+          style={{
+            backgroundColor: 'rgba(242,82,82,0.08)',
+            border: '1px solid rgba(242,82,82,0.25)',
+            borderRadius: 12,
+            padding: '12px 16px',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          <span style={{ fontSize: 18 }}>⚠️</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F25252' }}>
+              Plan vencido
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9CA3AF' }}>
+              El plan de este cliente ha finalizado. Asigná un nuevo plan para continuar el seguimiento.
+            </p>
+          </div>
+        </div>
+      )}
       <div
         style={{
           display: 'grid',

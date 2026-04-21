@@ -22,6 +22,7 @@ type Props = {
   state: ClientHealthState
   completedThisWeek: number
   plannedDaysPerWeek: number
+  planExpired?: boolean
 }
 
 export default function ClientCard({
@@ -30,6 +31,7 @@ export default function ClientCard({
   state,
   completedThisWeek,
   plannedDaysPerWeek,
+  planExpired,
 }: Props) {
   const stateUi = STATE_UI[state]
   const accent = stateUi.accent
@@ -74,6 +76,24 @@ export default function ClientCard({
             >
               {fullName}
             </p>
+            {planExpired && (
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: '#F25252',
+                  backgroundColor: 'rgba(242,82,82,0.1)',
+                  border: '1px solid rgba(242,82,82,0.25)',
+                  padding: '2px 7px',
+                  borderRadius: 20,
+                  letterSpacing: '0.05em',
+                  display: 'inline-block',
+                  marginTop: 4,
+                }}
+              >
+                PLAN VENCIDO
+              </span>
+            )}
           </div>
           <div
             style={{

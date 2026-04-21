@@ -6,6 +6,7 @@ import { Info, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import type { DashboardClientSummary } from '../dashboard/queries'
+import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 import ClientCard, { type ClientHealthState } from './client-card'
 import ClientsFilters, { type ClientsFilterId } from './clients-filters'
@@ -25,6 +26,7 @@ type ClientListItem = {
   completedThisWeek: number
   plannedDaysPerWeek: number
   daysSinceLastSession: number | null
+  planExpired: boolean
 }
 
 type ActivityItem = {
@@ -173,6 +175,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
         completedThisWeek: client.completedThisWeek,
         plannedDaysPerWeek: client.daysPerWeek,
         daysSinceLastSession: client.daysSinceLastSession,
+        planExpired: isPlanExpired(client.activePlanEndDate),
       })),
     [clients]
   )
@@ -534,6 +537,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                     state={client.state}
                     completedThisWeek={client.completedThisWeek}
                     plannedDaysPerWeek={client.plannedDaysPerWeek}
+                    planExpired={client.planExpired}
                   />
                 ))}
               </AnimatePresence>

@@ -39,6 +39,7 @@ export type DashboardClientSummary = {
   weeklyCompliance: number
   alerts: AlertType[]
   listState: CoachClientListState
+  activePlanEndDate: string | null
 }
 
 export type DashboardData = {
@@ -219,7 +220,7 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       .in('id', clientIds),
     supabase
       .from('client_plans')
-      .select('id, client_id, start_date, weeks')
+      .select('id, client_id, start_date, weeks, end_date')
       .in('client_id', clientIds)
       .eq('status', 'active'),
     supabase
@@ -245,6 +246,9 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
   const activePlanRows = activePlansResult.data ?? []
   const activePlanClientIds = new Set(activePlanRows.map((p) => p.client_id))
   const activePlanIds = activePlanRows.map((p) => p.id)
+  const activePlanEndDateMap = new Map<string, string | null>(
+    activePlanRows.map((p) => [p.client_id, p.end_date])
+  )
 
   let planDaysRows: {
     id: string
@@ -394,6 +398,7 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       weeklyCompliance,
       alerts,
       listState,
+      activePlanEndDate: activePlanEndDateMap.get(profile.id) ?? null,
     }
   })
 
