@@ -7,6 +7,8 @@ import ClientProfileTabsShell from './client-profile-tabs-shell'
 import ClientProfileHeroCard from './client-profile-hero-card'
 import ClientPlanHeatmapCard from './client-plan-heatmap-card'
 import ClientProgressContent from './client-progress-content'
+import EditClientForm from './edit-client-form'
+import LogMeasurementForm from './log-measurement-form'
 
 export default async function ClientProfilePage({
   params,
@@ -56,6 +58,20 @@ export default async function ClientProfilePage({
               daysPerWeek={profile.daysPerWeek}
               injuries={profile.injuries}
             />
+            <EditClientForm
+              clientId={profile.id}
+              initial={{
+                age: profile.age,
+                sex: profile.sex,
+                goal: profile.goal,
+                weightKg: profile.weightKg,
+                heightCm: profile.heightCm,
+                experienceLevel: profile.experienceLevel,
+                daysPerWeek: profile.daysPerWeek,
+                injuries: profile.injuries,
+              }}
+            />
+            <LogMeasurementForm clientId={profile.id} />
             <ClientPlanHeatmapCard
               activePlan={profile.activePlan}
               initialWeekData={profile.currentWeekData}
