@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/features/auth/actions/sign-out'
 import CoachSettingsForm from './coach-settings-form'
+import ChangePasswordForm from '@/components/ui/change-password-form'
 
 const cardStyle: CSSProperties = {
   backgroundColor: '#111317',
@@ -112,6 +113,11 @@ export default async function CoachSettingsPage() {
               El correo lo gestiona el inicio de sesión. Para cambiarlo, contactá soporte o usá el flujo
               de recuperación de tu proveedor cuando esté disponible en la app.
             </p>
+          </section>
+
+          <section style={cardStyle}>
+            <p style={sectionLabel}>Seguridad</p>
+            <ChangePasswordForm />
           </section>
 
           <section style={cardStyle}>
