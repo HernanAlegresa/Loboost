@@ -58,17 +58,34 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
     return (
       <div
         style={{
-          backgroundColor: '#111317',
-          border: '1px solid #1F2227',
-          borderRadius: 16,
-          padding: '28px 20px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           textAlign: 'center',
+          padding: '48px 24px',
+          gap: 12,
         }}
       >
-        <p style={{ fontSize: 14, fontWeight: 600, color: '#F0F0F0' }}>Todavía no tenés planes guardados</p>
-        <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
-          Creá el primero con el botón <span style={{ color: '#B5F23D' }}>+</span>. Después podés asignarlo a un
-          cliente desde el detalle del plan.
+        <div
+          style={{
+            width: 60,
+            height: 60,
+            borderRadius: '50%',
+            backgroundColor: 'rgba(181, 242, 61, 0.08)',
+            border: '1px solid rgba(181, 242, 61, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 28,
+          }}
+        >
+          📋
+        </div>
+        <p style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
+          Sin planes creados
+        </p>
+        <p style={{ fontSize: 13, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>
+          Creá tu primer plan de entrenamiento{'\n'}para asignárselo a tus clientes.
         </p>
       </div>
     )
