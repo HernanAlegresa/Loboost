@@ -1144,6 +1144,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
                 Descanso
               </p>
               <button
+                type="button"
                 onClick={clearRestTimer}
                 style={{
                   fontSize: 12,
@@ -1164,7 +1165,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
             <div style={{ backgroundColor: LT.track, borderRadius: 9999, height: 4, overflow: 'hidden' }}>
               <motion.div
                 style={{ height: '100%', backgroundColor: LT.lime, borderRadius: 9999 }}
-                animate={{ width: `${((restTimerTotal - restTimer) / restTimerTotal) * 100}%` }}
+                animate={{ width: restTimerTotal > 0 ? `${((restTimerTotal - restTimer) / restTimerTotal) * 100}%` : '0%' }}
                 transition={{ duration: 0.9, ease: 'linear' }}
               />
             </div>
