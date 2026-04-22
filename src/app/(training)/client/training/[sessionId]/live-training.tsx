@@ -17,6 +17,7 @@ import { completeSessionAction } from '@/features/training/actions/complete-sess
 import { updateSetAction } from '@/features/training/actions/update-set'
 import VideoModal from '@/components/ui/video-modal'
 import type { LiveExercise, LiveSessionData } from '@/features/training/types'
+import type { PrevSetEntry } from './queries'
 import {
   SAFE_AREA_BOTTOM,
   SAFE_AREA_TOP,
@@ -42,6 +43,7 @@ type FlatSet = {
   plannedDurationSeconds: number | null
   restSeconds: number | null
   clientPlanDayExerciseId: string
+  exerciseId: string
 }
 
 function makeKey(exerciseId: string, setNumber: number): string {
@@ -67,6 +69,7 @@ function buildFlatSets(exercises: LiveExercise[]): FlatSet[] {
         plannedDurationSeconds: ex.plannedDurationSeconds,
         restSeconds: ex.restSeconds,
         clientPlanDayExerciseId: ex.clientPlanDayExerciseId,
+        exerciseId: ex.exerciseId,
       }
     })
   )
@@ -108,7 +111,13 @@ const LT = {
   videoGlow: 'rgba(56, 189, 248, 0.25)',
 } as const
 
-export default function LiveTraining({ session }: { session: LiveSessionData }) {
+export default function LiveTraining({
+  session,
+  prevSets = {},
+}: {
+  session: LiveSessionData
+  prevSets?: Record<string, PrevSetEntry>
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isFinished, setIsFinished] = useState(false)
@@ -968,6 +977,31 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
 
                   {isActive ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'center' }}>
+                      {(() => {
+                        const prevKey = `${fs.exerciseId}:${fs.setNumber}`
+                        const prev = prevSets[prevKey]
+                        if (!prev) return null
+                        const label =
+                          fs.type === 'strength' && prev.weightKg != null
+                            ? `${prev.weightKg} kg × ${prev.repsPerformed ?? '—'} reps`
+                            : fs.type === 'cardio' && prev.repsPerformed != null
+                            ? `${prev.repsPerformed} seg`
+                            : null
+                        if (!label) return null
+                        return (
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: 12,
+                              color: '#6B7280',
+                              letterSpacing: '0.02em',
+                            }}
+                          >
+                            Última vez:{' '}
+                            <span style={{ color: '#9CA3AF', fontWeight: 600 }}>{label}</span>
+                          </p>
+                        )
+                      })()}
                       <motion.div
                         style={{ display: 'flex', justifyContent: 'center', width: '100%' }}
                         animate={
