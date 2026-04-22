@@ -116,6 +116,10 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [showSetCelebration, setShowSetCelebration] = useState(false)
   const [inputFocusIdx, setInputFocusIdx] = useState<number | null>(null)
+  const [restTimer, setRestTimer] = useState<number | null>(null)
+  const [restTimerTotal, setRestTimerTotal] = useState<number>(0)
+  const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const restTimerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingScrollAfterCelebrationRef = useRef<number | null>(null)
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -224,6 +228,13 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     return () => window.clearTimeout(id)
   }, [showSetCelebration])
 
+  useEffect(() => {
+    return () => {
+      if (restTimerTimeoutRef.current) clearTimeout(restTimerTimeoutRef.current)
+      if (restIntervalRef.current) clearInterval(restIntervalRef.current)
+    }
+  }, [])
+
   const onCelebrationExitComplete = useCallback(() => {
     const next = pendingScrollAfterCelebrationRef.current
     pendingScrollAfterCelebrationRef.current = null
@@ -249,6 +260,36 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     })
   }
 
+  function clearRestTimer() {
+    if (restTimerTimeoutRef.current) {
+      clearTimeout(restTimerTimeoutRef.current)
+      restTimerTimeoutRef.current = null
+    }
+    if (restIntervalRef.current) {
+      clearInterval(restIntervalRef.current)
+      restIntervalRef.current = null
+    }
+    setRestTimer(null)
+    setRestTimerTotal(0)
+  }
+
+  function startRestTimer(seconds: number) {
+    clearRestTimer()
+    if (seconds <= 0) return
+    setRestTimerTotal(seconds)
+    setRestTimer(seconds)
+    restIntervalRef.current = setInterval(() => {
+      setRestTimer((prev) => {
+        if (prev == null || prev <= 1) {
+          clearInterval(restIntervalRef.current!)
+          restIntervalRef.current = null
+          return null
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
   function handleCompleteSet(flatIndex: number) {
     const fs = flatSets[flatIndex]
     if (!fs) return
@@ -272,10 +313,18 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
       const next = flatIndex + 1
       pendingScrollAfterCelebrationRef.current = next < flatSets.length ? next : null
       setShowSetCelebration(true)
+      const secondsToRest = fs.restSeconds
+      if (secondsToRest && secondsToRest > 0) {
+        restTimerTimeoutRef.current = setTimeout(
+          () => startRestTimer(secondsToRest),
+          CELEBRATION_DISPLAY_MS
+        )
+      }
     })
   }
 
   function handleFinish() {
+    clearRestTimer()
     startTransition(async () => {
       await completeSessionAction(session.sessionId)
       setIsFinished(true)
@@ -1067,6 +1116,62 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
       )}
 
       {videoUrlOpen && <VideoModal url={videoUrlOpen} onClose={() => setVideoUrlOpen(null)} />}
+
+      {/* Rest Timer Overlay */}
+      <AnimatePresence>
+        {restTimer != null && (
+          <motion.div
+            key="rest-timer"
+            initial={{ y: 120, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 120, opacity: 0 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+            style={{
+              position: 'fixed',
+              bottom: 80,
+              left: 16,
+              right: 16,
+              backgroundColor: '#111317',
+              border: `1px solid ${LT.borderStrong}`,
+              borderRadius: 20,
+              padding: '16px 20px',
+              zIndex: 50,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <p style={{ fontSize: 13, color: LT.muted, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Descanso
+              </p>
+              <button
+                type="button"
+                onClick={clearRestTimer}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: LT.lime,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                }}
+              >
+                Saltar →
+              </button>
+            </div>
+            <p style={{ fontSize: 48, fontWeight: 700, color: LT.text, textAlign: 'center', lineHeight: 1, marginBottom: 12 }}>
+              {restTimer}s
+            </p>
+            <div style={{ backgroundColor: LT.track, borderRadius: 9999, height: 4, overflow: 'hidden' }}>
+              <motion.div
+                style={{ height: '100%', backgroundColor: LT.lime, borderRadius: 9999 }}
+                animate={{ width: restTimerTotal > 0 ? `${((restTimerTotal - restTimer) / restTimerTotal) * 100}%` : '0%' }}
+                transition={{ duration: 0.9, ease: 'linear' }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
