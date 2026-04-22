@@ -23,6 +23,7 @@ type Props = {
   completedThisWeek: number
   plannedDaysPerWeek: number
   planExpired?: boolean
+  daysSinceLastSession?: number | null
 }
 
 export default function ClientCard({
@@ -32,6 +33,7 @@ export default function ClientCard({
   completedThisWeek,
   plannedDaysPerWeek,
   planExpired,
+  daysSinceLastSession,
 }: Props) {
   const stateUi = STATE_UI[state]
   const accent = stateUi.accent
@@ -94,6 +96,26 @@ export default function ClientCard({
                 PLAN VENCIDO
               </span>
             )}
+            {!planExpired &&
+              daysSinceLastSession != null &&
+              daysSinceLastSession >= 7 && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    color: '#F2994A',
+                    backgroundColor: 'rgba(242,153,74,0.1)',
+                    border: '1px solid rgba(242,153,74,0.25)',
+                    padding: '2px 7px',
+                    borderRadius: 20,
+                    letterSpacing: '0.05em',
+                    display: 'inline-block',
+                    marginTop: 4,
+                  }}
+                >
+                  {daysSinceLastSession}D SIN ENTRENAR
+                </span>
+              )}
           </div>
           <div
             style={{
