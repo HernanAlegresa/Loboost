@@ -5,7 +5,10 @@ import { createClient } from '@/lib/supabase/server'
 export async function completeSessionAction(
   sessionId: string,
   rpe?: number,
-  notes?: string
+  notes?: string,
+  energyLevel?: number,
+  sleepQuality?: number,
+  sorenessLevel?: number
 ) {
   const supabase = await createClient()
   const {
@@ -21,6 +24,9 @@ export async function completeSessionAction(
       completed_at: new Date().toISOString(),
       rpe: rpe ?? null,
       notes: notes ?? null,
+      energy_level: energyLevel ?? null,
+      sleep_quality: sleepQuality ?? null,
+      soreness_level: sorenessLevel ?? null,
     })
     .eq('id', sessionId)
     .eq('client_id', user.id)

@@ -607,9 +607,12 @@ export type Database = {
           client_plan_day_id: string
           completed_at: string | null
           date: string
+          energy_level: number | null
           id: string
           notes: string | null
           rpe: number | null
+          sleep_quality: number | null
+          soreness_level: number | null
           started_at: string
           status: string
         }
@@ -618,9 +621,12 @@ export type Database = {
           client_plan_day_id: string
           completed_at?: string | null
           date: string
+          energy_level?: number | null
           id?: string
           notes?: string | null
           rpe?: number | null
+          sleep_quality?: number | null
+          soreness_level?: number | null
           started_at?: string
           status?: string
         }
@@ -629,9 +635,12 @@ export type Database = {
           client_plan_day_id?: string
           completed_at?: string | null
           date?: string
+          energy_level?: number | null
           id?: string
           notes?: string | null
           rpe?: number | null
+          sleep_quality?: number | null
+          soreness_level?: number | null
           started_at?: string
           status?: string
         }
