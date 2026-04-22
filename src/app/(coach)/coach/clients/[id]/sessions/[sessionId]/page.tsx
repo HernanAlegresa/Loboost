@@ -91,16 +91,67 @@ export default async function SessionDetailPage({
         subtitle={date}
       />
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 20px 100px' }}>
-        {(session.rpe != null || session.notes) && (
-          <div style={{ backgroundColor: T.card, border: `1px solid ${T.border}`, borderRadius: 14, padding: '14px 16px', marginBottom: 20 }}>
+        {(session.rpe != null ||
+          session.notes ||
+          session.energyLevel != null ||
+          session.sleepQuality != null ||
+          session.sorenessLevel != null) && (
+          <div
+            style={{
+              backgroundColor: T.card,
+              border: `1px solid ${T.border}`,
+              borderRadius: 14,
+              padding: '14px 16px',
+              marginBottom: 20,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
             {session.rpe != null && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: session.notes ? 10 : 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <p style={{ margin: 0, fontSize: 13, color: T.muted }}>RPE percibido</p>
-                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.lime }}>{session.rpe}/10</p>
+                <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: T.lime }}>
+                  {session.rpe}/10
+                </p>
+              </div>
+            )}
+            {session.energyLevel != null && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ margin: 0, fontSize: 13, color: T.muted }}>Energía</p>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.text }}>
+                  {['', '💀 Agotado', '😴 Bajo', '😐 Normal', '💪 Bien', '🔥 Excelente'][session.energyLevel]}
+                </p>
+              </div>
+            )}
+            {session.sleepQuality != null && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ margin: 0, fontSize: 13, color: T.muted }}>Sueño</p>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.text }}>
+                  {['', '😵 Pésimo', '🥱 Mal', '😐 Regular', '😌 Bien', '✨ Muy bien'][session.sleepQuality]}
+                </p>
+              </div>
+            )}
+            {session.sorenessLevel != null && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p style={{ margin: 0, fontSize: 13, color: T.muted }}>Dolor muscular</p>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.text }}>
+                  {['', '🔴 Mucho', '🟠 Bastante', '🟡 Algo', '🟢 Poco', '✅ Sin dolor'][session.sorenessLevel]}
+                </p>
               </div>
             )}
             {session.notes && (
-              <p style={{ margin: 0, fontSize: 13, color: T.secondary, fontStyle: 'italic', lineHeight: 1.5 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13,
+                  color: T.secondary,
+                  fontStyle: 'italic',
+                  lineHeight: 1.5,
+                  borderTop: `1px solid ${T.border}`,
+                  paddingTop: 10,
+                }}
+              >
                 &ldquo;{session.notes}&rdquo;
               </p>
             )}

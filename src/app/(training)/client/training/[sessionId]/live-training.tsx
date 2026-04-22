@@ -125,6 +125,11 @@ export default function LiveTraining({
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [showSetCelebration, setShowSetCelebration] = useState(false)
   const [showPrCelebration, setShowPrCelebration] = useState(false)
+  const [showCheckIn, setShowCheckIn] = useState(false)
+  const [checkInRpe, setCheckInRpe] = useState<number>(7)
+  const [checkInEnergy, setCheckInEnergy] = useState<number>(3)
+  const [checkInSleep, setCheckInSleep] = useState<number>(3)
+  const [checkInSoreness, setCheckInSoreness] = useState<number>(3)
   const [inputFocusIdx, setInputFocusIdx] = useState<number | null>(null)
   const [restTimer, setRestTimer] = useState<number | null>(null)
   const [restTimerTotal, setRestTimerTotal] = useState<number>(0)
@@ -344,8 +349,20 @@ export default function LiveTraining({
 
   function handleFinish() {
     clearRestTimer()
+    setShowCheckIn(true)
+  }
+
+  async function handleCheckInSubmit(skip: boolean) {
+    setShowCheckIn(false)
     startTransition(async () => {
-      await completeSessionAction(session.sessionId)
+      await completeSessionAction(
+        session.sessionId,
+        skip ? undefined : checkInRpe,
+        undefined,
+        skip ? undefined : checkInEnergy,
+        skip ? undefined : checkInSleep,
+        skip ? undefined : checkInSoreness
+      )
       setIsFinished(true)
     })
   }
@@ -363,6 +380,30 @@ export default function LiveTraining({
       const result = await updateSetAction(formData)
       if (result.success) setEditingKey(null)
     })
+  }
+
+  const ENERGY_LABELS: Record<number, string> = {
+    1: '💀 Agotado',
+    2: '😴 Bajo',
+    3: '😐 Normal',
+    4: '💪 Bien',
+    5: '🔥 Excelente',
+  }
+
+  const SLEEP_LABELS: Record<number, string> = {
+    1: '😵 Pésimo',
+    2: '🥱 Mal',
+    3: '😐 Regular',
+    4: '😌 Bien',
+    5: '✨ Muy bien',
+  }
+
+  const SORENESS_LABELS: Record<number, string> = {
+    1: '🔴 Mucho dolor',
+    2: '🟠 Bastante',
+    3: '🟡 Algo',
+    4: '🟢 Poco',
+    5: '✅ Sin dolor',
   }
 
   if (session.exercises.length === 0) {
@@ -397,6 +438,182 @@ export default function LiveTraining({
         >
           Volver al inicio
         </button>
+      </div>
+    )
+  }
+
+  if (showCheckIn) {
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: LT.bg,
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            flexShrink: 0,
+            paddingTop: `calc(20px + ${SAFE_AREA_TOP})`,
+            paddingLeft: 20,
+            paddingRight: 20,
+            paddingBottom: 20,
+            borderBottom: `1px solid ${LT.border}`,
+            textAlign: 'center',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: LT.text }}>
+            ¿Cómo te sentís?
+          </p>
+          <p style={{ margin: '6px 0 0', fontSize: 13, color: LT.muted }}>
+            Rápido — después de este entrenamiento
+          </p>
+        </div>
+
+        {/* Sliders */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '28px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 32,
+          }}
+        >
+          {/* RPE */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
+                ESFUERZO PERCIBIDO (RPE)
+              </p>
+              <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: LT.lime }}>
+                {checkInRpe}/10
+              </p>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={10}
+              value={checkInRpe}
+              onChange={(e) => setCheckInRpe(Number(e.target.value))}
+              style={{ width: '100%', accentColor: LT.lime }}
+            />
+          </div>
+
+          {/* Energía */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
+                ENERGÍA
+              </p>
+              <p style={{ margin: 0, fontSize: 14, color: LT.text }}>
+                {ENERGY_LABELS[checkInEnergy]}
+              </p>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={5}
+              value={checkInEnergy}
+              onChange={(e) => setCheckInEnergy(Number(e.target.value))}
+              style={{ width: '100%', accentColor: LT.lime }}
+            />
+          </div>
+
+          {/* Sueño */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
+                CÓMO DORMISTE
+              </p>
+              <p style={{ margin: 0, fontSize: 14, color: LT.text }}>
+                {SLEEP_LABELS[checkInSleep]}
+              </p>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={5}
+              value={checkInSleep}
+              onChange={(e) => setCheckInSleep(Number(e.target.value))}
+              style={{ width: '100%', accentColor: LT.lime }}
+            />
+          </div>
+
+          {/* Dolor muscular */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
+                DOLOR MUSCULAR
+              </p>
+              <p style={{ margin: 0, fontSize: 14, color: LT.text }}>
+                {SORENESS_LABELS[checkInSoreness]}
+              </p>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={5}
+              value={checkInSoreness}
+              onChange={(e) => setCheckInSoreness(Number(e.target.value))}
+              style={{ width: '100%', accentColor: LT.lime }}
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            flexShrink: 0,
+            padding: `16px 20px calc(16px + ${SAFE_AREA_BOTTOM})`,
+            borderTop: `1px solid ${LT.border}`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+            backgroundColor: LT.bg,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => handleCheckInSubmit(false)}
+            disabled={isPending}
+            style={{
+              width: '100%',
+              height: 52,
+              background: isPending
+                ? 'rgba(181,242,61,0.35)'
+                : `linear-gradient(180deg, ${LT.lime} 0%, #9FD82E 100%)`,
+              border: 'none',
+              borderRadius: 14,
+              color: '#0A0A0A',
+              fontWeight: 900,
+              fontSize: 16,
+              cursor: isPending ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {isPending ? 'Guardando...' : 'Guardar y salir'}
+          </button>
+          <button
+            type="button"
+            onClick={() => handleCheckInSubmit(true)}
+            disabled={isPending}
+            style={{
+              width: '100%',
+              height: 40,
+              background: 'transparent',
+              border: 'none',
+              color: LT.muted,
+              fontSize: 13,
+              cursor: isPending ? 'not-allowed' : 'pointer',
+            }}
+          >
+            Saltar
+          </button>
+        </div>
       </div>
     )
   }

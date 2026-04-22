@@ -21,6 +21,9 @@ export const completeSessionSchema = z.object({
   sessionId: z.string().uuid(),
   rpe: z.coerce.number().int().min(1).max(10).optional(),
   notes: z.string().max(500).optional(),
+  energyLevel: z.coerce.number().int().min(1).max(5).optional(),
+  sleepQuality: z.coerce.number().int().min(1).max(5).optional(),
+  sorenessLevel: z.coerce.number().int().min(1).max(5).optional(),
 })
 
 export type CompleteSessionInput = z.infer<typeof completeSessionSchema>
