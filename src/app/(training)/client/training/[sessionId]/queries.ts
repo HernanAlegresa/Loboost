@@ -87,3 +87,66 @@ export async function getLiveSessionData(
     exercises,
   }
 }
+
+export type PrevSetEntry = {
+  weightKg: number | null
+  repsPerformed: number | null
+}
+
+export async function getPrevSessionSets(
+  clientId: string,
+  exerciseIds: string[],
+  currentSessionId: string
+): Promise<Record<string, PrevSetEntry>> {
+  if (exerciseIds.length === 0) return {}
+
+  const supabase = await createClient()
+
+  const { data: sessions } = await supabase
+    .from('sessions')
+    .select('id')
+    .eq('client_id', clientId)
+    .eq('status', 'completed')
+    .neq('id', currentSessionId)
+    .order('completed_at', { ascending: false })
+    .limit(10)
+
+  if (!sessions?.length) return {}
+
+  const sessionIds = sessions.map((s) => s.id)
+
+  const { data: sets } = await supabase
+    .from('session_sets')
+    .select(
+      'set_number, weight_kg, reps_performed, session_id, client_plan_day_exercises(exercise_id)'
+    )
+    .in('session_id', sessionIds)
+    .eq('completed', true)
+
+  if (!sets?.length) return {}
+
+  const sessionRank = new Map(sessions.map((s, i) => [s.id, i]))
+  const sorted = [...sets].sort((a, b) => {
+    const ra = sessionRank.get(a.session_id) ?? 999
+    const rb = sessionRank.get(b.session_id) ?? 999
+    return ra - rb
+  })
+
+  const exerciseIdSet = new Set(exerciseIds)
+  const result: Record<string, PrevSetEntry> = {}
+
+  for (const set of sorted) {
+    const exId = (
+      set.client_plan_day_exercises as { exercise_id: string } | null
+    )?.exercise_id
+    if (!exId || !exerciseIdSet.has(exId)) continue
+    const key = `${exId}:${set.set_number}`
+    if (result[key]) continue
+    result[key] = {
+      weightKg: set.weight_kg ?? null,
+      repsPerformed: set.reps_performed ?? null,
+    }
+  }
+
+  return result
+}
