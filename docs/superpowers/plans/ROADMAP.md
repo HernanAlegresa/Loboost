@@ -1,16 +1,17 @@
 # LoBoost — Roadmap de Implementación
 
-> Actualizado: 2026-04-21. Fase 3 completa. A continuación los 9 planes pendientes (features + UX/UI).
+> Actualizado: 2026-04-22. Fase 4 en progreso. Quedan 2 planes pendientes.
 
 ## Cómo usar este roadmap
 
 En la sesión de implementación, decile a Claude: **"Ejecutá el Plan [N] de LoBoost: [nombre]"**.
-Claude leerá el plan y arrancará con `superpowers:subagent-driven-development` o `superpowers:executing-plans`.
+Claude leerá el plan y arrancará con `superpowers:executing-plans`.
 
 ---
 
-## PLANES COMPLETADOS ✅ (Fase 3)
+## PLANES COMPLETADOS ✅
 
+### Fase 3 — Base funcional
 - Plan A — Fundación de datos (migraciones, schemas, actions) ✅
 - Plan B — UI multi-semana, live training, vista progreso ✅
 - Plan 1 — Plan detail fix + coach ve sesiones del cliente ✅
@@ -19,25 +20,23 @@ Claude leerá el plan y arrancará con `superpowers:subagent-driven-development`
 - Plan 4 — Cambio de contraseña coach y cliente ✅
 - Plan 5 — Alerta plan vencido (badge + banner) ✅
 - Plan 6 — Vista de progreso épica (recharts) ✅
-- Plan 11 — Rest Timer en live training ✅
-- Plan 12 — Skeleton loaders + loading.tsx ✅
-- Plan 13 — Error boundaries en rutas críticas ✅
+
+### Fase 4 — Features + UX/UI
+- Plan 7 — Inline last-session data en live training ✅ → `feat/inline-last-session`
+- Plan 9 — Inactivity alert badge en lista de clientes ✅ → `feat/inactivity-alert`
+- Plan 11 — Rest Timer en live training ✅ → `feat/rest-timer`
+- Plan 12 — Skeleton loaders + loading.tsx ✅ → `feat/skeleton-loaders`
+- Plan 13 — Error boundaries en rutas críticas ✅ → `feat/error-boundaries`
+- Plan 14 — Empty states upgrade ✅ → `feat/empty-states`
+- Plan 15 — Assign plan shortcut desde banner vencido ✅ → `feat/assign-shortcut`
 
 ---
 
-## PLANES PENDIENTES — Fase 4
-
-### Plan 7 — Inline last-session data (live training)
-**Archivo:** `docs/superpowers/plans/2026-04-21-inline-last-session.md`
-**Trigger:** `"Ejecutá el Plan 7 de LoBoost: inline last-session data en live training"`
-**Qué resuelve:**
-- Mientras el cliente entrena, no ve qué peso/reps hizo la última vez en ese set
-- Se muestra "Última vez: 80 kg × 5 reps" en el set activo (estilo Strong/Hevy)
-
----
+## PLANES PENDIENTES — Fase 4 ❌
 
 ### Plan 8 — PR Detection + celebración visual
 **Archivo:** `docs/superpowers/plans/2026-04-21-pr-detection.md`
+**Branch a crear:** `feat/pr-detection`
 **Trigger:** `"Ejecutá el Plan 8 de LoBoost: PR detection con celebración visual"`
 **Qué resuelve:**
 - No hay detección de récord personal al completar un set
@@ -45,17 +44,9 @@ Claude leerá el plan y arrancará con `superpowers:subagent-driven-development`
 
 ---
 
-### Plan 9 — Inactivity alert badge
-**Archivo:** `docs/superpowers/plans/2026-04-21-inactivity-alert.md`
-**Trigger:** `"Ejecutá el Plan 9 de LoBoost: inactivity alert badge en lista de clientes"`
-**Qué resuelve:**
-- El coach no ve señal visual cuando un cliente lleva 7+ días sin entrenar
-- Badge "X días sin entrenar" en la client card (puramente UI, `daysSinceLastSession` ya existe)
-
----
-
 ### Plan 10 — Post-session check-in
 **Archivo:** `docs/superpowers/plans/2026-04-21-post-session-checkin.md`
+**Branch a crear:** `feat/post-session-checkin`
 **Trigger:** `"Ejecutá el Plan 10 de LoBoost: post-session check-in modal"`
 **Qué resuelve:**
 - Al terminar un entrenamiento se va directo al éxito sin preguntar cómo se sintió el cliente
@@ -64,65 +55,28 @@ Claude leerá el plan y arrancará con `superpowers:subagent-driven-development`
 
 ---
 
-### Plan 11 — Rest Timer en live training ⭐ UX
-**Archivo:** `docs/superpowers/plans/2026-04-21-rest-timer.md`
-**Trigger:** `"Ejecutá el Plan 11 de LoBoost: rest timer en live training"`
-**Qué resuelve:**
-- Después de completar un set no hay feedback de cuánto descansar
-- Countdown automático usando el `restSeconds` del ejercicio, con barra de progreso y botón "Saltar"
-- Feature icónica de Strong, mejora drástica de la experiencia de entrenamiento
+## Estado de branches
+
+| Branch | Plan | En master |
+|--------|------|-----------|
+| `feat/skeleton-loaders` | Plan 12 | ❌ pendiente merge |
+| `feat/error-boundaries` | Plan 13 | ❌ pendiente merge |
+| `feat/rest-timer` | Plan 11 | ❌ pendiente merge |
+| `feat/inactivity-alert` | Plan 9 | ❌ pendiente merge |
+| `feat/empty-states` | Plan 14 | ❌ pendiente merge |
+| `feat/assign-shortcut` | Plan 15 | ❌ pendiente merge |
+| `feat/inline-last-session` | Plan 7 | ❌ pendiente merge |
+
+> Todos los branches están pushados a origin. El merge a master se hará al final, cuando todos los planes estén completos.
 
 ---
 
-### Plan 12 — Skeleton loaders + loading.tsx ⭐ UX/Producción
-**Archivo:** `docs/superpowers/plans/2026-04-21-skeleton-loaders.md`
-**Trigger:** `"Ejecutá el Plan 12 de LoBoost: skeleton loaders en todas las rutas"`
-**Qué resuelve:**
-- Las páginas muestran pantalla en blanco mientras cargan
-- Agrega `loading.tsx` con skeletons animados en 8 rutas principales
+## Orden de ejecución — próxima sesión
 
----
-
-### Plan 13 — Error boundaries ⭐ Producción
-**Archivo:** `docs/superpowers/plans/2026-04-21-error-boundaries.md`
-**Trigger:** `"Ejecutá el Plan 13 de LoBoost: error boundaries en rutas críticas"`
-**Qué resuelve:**
-- Si una query falla, la app rompe sin mensaje claro
-- Agrega `error.tsx` en 4 rutas críticas con ErrorView reutilizable + botón retry
-
----
-
-### Plan 14 — Empty states upgrade ⭐ UX
-**Archivo:** `docs/superpowers/plans/2026-04-21-empty-states.md`
-**Trigger:** `"Ejecutá el Plan 14 de LoBoost: empty states mejorados"`
-**Qué resuelve:**
-- Empty states son texto gris plano sin contexto visual
-- Agrega icono + título + subtexto motivacional en 4 pantallas clave
-
----
-
-### Plan 15 — Assign plan shortcut desde banner vencido ⭐ UX
-**Archivo:** `docs/superpowers/plans/2026-04-21-assign-plan-shortcut.md`
-**Trigger:** `"Ejecutá el Plan 15 de LoBoost: assign plan shortcut desde banner vencido"`
-**Qué resuelve:**
-- El coach ve el banner "Plan vencido" pero tiene que navegar manualmente para asignar
-- Botón "Asignar nuevo plan →" directo en el banner, lleva a `/coach/library/plans?assignTo=[clientId]`
-
----
-
-## Orden de ejecución recomendado
-
-| Prioridad | Plan | Impacto |
-|-----------|------|---------|
-| 1 | Plan 12 (Skeletons) | Producción — apariencia profesional inmediata |
-| 2 | Plan 13 (Error boundaries) | Producción — robustez básica |
-| 3 | Plan 11 (Rest Timer) | UX — feature más impactante de entrenamiento |
-| 4 | Plan 7 (Inline last-session) | UX — mejora core del live training |
-| 5 | Plan 8 (PR Detection) | UX — delight feature |
-| 6 | Plan 10 (Post-session check-in) | Feature — datos para el coach |
-| 7 | Plan 14 (Empty states) | UX — pulido visual |
-| 8 | Plan 15 (Assign plan shortcut) | UX — flujo coach |
-| 9 | Plan 9 (Inactivity alert) | UX — coach awareness |
+1. Plan 8 (PR Detection) → `feat/pr-detection`
+2. Plan 10 (Post-session check-in) → `feat/post-session-checkin`
+3. Revisión final de calidad de todos los planes
+4. Merge de todos los branches a master en orden
 
 ---
 
