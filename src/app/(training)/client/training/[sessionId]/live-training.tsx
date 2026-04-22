@@ -1116,6 +1116,61 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
       )}
 
       {videoUrlOpen && <VideoModal url={videoUrlOpen} onClose={() => setVideoUrlOpen(null)} />}
+
+      {/* Rest Timer Overlay */}
+      <AnimatePresence>
+        {restTimer != null && (
+          <motion.div
+            key="rest-timer"
+            initial={{ y: 120, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 120, opacity: 0 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+            style={{
+              position: 'fixed',
+              bottom: 80,
+              left: 16,
+              right: 16,
+              backgroundColor: '#111317',
+              border: `1px solid ${LT.borderStrong}`,
+              borderRadius: 20,
+              padding: '16px 20px',
+              zIndex: 50,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <p style={{ fontSize: 13, color: LT.muted, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                Descanso
+              </p>
+              <button
+                onClick={clearRestTimer}
+                style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color: LT.lime,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                }}
+              >
+                Saltar →
+              </button>
+            </div>
+            <p style={{ fontSize: 48, fontWeight: 700, color: LT.text, textAlign: 'center', lineHeight: 1, marginBottom: 12 }}>
+              {restTimer}s
+            </p>
+            <div style={{ backgroundColor: LT.track, borderRadius: 9999, height: 4, overflow: 'hidden' }}>
+              <motion.div
+                style={{ height: '100%', backgroundColor: LT.lime, borderRadius: 9999 }}
+                animate={{ width: `${((restTimerTotal - restTimer) / restTimerTotal) * 100}%` }}
+                transition={{ duration: 0.9, ease: 'linear' }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
