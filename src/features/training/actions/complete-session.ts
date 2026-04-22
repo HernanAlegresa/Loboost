@@ -2,9 +2,16 @@
 
 import { createClient } from '@/lib/supabase/server'
 
-export async function completeSessionAction(sessionId: string) {
+export async function completeSessionAction(
+  sessionId: string,
+  rpe?: number,
+  notes?: string
+) {
   const supabase = await createClient()
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
   if (authError || !user) return { error: 'No autenticado' }
 
   const { error } = await supabase
@@ -12,9 +19,11 @@ export async function completeSessionAction(sessionId: string) {
     .update({
       status: 'completed',
       completed_at: new Date().toISOString(),
+      rpe: rpe ?? null,
+      notes: notes ?? null,
     })
     .eq('id', sessionId)
-    .eq('client_id', user.id) // RLS: el cliente solo puede cerrar sus propias sesiones
+    .eq('client_id', user.id)
 
   if (error) return { error: 'Error al completar la sesión' }
 

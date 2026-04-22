@@ -20,7 +20,6 @@ export default function ClientProfileHeader({ fullName, goal, statusColor }: Pro
     <div
       style={{
         backgroundColor: '#0A0A0A',
-        borderBottom: '1px solid #1F2227',
         padding: '12px 20px',
         display: 'grid',
         gridTemplateColumns: '44px 1fr 44px',

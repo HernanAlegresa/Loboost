@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, CalendarDays, Clock, Settings } from 'lucide-react'
+import { Home, CalendarDays, TrendingUp, Clock, Settings } from 'lucide-react'
 import {
   SAFE_BOTTOM_NAV_HEIGHT,
   SAFE_BOTTOM_NAV_PADDING_BOTTOM,
@@ -12,6 +12,7 @@ import {
 const NAV_ITEMS = [
   { label: 'Inicio', href: '/client/dashboard', Icon: Home },
   { label: 'Plan', href: '/client/plan', Icon: CalendarDays },
+  { label: 'Progreso', href: '/client/progress', Icon: TrendingUp },
   { label: 'Historial', href: '/client/history', Icon: Clock },
   { label: 'Ajustes', href: '/client/settings', Icon: Settings },
 ]

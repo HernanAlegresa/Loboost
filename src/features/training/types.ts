@@ -5,7 +5,8 @@ export type TodayExercise = {
   name: string
   order: number
   plannedSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
 }
 
@@ -54,6 +55,7 @@ export type ClientDashboardData = {
 
 export type SetLog = {
   setNumber: number
+  repsPerformed: number | null
   weightKg: number | null
   durationSeconds: number | null
   completed: boolean
@@ -67,7 +69,8 @@ export type LiveExercise = {
   type: 'strength' | 'cardio'
   order: number
   plannedSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   restSeconds: number | null
   videoUrl: string | null
@@ -131,7 +134,8 @@ export type DayExerciseDetail = {
   type: 'strength' | 'cardio'
   order: number
   plannedSets: number
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   restSeconds: number | null
   videoUrl: string | null
@@ -161,6 +165,7 @@ export type WeekHistorySummary = {
 
 export type WeekDetailSet = {
   setNumber: number
+  repsPerformed: number | null
   weightKg: number | null
   durationSeconds: number | null
   completed: boolean
@@ -171,7 +176,8 @@ export type WeekDetailExercise = {
   name: string
   muscleGroup: string
   type: 'strength' | 'cardio'
-  plannedReps: number | null
+  plannedRepsMin: number | null
+  plannedRepsMax: number | null
   plannedDurationSeconds: number | null
   sets: WeekDetailSet[]
 }
@@ -185,11 +191,19 @@ export type WeekDetailSession = {
   exercises: WeekDetailExercise[]
 }
 
+export type PlannedDayWithoutSession = {
+  clientPlanDayId: string
+  dayOfWeek: number
+  dateISO: string
+  exerciseCount: number
+}
+
 export type WeekDetailData = {
   weekNumber: number
   dateRangeStart: string
   dateRangeEnd: string
   sessions: WeekDetailSession[]
+  plannedDaysWithoutSession: PlannedDayWithoutSession[]
 }
 
 // ── Notification prefs ─────────────────────────────────────────────────────
@@ -197,4 +211,40 @@ export type WeekDetailData = {
 export type NotificationPrefs = {
   reminders: boolean
   coachMsgs: boolean
+}
+
+// ── Client progress types ──────────────────────────────────────────────────
+
+export type ExercisePR = {
+  exerciseId: string
+  exerciseName: string
+  muscleGroup: string
+  bestWeightKg: number | null
+  bestRepsAtBestWeight: number | null
+  totalCompletedSets: number
+  lastLoggedAt: string | null
+}
+
+export type ExerciseHistoryPoint = {
+  sessionDate: string
+  weekNumber: number
+  setNumber: number
+  weightKg: number | null
+  repsPerformed: number | null
+  durationSeconds: number | null
+}
+
+export type ExerciseProgressSeries = {
+  exerciseId: string
+  exerciseName: string
+  muscleGroup: string
+  history: ExerciseHistoryPoint[]
+}
+
+export type ClientProgressData = {
+  prs: ExercisePR[]
+  bodyMeasurements: Array<{
+    date: string
+    weightKg: number
+  }>
 }

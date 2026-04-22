@@ -107,16 +107,26 @@ export async function getPlanDetailForCoach(
   }
 }
 
+export type PlanBuilderInitialExercise = {
+  exerciseId: string
+  order: number
+  sets: number
+  repsMin: number | null
+  repsMax: number | null
+  durationSeconds: number | null
+  restSeconds: number | null
+}
+
 export type PlanBuilderInitialDay = {
   dayOfWeek: number
-  exercises: Array<{
-    exerciseId: string
-    order: number
-    sets: number
-    reps: number | null
-    durationSeconds: number | null
-    restSeconds: number | null
-  }>
+  exercises: PlanBuilderInitialExercise[]
+}
+
+export type PlanBuilderInitialWeek = {
+  weekNumber: number
+  weekName: string | null
+  weekType: string
+  days: PlanBuilderInitialDay[]
 }
 
 export type PlanBuilderInitial = {
@@ -124,7 +134,122 @@ export type PlanBuilderInitial = {
   name: string
   description: string | null
   weeks: number
-  days: PlanBuilderInitialDay[]
+  planWeeks: PlanBuilderInitialWeek[]
+}
+
+export type PlanDetailExercise = {
+  id: string
+  name: string
+  type: 'strength' | 'cardio'
+  order: number
+  sets: number
+  repsMin: number | null
+  repsMax: number | null
+  durationSeconds: number | null
+  restSeconds: number | null
+}
+
+export type PlanDetailDay = {
+  id: string
+  dayOfWeek: number
+  order: number
+  exercises: PlanDetailExercise[]
+}
+
+export type PlanDetailWeek = {
+  id: string
+  weekNumber: number
+  weekName: string | null
+  weekType: string
+  days: PlanDetailDay[]
+}
+
+export type PlanDetailFull = {
+  id: string
+  name: string
+  description: string | null
+  weeks: number
+  planWeeks: PlanDetailWeek[]
+}
+
+export async function getPlanDetailFull(
+  coachId: string,
+  planId: string
+): Promise<PlanDetailFull | null> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('plans')
+    .select(`
+      id, name, description, weeks,
+      plan_weeks (
+        id, week_number, week_name, week_type,
+        plan_days (
+          id, day_of_week, order,
+          plan_day_exercises (
+            id, order, sets, reps_min, reps_max, duration_seconds, rest_seconds,
+            exercises ( id, name, type )
+          )
+        )
+      )
+    `)
+    .eq('id', planId)
+    .eq('coach_id', coachId)
+    .single()
+
+  if (error || !data) return null
+
+  type RawWeek = {
+    id: string
+    week_number: number
+    week_name: string | null
+    week_type: string
+    plan_days: Array<{
+      id: string
+      day_of_week: number
+      order: number
+      plan_day_exercises: Array<{
+        id: string
+        order: number
+        sets: number
+        reps_min: number | null
+        reps_max: number | null
+        duration_seconds: number | null
+        rest_seconds: number | null
+        exercises: { id: string; name: string; type: string } | null
+      }>
+    }>
+  }
+
+  const planWeeks: PlanDetailWeek[] = ((data.plan_weeks as RawWeek[]) ?? [])
+    .sort((a, b) => a.week_number - b.week_number)
+    .map((w) => ({
+      id: w.id,
+      weekNumber: w.week_number,
+      weekName: w.week_name,
+      weekType: w.week_type,
+      days: (w.plan_days ?? [])
+        .sort((a, b) => a.order - b.order)
+        .map((d) => ({
+          id: d.id,
+          dayOfWeek: d.day_of_week,
+          order: d.order,
+          exercises: (d.plan_day_exercises ?? [])
+            .sort((a, b) => a.order - b.order)
+            .map((e) => ({
+              id: e.id,
+              name: e.exercises?.name ?? 'Ejercicio',
+              type: (e.exercises?.type ?? 'strength') as 'strength' | 'cardio',
+              order: e.order,
+              sets: e.sets,
+              repsMin: e.reps_min,
+              repsMax: e.reps_max,
+              durationSeconds: e.duration_seconds,
+              restSeconds: e.rest_seconds,
+            })),
+        })),
+    }))
+
+  return { id: data.id, name: data.name, description: data.description, weeks: data.weeks, planWeeks }
 }
 
 export async function getPlanForBuilderEdit(
@@ -137,10 +262,13 @@ export async function getPlanForBuilderEdit(
     .select(
       `
       id, name, description, weeks,
-      plan_days (
-        day_of_week,
-        plan_day_exercises (
-          exercise_id, order, sets, reps, duration_seconds, rest_seconds
+      plan_weeks (
+        id, week_number, week_name, week_type,
+        plan_days (
+          id, day_of_week, order,
+          plan_day_exercises (
+            id, exercise_id, order, sets, reps_min, reps_max, duration_seconds, rest_seconds
+          )
         )
       )
     `
@@ -151,31 +279,49 @@ export async function getPlanForBuilderEdit(
 
   if (error || !data) return null
 
-  const planDays = (data.plan_days ?? []) as Array<{
-    day_of_week: number
-    plan_day_exercises: Array<{
-      exercise_id: string
+  type WeekRow = {
+    id: string
+    week_number: number
+    week_name: string | null
+    week_type: string
+    plan_days: Array<{
+      id: string
+      day_of_week: number
       order: number
-      sets: number
-      reps: number | null
-      duration_seconds: number | null
-      rest_seconds: number | null
+      plan_day_exercises: Array<{
+        id: string
+        exercise_id: string
+        order: number
+        sets: number
+        reps_min: number | null
+        reps_max: number | null
+        duration_seconds: number | null
+        rest_seconds: number | null
+      }>
     }>
-  }>
+  }
 
-  const days: PlanBuilderInitialDay[] = [...planDays]
-    .sort((a, b) => a.day_of_week - b.day_of_week)
-    .map((d) => ({
-      dayOfWeek: d.day_of_week,
-      exercises: [...(d.plan_day_exercises ?? [])]
+  const planWeeks: PlanBuilderInitialWeek[] = ((data.plan_weeks as WeekRow[]) ?? [])
+    .sort((a, b) => a.week_number - b.week_number)
+    .map((w) => ({
+      weekNumber: w.week_number,
+      weekName: w.week_name,
+      weekType: w.week_type,
+      days: (w.plan_days ?? [])
         .sort((a, b) => a.order - b.order)
-        .map((e) => ({
-          exerciseId: e.exercise_id,
-          order: e.order,
-          sets: e.sets,
-          reps: e.reps,
-          durationSeconds: e.duration_seconds,
-          restSeconds: e.rest_seconds,
+        .map((d) => ({
+          dayOfWeek: d.day_of_week,
+          exercises: (d.plan_day_exercises ?? [])
+            .sort((a, b) => a.order - b.order)
+            .map((e) => ({
+              exerciseId: e.exercise_id,
+              order: e.order,
+              sets: e.sets,
+              repsMin: e.reps_min,
+              repsMax: e.reps_max,
+              durationSeconds: e.duration_seconds,
+              restSeconds: e.rest_seconds,
+            })),
         })),
     }))
 
@@ -184,6 +330,6 @@ export async function getPlanForBuilderEdit(
     name: data.name,
     description: data.description,
     weeks: data.weeks,
-    days,
+    planWeeks,
   }
 }

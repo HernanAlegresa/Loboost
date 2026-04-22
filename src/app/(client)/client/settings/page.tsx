@@ -4,7 +4,9 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { createClient } from '@/lib/supabase/server'
 import ClientAvatar from '@/components/ui/client-avatar'
 import NotificationToggles from './notification-toggles'
+import LogWeightForm from './log-weight-form'
 import { signOut } from '@/features/auth/actions/sign-out'
+import ChangePasswordForm from '@/components/ui/change-password-form'
 import type { NotificationPrefs } from '@/features/training/types'
 
 async function getSettingsData(userId: string) {
@@ -91,6 +93,11 @@ export default async function SettingsPage() {
       </div>
 
       <div>
+        <p style={SECTION_LABEL}>Peso corporal</p>
+        <LogWeightForm />
+      </div>
+
+      <div>
         <p style={SECTION_LABEL}>Notificaciones</p>
         <div
           style={{
@@ -102,6 +109,11 @@ export default async function SettingsPage() {
         >
           <NotificationToggles initial={data.prefs} />
         </div>
+      </div>
+
+      <div>
+        <p style={SECTION_LABEL}>Seguridad</p>
+        <ChangePasswordForm />
       </div>
 
       <div>

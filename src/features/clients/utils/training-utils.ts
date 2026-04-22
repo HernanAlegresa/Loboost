@@ -36,6 +36,13 @@ export function computeDayDate(startDate: string, weekNumber: number, dayOfWeek:
   return d.toISOString().split('T')[0]
 }
 
+/** Returns true if end_date (YYYY-MM-DD) has already passed. */
+export function isPlanExpired(endDate: string | null): boolean {
+  if (!endDate) return false
+  const today = getTodayISO()
+  return endDate < today
+}
+
 /**
  * Determines display status of a training day.
  * sessionStatus takes priority over date comparison.

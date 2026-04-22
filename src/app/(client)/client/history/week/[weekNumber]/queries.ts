@@ -5,6 +5,7 @@ import type {
   WeekDetailSession,
   WeekDetailExercise,
   WeekDetailSet,
+  PlannedDayWithoutSession,
 } from '@/features/training/types'
 
 export async function getWeekDetailData(
@@ -43,12 +44,34 @@ export async function getWeekDetailData(
   const dateRangeStart = computeDayDate(plan.start_date, weekNumber, 1)
   const dateRangeEnd = computeDayDate(plan.start_date, weekNumber, 7)
 
+  const completedDayIds = new Set((sessions ?? []).map((s) => s.client_plan_day_id))
+
+  const { data: exerciseCounts } = await supabase
+    .from('client_plan_day_exercises')
+    .select('client_plan_day_id')
+    .in('client_plan_day_id', dayIds)
+
+  const countByDay = new Map<string, number>()
+  for (const row of exerciseCounts ?? []) {
+    countByDay.set(row.client_plan_day_id, (countByDay.get(row.client_plan_day_id) ?? 0) + 1)
+  }
+
+  const plannedDaysWithoutSession: PlannedDayWithoutSession[] = days
+    .filter((d) => !completedDayIds.has(d.id))
+    .map((d) => ({
+      clientPlanDayId: d.id,
+      dayOfWeek: d.day_of_week,
+      dateISO: computeDayDate(plan.start_date, weekNumber, d.day_of_week),
+      exerciseCount: countByDay.get(d.id) ?? 0,
+    }))
+
   if (!sessions || sessions.length === 0) {
     return {
       weekNumber,
       dateRangeStart,
       dateRangeEnd,
       sessions: [],
+      plannedDaysWithoutSession,
     }
   }
 
@@ -57,9 +80,9 @@ export async function getWeekDetailData(
   const { data: setsData } = await supabase
     .from('session_sets')
     .select(
-      `session_id, set_number, weight_kg, duration_seconds, completed, client_plan_day_exercise_id,
+      `session_id, set_number, weight_kg, reps_performed, duration_seconds, completed, client_plan_day_exercise_id,
        client_plan_day_exercises (
-         order, sets, reps, duration_seconds,
+         order, sets, reps_min, reps_max, duration_seconds,
          exercises (name, muscle_group, type)
        )`
     )
@@ -70,13 +93,15 @@ export async function getWeekDetailData(
     session_id: string
     set_number: number
     weight_kg: number | null
+    reps_performed: number | null
     duration_seconds: number | null
     completed: boolean
     client_plan_day_exercise_id: string
     client_plan_day_exercises: {
       order: number
       sets: number
-      reps: number | null
+      reps_min: number | null
+      reps_max: number | null
       duration_seconds: number | null
       exercises: { name: string; muscle_group: string; type: string } | null
     } | null
@@ -114,6 +139,7 @@ export async function getWeekDetailData(
           .sort((a, b) => a.set_number - b.set_number)
           .map((r) => ({
             setNumber: r.set_number,
+            repsPerformed: r.reps_performed ?? null,
             weightKg: r.weight_kg,
             durationSeconds: r.duration_seconds,
             completed: r.completed,
@@ -123,7 +149,8 @@ export async function getWeekDetailData(
           name: exInfo?.exercises?.name ?? 'Ejercicio',
           muscleGroup: exInfo?.exercises?.muscle_group ?? '',
           type: (exInfo?.exercises?.type as 'strength' | 'cardio') ?? 'strength',
-          plannedReps: exInfo?.reps ?? null,
+          plannedRepsMin: exInfo?.reps_min ?? null,
+          plannedRepsMax: exInfo?.reps_max ?? null,
           plannedDurationSeconds: exInfo?.duration_seconds ?? null,
           sets,
         }
@@ -149,5 +176,6 @@ export async function getWeekDetailData(
     dateRangeStart,
     dateRangeEnd,
     sessions: detailSessions,
+    plannedDaysWithoutSession,
   }
 }

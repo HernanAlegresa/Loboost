@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 
 type ClientProfileTab = 'profile' | 'progress'
@@ -18,11 +19,13 @@ const PROFILE_SECTION_GAP_PX = 32
 const PROGRESS_SECTION_GAP_PX = 24
 
 type Props = {
+  clientId: string
   profileContent: React.ReactNode
   progressContent: React.ReactNode
 }
 
-export default function ClientProfileTabsShell({ profileContent, progressContent }: Props) {
+export default function ClientProfileTabsShell({ clientId, profileContent, progressContent }: Props) {
+  const router = useRouter()
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const tabsTrackRef = useRef<HTMLDivElement | null>(null)
   const tabTextRefs = useRef<Record<ClientProfileTab, HTMLSpanElement | null>>({
@@ -32,6 +35,27 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
   const [activeTab, setActiveTab] = useState<ClientProfileTab>('profile')
   const [panelWidth, setPanelWidth] = useState(0)
   const [indicator, setIndicator] = useState({ left: 0, width: 0 })
+
+  // On mount: if ?tab=progress is in the URL, jump to the progress panel instantly
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('tab') !== 'progress') return
+    setActiveTab('progress')
+    // Double rAF so layout has settled before we set scrollLeft
+    let r1: number
+    let r2: number
+    r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => {
+        const vp = viewportRef.current
+        if (vp && vp.clientWidth > 0) vp.scrollLeft = vp.clientWidth
+      })
+    })
+    return () => {
+      cancelAnimationFrame(r1)
+      cancelAnimationFrame(r2)
+    }
+  }, [])
 
   const tabs = useMemo(() => TABS, [])
 
@@ -153,6 +177,23 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
                   </button>
                 )
               })}
+              <button
+                type="button"
+                onClick={() => router.push(`/coach/clients/${clientId}/sessions`)}
+                style={{
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: '#6B7280',
+                  padding: '6px 0',
+                  fontSize: 18,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  transition: 'color 140ms ease',
+                }}
+              >
+                Sesiones
+              </button>
             </div>
 
             <div

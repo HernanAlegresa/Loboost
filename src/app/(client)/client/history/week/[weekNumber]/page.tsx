@@ -46,7 +46,7 @@ export default async function WeekDetailPage({
         </p>
       </div>
 
-      <WeekDetailClient data={data} />
+      <WeekDetailClient data={data} weekNumber={num} />
     </div>
   )
 }

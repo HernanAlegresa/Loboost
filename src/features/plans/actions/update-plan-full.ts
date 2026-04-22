@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import {
-  deletePlanDayTree,
-  insertPlanDayTree,
+  deletePlanWeekTree,
+  insertPlanWeekTree,
   validatePlanBuilderForCoach,
 } from '@/features/plans/plan-builder-persist'
 
@@ -53,7 +53,7 @@ export async function updatePlanFullAction(
 
   const validated = await validatePlanBuilderForCoach(supabase, user.id, parsedJson)
   if (!validated.ok) return { success: false, error: validated.error }
-  const { sortedDays, payload } = validated.data
+  const { payload } = validated.data
 
   const { error: metaErr } = await supabase
     .from('plans')
@@ -67,10 +67,10 @@ export async function updatePlanFullAction(
 
   if (metaErr) return { success: false, error: 'Error al actualizar el plan' }
 
-  const del = await deletePlanDayTree(supabase, planId)
+  const del = await deletePlanWeekTree(supabase, planId)
   if (!del.ok) return { success: false, error: del.error }
 
-  const ins = await insertPlanDayTree(supabase, planId, user.id, sortedDays)
+  const ins = await insertPlanWeekTree(supabase, planId, payload.planWeeks)
   if (!ins.ok) return { success: false, error: ins.error }
 
   revalidatePath('/coach/library/plans')

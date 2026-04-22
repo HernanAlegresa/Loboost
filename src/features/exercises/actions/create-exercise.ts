@@ -14,10 +14,9 @@ export async function createExerciseAction(
 ): Promise<CreateExerciseState> {
   const videoRaw = formData.get('videoUrl')
   const raw = {
-    name: formData.get('name'),
+    name:        formData.get('name'),
     muscleGroup: formData.get('muscleGroup'),
-    category: formData.get('category'),
-    type: formData.get('type'),
+    type:        formData.get('type'),
     videoUrl:
       typeof videoRaw === 'string' && videoRaw.trim() === '' ? undefined : videoRaw || undefined,
   }
@@ -34,17 +33,15 @@ export async function createExerciseAction(
   const { data, error } = await supabase
     .from('exercises')
     .insert({
-      coach_id: user.id,
-      name: result.data.name,
+      coach_id:     user.id,
+      name:         result.data.name,
       muscle_group: result.data.muscleGroup,
-      category: result.data.category,
-      type: result.data.type,
-      video_url: result.data.videoUrl ?? null,
+      type:         result.data.type,
+      video_url:    result.data.videoUrl ?? null,
     })
     .select('id')
     .single()
 
   if (error) return { success: false, error: 'Error al crear el ejercicio' }
-
   return { success: true, exerciseId: data.id }
 }

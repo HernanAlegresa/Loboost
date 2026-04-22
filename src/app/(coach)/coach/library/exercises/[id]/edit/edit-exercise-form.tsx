@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useState, type CSSProperties, type 
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { updateExerciseAction, type UpdateExerciseState } from '@/features/exercises/actions/update-exercise'
+import { MUSCLE_GROUP_OPTIONS } from '@/features/exercises/muscle-groups'
 import type { ExerciseEditRow } from '../../queries'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 import CustomSelect from '@/components/ui/custom-select'
@@ -54,26 +55,23 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
   const router = useRouter()
   const initial = useMemo(
     () => ({
-      name: exercise.name,
+      name:        exercise.name,
       muscleGroup: exercise.muscle_group,
-      category: exercise.category,
-      type: exercise.type,
-      videoUrl: exercise.video_url?.trim() ?? '',
+      type:        exercise.type,
+      videoUrl:    exercise.video_url?.trim() ?? '',
     }),
     [exercise]
   )
 
-  const [name, setName] = useState(initial.name)
+  const [name,        setName]        = useState(initial.name)
   const [muscleGroup, setMuscleGroup] = useState(initial.muscleGroup)
-  const [category, setCategory] = useState(initial.category)
-  const [type, setType] = useState(initial.type)
-  const [videoUrl, setVideoUrl] = useState(initial.videoUrl)
+  const [type,        setType]        = useState(initial.type)
+  const [videoUrl,    setVideoUrl]    = useState(initial.videoUrl)
 
   const dirty =
-    name.trim() !== initial.name ||
-    muscleGroup.trim() !== initial.muscleGroup ||
-    category.trim() !== initial.category ||
-    type !== initial.type ||
+    name.trim()     !== initial.name       ||
+    muscleGroup     !== initial.muscleGroup ||
+    type            !== initial.type        ||
     videoUrl.trim() !== initial.videoUrl
 
   const [state, formAction, isPending] = useActionState<UpdateExerciseState, FormData>(
@@ -82,9 +80,7 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
   )
 
   useEffect(() => {
-    if (state?.success) {
-      router.push('/coach/library?tab=exercises')
-    }
+    if (state?.success) router.push('/coach/library?tab=exercises')
   }, [state, router])
 
   return (
@@ -96,15 +92,7 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
         titleSize={20}
       />
 
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          overscrollBehaviorY: 'contain',
-        }}
-      >
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain' }}>
         <form
           action={formAction}
           style={{ padding: '16px 20px 120px', display: 'flex', flexDirection: 'column', gap: 28 }}
@@ -127,26 +115,13 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
               </Field>
 
               <Field label="Grupo muscular">
-                <input
+                <CustomSelect
                   name="muscleGroup"
-                  type="text"
                   required
                   value={muscleGroup}
-                  onChange={(e) => setMuscleGroup(e.target.value)}
-                  style={inputStyle}
-                  autoComplete="off"
-                />
-              </Field>
-
-              <Field label="Categoría">
-                <input
-                  name="category"
-                  type="text"
-                  required
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  style={inputStyle}
-                  autoComplete="off"
+                  onChange={setMuscleGroup}
+                  placeholder="Seleccioná el grupo muscular"
+                  options={MUSCLE_GROUP_OPTIONS}
                 />
               </Field>
 
@@ -215,13 +190,7 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
 
           <Link
             href="/coach/library?tab=exercises"
-            style={{
-              textAlign: 'center',
-              fontSize: 14,
-              fontWeight: 600,
-              color: '#6B7280',
-              textDecoration: 'none',
-            }}
+            style={{ textAlign: 'center', fontSize: 14, fontWeight: 600, color: '#6B7280', textDecoration: 'none' }}
           >
             Cancelar
           </Link>
