@@ -1,6 +1,8 @@
+import Link from 'next/link'
 import Avatar from '@/components/ui/avatar'
 
 type Props = {
+  clientId: string
   fullName: string
   statusColor: 'active' | 'warning' | 'critical'
   sex: 'male' | 'female' | 'other' | null
@@ -36,6 +38,7 @@ const LEVEL_LABELS: Record<'beginner' | 'intermediate' | 'advanced', string> = {
 }
 
 export default function ClientProfileHeroCard({
+  clientId,
   fullName,
   statusColor,
   sex,
@@ -77,13 +80,29 @@ export default function ClientProfileHeroCard({
           }}
         >
           <span style={{ fontSize: 18 }}>⚠️</span>
-          <div>
+          <div style={{ flex: 1 }}>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F25252' }}>
               Plan vencido
             </p>
             <p style={{ margin: '2px 0 0', fontSize: 12, color: '#9CA3AF' }}>
-              El plan de este cliente ha finalizado. Asigná un nuevo plan para continuar el seguimiento.
+              El plan de este cliente ha finalizado.
             </p>
+            <Link
+              href={`/coach/library/plans?assignTo=${clientId}`}
+              style={{
+                display: 'inline-block',
+                marginTop: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                color: '#0A0A0A',
+                backgroundColor: '#B5F23D',
+                borderRadius: 8,
+                padding: '6px 12px',
+                textDecoration: 'none',
+              }}
+            >
+              Asignar nuevo plan →
+            </Link>
           </div>
         </div>
       )}
