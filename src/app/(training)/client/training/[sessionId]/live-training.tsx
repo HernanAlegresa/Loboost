@@ -124,6 +124,7 @@ export default function LiveTraining({
   const [videoUrlOpen, setVideoUrlOpen] = useState<string | null>(null)
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [showSetCelebration, setShowSetCelebration] = useState(false)
+  const [showPrCelebration, setShowPrCelebration] = useState(false)
   const [inputFocusIdx, setInputFocusIdx] = useState<number | null>(null)
   const [restTimer, setRestTimer] = useState<number | null>(null)
   const [restTimerTotal, setRestTimerTotal] = useState<number>(0)
@@ -238,6 +239,12 @@ export default function LiveTraining({
   }, [showSetCelebration])
 
   useEffect(() => {
+    if (!showPrCelebration) return
+    const id = window.setTimeout(() => setShowPrCelebration(false), 1500)
+    return () => window.clearTimeout(id)
+  }, [showPrCelebration])
+
+  useEffect(() => {
     return () => {
       if (restTimerTimeoutRef.current) clearTimeout(restTimerTimeoutRef.current)
       if (restIntervalRef.current) clearInterval(restIntervalRef.current)
@@ -316,12 +323,15 @@ export default function LiveTraining({
       if (fs.type === 'cardio' && inp.duration) formData.set('durationSeconds', inp.duration)
 
       const result = await completeSetAction(formData)
-      if (result.error) return
+      if ('error' in result) return
 
       setLocalCompleted((prev) => new Set([...prev, key]))
       const next = flatIndex + 1
       pendingScrollAfterCelebrationRef.current = next < flatSets.length ? next : null
       setShowSetCelebration(true)
+
+      if (result.isPR) setShowPrCelebration(true)
+
       const secondsToRest = fs.restSeconds
       if (secondsToRest && secondsToRest > 0) {
         restTimerTimeoutRef.current = setTimeout(
@@ -495,6 +505,41 @@ export default function LiveTraining({
             </motion.div>
           </motion.div>
         ) : null}
+      </AnimatePresence>
+
+      {/* PR celebration overlay */}
+      <AnimatePresence>
+        {showPrCelebration && (
+          <motion.div
+            key="pr-celebration"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ type: 'spring', stiffness: 360, damping: 22 }}
+            style={{
+              position: 'fixed',
+              bottom: 120,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 300,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              backgroundColor: '#B5F23D',
+              color: '#0A0A0A',
+              fontWeight: 800,
+              fontSize: 14,
+              letterSpacing: '0.06em',
+              padding: '10px 20px',
+              borderRadius: 100,
+              boxShadow: '0 8px 24px rgba(181,242,61,0.45)',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+            }}
+          >
+            🏆 NUEVO RÉCORD PERSONAL
+          </motion.div>
+        )}
       </AnimatePresence>
 
       <header
