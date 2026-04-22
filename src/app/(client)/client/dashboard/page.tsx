@@ -170,13 +170,36 @@ export default async function ClientDashboardPage() {
           style={{
             backgroundColor: '#111317',
             border: '1px solid #1F2227',
-            borderRadius: 14,
-            padding: 24,
+            borderRadius: 16,
+            padding: '32px 24px',
             textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 10,
           }}
         >
-          <p style={{ fontSize: 14, color: '#4B5563' }}>
-            Tu coach todavía no te asignó un plan.
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(181, 242, 61, 0.08)',
+              border: '1px solid rgba(181, 242, 61, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 26,
+              marginBottom: 4,
+            }}
+          >
+            🏋️
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
+            Todavía no tenés un plan
+          </p>
+          <p style={{ fontSize: 13, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>
+            Tu coach te va a asignar un plan pronto.{'\n'}Mientras tanto, ¡preparate para entrenar!
           </p>
         </div>
       )}

@@ -33,15 +33,37 @@ export default async function HistoryPage() {
           style={{
             backgroundColor: '#111317',
             border: '1px solid #1F2227',
-            borderRadius: 14,
-            padding: 32,
+            borderRadius: 16,
+            padding: '36px 24px',
             textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 10,
           }}
         >
-          <p style={{ fontSize: 14, color: '#4B5563' }}>
-            Todavía no completaste ninguna semana.
+          <div
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: '50%',
+              backgroundColor: 'rgba(181, 242, 61, 0.08)',
+              border: '1px solid rgba(181, 242, 61, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 28,
+              marginBottom: 4,
+            }}
+          >
+            📅
+          </div>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
+            Sin semanas registradas
           </p>
-          <p style={{ fontSize: 12, color: '#374151', marginTop: 6 }}>¡Empezá hoy!</p>
+          <p style={{ fontSize: 13, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>
+            Completá tu primera semana de entrenamiento{'\n'}y aparecerá aquí.
+          </p>
         </div>
       ) : (
         weeks.map((week) => (
