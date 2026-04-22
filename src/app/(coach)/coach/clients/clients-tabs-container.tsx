@@ -538,6 +538,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                     completedThisWeek={client.completedThisWeek}
                     plannedDaysPerWeek={client.plannedDaysPerWeek}
                     planExpired={client.planExpired}
+                    daysSinceLastSession={client.daysSinceLastSession}
                   />
                 ))}
               </AnimatePresence>

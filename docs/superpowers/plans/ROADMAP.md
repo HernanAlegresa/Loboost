@@ -19,6 +19,8 @@ Claude leerá el plan y arrancará con `superpowers:subagent-driven-development`
 - Plan 4 — Cambio de contraseña coach y cliente ✅
 - Plan 5 — Alerta plan vencido (badge + banner) ✅
 - Plan 6 — Vista de progreso épica (recharts) ✅
+- Plan 11 — Rest Timer en live training ✅
+- Plan 12 — Skeleton loaders + loading.tsx ✅
 - Plan 13 — Error boundaries en rutas críticas ✅
 
 ---
