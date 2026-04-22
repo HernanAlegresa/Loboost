@@ -25,6 +25,9 @@ export type SessionDetail = {
   status: 'completed' | 'in_progress'
   rpe: number | null
   notes: string | null
+  energyLevel: number | null
+  sleepQuality: number | null
+  sorenessLevel: number | null
   weekNumber: number
   dayOfWeek: number
   exercises: SessionExerciseDetail[]
@@ -47,7 +50,7 @@ export async function getSessionDetailForCoach(
   const { data: session, error: sessErr } = await supabase
     .from('sessions')
     .select(`
-      id, date, status, rpe, notes,
+      id, date, status, rpe, notes, energy_level, sleep_quality, soreness_level,
       client_plan_days ( day_of_week, week_number,
         client_plan_day_exercises (
           id, sets, reps_min, reps_max, duration_seconds,
@@ -113,6 +116,9 @@ export async function getSessionDetailForCoach(
     status: session.status as 'completed' | 'in_progress',
     rpe: session.rpe,
     notes: session.notes,
+    energyLevel: (session as { energy_level: number | null }).energy_level ?? null,
+    sleepQuality: (session as { sleep_quality: number | null }).sleep_quality ?? null,
+    sorenessLevel: (session as { soreness_level: number | null }).soreness_level ?? null,
     weekNumber: day?.week_number ?? 0,
     dayOfWeek: day?.day_of_week ?? 0,
     exercises,
