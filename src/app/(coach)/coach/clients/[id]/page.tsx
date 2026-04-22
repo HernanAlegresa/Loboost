@@ -49,6 +49,7 @@ export default async function ClientProfilePage({
         profileContent={
           <>
             <ClientProfileHeroCard
+              clientId={id}
               fullName={profile.fullName}
               statusColor={profile.statusColor}
               sex={profile.sex}
