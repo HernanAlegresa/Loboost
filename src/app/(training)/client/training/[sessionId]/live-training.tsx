@@ -119,6 +119,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   const [restTimer, setRestTimer] = useState<number | null>(null)
   const [restTimerTotal, setRestTimerTotal] = useState<number>(0)
   const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const restTimerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingScrollAfterCelebrationRef = useRef<number | null>(null)
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -229,6 +230,7 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
 
   useEffect(() => {
     return () => {
+      if (restTimerTimeoutRef.current) clearTimeout(restTimerTimeoutRef.current)
       if (restIntervalRef.current) clearInterval(restIntervalRef.current)
     }
   }, [])
@@ -259,6 +261,10 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   }
 
   function clearRestTimer() {
+    if (restTimerTimeoutRef.current) {
+      clearTimeout(restTimerTimeoutRef.current)
+      restTimerTimeoutRef.current = null
+    }
     if (restIntervalRef.current) {
       clearInterval(restIntervalRef.current)
       restIntervalRef.current = null
@@ -307,9 +313,12 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
       const next = flatIndex + 1
       pendingScrollAfterCelebrationRef.current = next < flatSets.length ? next : null
       setShowSetCelebration(true)
-      if (fs.restSeconds && fs.restSeconds > 0) {
-        // El timer arranca después de que la celebración termina (920ms)
-        setTimeout(() => startRestTimer(fs.restSeconds!), CELEBRATION_DISPLAY_MS)
+      const secondsToRest = fs.restSeconds
+      if (secondsToRest && secondsToRest > 0) {
+        restTimerTimeoutRef.current = setTimeout(
+          () => startRestTimer(secondsToRest),
+          CELEBRATION_DISPLAY_MS
+        )
       }
     })
   }
