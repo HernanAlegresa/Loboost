@@ -116,6 +116,9 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
   const [editingKey, setEditingKey] = useState<string | null>(null)
   const [showSetCelebration, setShowSetCelebration] = useState(false)
   const [inputFocusIdx, setInputFocusIdx] = useState<number | null>(null)
+  const [restTimer, setRestTimer] = useState<number | null>(null)
+  const [restTimerTotal, setRestTimerTotal] = useState<number>(0)
+  const restIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const pendingScrollAfterCelebrationRef = useRef<number | null>(null)
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -224,6 +227,12 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     return () => window.clearTimeout(id)
   }, [showSetCelebration])
 
+  useEffect(() => {
+    return () => {
+      if (restIntervalRef.current) clearInterval(restIntervalRef.current)
+    }
+  }, [])
+
   const onCelebrationExitComplete = useCallback(() => {
     const next = pendingScrollAfterCelebrationRef.current
     pendingScrollAfterCelebrationRef.current = null
@@ -249,6 +258,32 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
     })
   }
 
+  function clearRestTimer() {
+    if (restIntervalRef.current) {
+      clearInterval(restIntervalRef.current)
+      restIntervalRef.current = null
+    }
+    setRestTimer(null)
+    setRestTimerTotal(0)
+  }
+
+  function startRestTimer(seconds: number) {
+    clearRestTimer()
+    if (seconds <= 0) return
+    setRestTimerTotal(seconds)
+    setRestTimer(seconds)
+    restIntervalRef.current = setInterval(() => {
+      setRestTimer((prev) => {
+        if (prev == null || prev <= 1) {
+          clearInterval(restIntervalRef.current!)
+          restIntervalRef.current = null
+          return null
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
   function handleCompleteSet(flatIndex: number) {
     const fs = flatSets[flatIndex]
     if (!fs) return
@@ -272,10 +307,15 @@ export default function LiveTraining({ session }: { session: LiveSessionData }) 
       const next = flatIndex + 1
       pendingScrollAfterCelebrationRef.current = next < flatSets.length ? next : null
       setShowSetCelebration(true)
+      if (fs.restSeconds && fs.restSeconds > 0) {
+        // El timer arranca después de que la celebración termina (920ms)
+        setTimeout(() => startRestTimer(fs.restSeconds!), CELEBRATION_DISPLAY_MS)
+      }
     })
   }
 
   function handleFinish() {
+    clearRestTimer()
     startTransition(async () => {
       await completeSessionAction(session.sessionId)
       setIsFinished(true)
