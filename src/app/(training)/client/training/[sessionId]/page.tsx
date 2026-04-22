@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth/session'
-import { getLiveSessionData } from './queries'
+import { getLiveSessionData, getPrevSessionSets } from './queries'
 import LiveTraining from './live-training'
 
 export default async function LiveTrainingPage({
@@ -16,5 +16,8 @@ export default async function LiveTrainingPage({
   const session = await getLiveSessionData(sessionId, user.id)
   if (!session) notFound()
 
-  return <LiveTraining session={session} />
+  const exerciseIds = session.exercises.map((e) => e.exerciseId)
+  const prevSets = await getPrevSessionSets(user.id, exerciseIds, sessionId)
+
+  return <LiveTraining session={session} prevSets={prevSets} />
 }
