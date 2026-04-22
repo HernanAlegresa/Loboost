@@ -529,18 +529,55 @@ export default function ClientsTabsContainer({ clients }: Props) {
               }}
             >
               <AnimatePresence mode="popLayout">
-                {filteredClients.map((client) => (
-                  <ClientCard
-                    key={client.id}
-                    clientId={client.id}
-                    fullName={client.fullName}
-                    state={client.state}
-                    completedThisWeek={client.completedThisWeek}
-                    plannedDaysPerWeek={client.plannedDaysPerWeek}
-                    planExpired={client.planExpired}
-                    daysSinceLastSession={client.daysSinceLastSession}
-                  />
-                ))}
+                {filteredClients.length === 0 ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      textAlign: 'center',
+                      padding: '48px 24px',
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(181, 242, 61, 0.08)',
+                        border: '1px solid rgba(181, 242, 61, 0.15)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 28,
+                      }}
+                    >
+                      👥
+                    </div>
+                    <p style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
+                      {activeFilter === 'todos' ? 'Todavía no tenés clientes' : 'Sin clientes en esta categoría'}
+                    </p>
+                    <p style={{ fontSize: 13, color: '#6B7280', margin: 0, lineHeight: 1.5 }}>
+                      {activeFilter === 'todos'
+                        ? 'Creá tu primer cliente para empezar.'
+                        : 'Probá cambiando el filtro.'}
+                    </p>
+                  </div>
+                ) : (
+                  filteredClients.map((client) => (
+                    <ClientCard
+                      key={client.id}
+                      clientId={client.id}
+                      fullName={client.fullName}
+                      state={client.state}
+                      completedThisWeek={client.completedThisWeek}
+                      plannedDaysPerWeek={client.plannedDaysPerWeek}
+                      planExpired={client.planExpired}
+                      daysSinceLastSession={client.daysSinceLastSession}
+                    />
+                  ))
+                )}
               </AnimatePresence>
             </div>
           </div>
