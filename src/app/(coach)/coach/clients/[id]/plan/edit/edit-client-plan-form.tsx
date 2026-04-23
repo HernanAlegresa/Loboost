@@ -11,6 +11,7 @@ import type { ClientPlanDayForEdit } from './page'
 import type { ExercisePick } from '@/app/(coach)/coach/library/plans/queries'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 import CustomSelect from '@/components/ui/custom-select'
+import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -168,7 +169,10 @@ export default function EditClientPlanForm({
 
   useEffect(() => {
     if (state?.success) {
-      router.push(`/coach/clients/${clientId}`)
+      const timer = setTimeout(() => {
+        router.push(`/coach/clients/${clientId}`)
+      }, 2200)
+      return () => clearTimeout(timer)
     }
   }, [state, router, clientId])
 
@@ -231,6 +235,13 @@ export default function EditClientPlanForm({
         overflow: 'hidden',
       }}
     >
+      {state?.success ? (
+        <CoachSuccessOverlay
+          title="¡Plan actualizado!"
+          subtitle={planName}
+          hint="Volviendo al perfil del cliente..."
+        />
+      ) : null}
       <CoachSubpageHeader
         backHref={`/coach/clients/${clientId}`}
         title="Editar plan"

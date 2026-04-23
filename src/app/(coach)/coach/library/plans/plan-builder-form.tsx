@@ -18,6 +18,7 @@ import {
 import type { ExercisePick, PlanBuilderInitial } from './queries'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 import CustomSelect from '@/components/ui/custom-select'
+import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -144,6 +145,8 @@ type Props = {
   initialPlan?: PlanBuilderInitial
 }
 
+type BuilderStep = 'meta' | 'training'
+
 export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props) {
   const router = useRouter()
   const [name, setName] = useState(() => initialPlan?.name ?? '')
@@ -154,6 +157,7 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     initialWeekDrafts(initialPlan?.weeks ?? 4, initialPlan)
   )
   const [activeWeekIdx, setActiveWeekIdx] = useState(0)
+  const [activeStep, setActiveStep] = useState<BuilderStep>('meta')
 
   const activeDays = weekDrafts[activeWeekIdx]?.days ?? emptyDays()
 
@@ -222,11 +226,14 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
 
   useEffect(() => {
     if (!state?.success) return
-    if (mode === 'edit' && initialPlan) {
-      router.push(`/coach/library/plans/${initialPlan.planId}`)
-      return
-    }
-    router.push('/coach/library?tab=plans')
+    const timer = setTimeout(() => {
+      if (mode === 'edit' && initialPlan) {
+        router.push(`/coach/library/plans/${initialPlan.planId}`)
+        return
+      }
+      router.push('/coach/library?tab=plans')
+    }, 2200)
+    return () => clearTimeout(timer)
   }, [state, router, mode, initialPlan])
 
   function handleWeeksChange(newWeeks: number) {
@@ -349,6 +356,12 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
         overflow: 'hidden',
       }}
     >
+      {state?.success ? (
+        <CoachSuccessOverlay
+          title={mode === 'edit' ? '¡Plan actualizado!' : '¡Plan creado!'}
+          hint="Redirigiendo a biblioteca..."
+        />
+      ) : null}
       <CoachSubpageHeader
         backHref="/coach/library?tab=plans"
         title={mode === 'edit' ? 'Editar plan' : 'Nuevo plan'}
@@ -375,55 +388,102 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
             <input type="hidden" name="planId" value={initialPlan.planId} readOnly />
           ) : null}
 
-          {/* Plan meta */}
-          <div>
-            <p style={sectionTitleStyle}>Datos del plan</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <Field label="Nombre">
-                <input
-                  name="nameDisplay"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  type="text"
-                  required
-                  style={inputStyle}
-                  placeholder="Fuerza 4 semanas"
-                  autoComplete="off"
-                />
-              </Field>
-
-              <Field label="Descripción (opcional)">
-                <input
-                  name="descriptionDisplay"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  type="text"
-                  style={inputStyle}
-                  placeholder="Objetivo, enfoque, notas…"
-                  autoComplete="off"
-                />
-              </Field>
-
-              <Field label="Semanas (1–12)">
-                <input
-                  name="weeksDisplay"
-                  value={String(weeks)}
-                  onChange={(e) => {
-                    const v = Math.min(12, Math.max(1, Number(e.target.value) || 1))
-                    handleWeeksChange(v)
-                  }}
-                  type="number"
-                  min={1}
-                  max={12}
-                  required
-                  style={inputStyle}
-                />
-              </Field>
-            </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 8,
+              padding: 4,
+              borderRadius: 12,
+              border: '1px solid #1F2227',
+              backgroundColor: '#111317',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveStep('meta')}
+              style={{
+                height: 40,
+                borderRadius: 10,
+                border: 'none',
+                backgroundColor: activeStep === 'meta' ? 'rgba(181,242,61,0.14)' : 'transparent',
+                color: activeStep === 'meta' ? '#B5F23D' : '#9CA3AF',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Datos del plan
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveStep('training')}
+              style={{
+                height: 40,
+                borderRadius: 10,
+                border: 'none',
+                backgroundColor: activeStep === 'training' ? 'rgba(181,242,61,0.14)' : 'transparent',
+                color: activeStep === 'training' ? '#B5F23D' : '#9CA3AF',
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Días de entrenamiento
+            </button>
           </div>
 
+          {activeStep === 'meta' ? (
+            <div>
+              <p style={sectionTitleStyle}>Datos del plan</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <Field label="Nombre">
+                  <input
+                    name="nameDisplay"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    type="text"
+                    required
+                    style={inputStyle}
+                    placeholder="Fuerza 4 semanas"
+                    autoComplete="off"
+                  />
+                </Field>
+
+                <Field label="Descripción (opcional)">
+                  <input
+                    name="descriptionDisplay"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    type="text"
+                    style={inputStyle}
+                    placeholder="Objetivo, enfoque, notas…"
+                    autoComplete="off"
+                  />
+                </Field>
+
+                <Field label="Semanas (1–12)">
+                  <input
+                    name="weeksDisplay"
+                    value={String(weeks)}
+                    onChange={(e) => {
+                      const v = Math.min(12, Math.max(1, Number(e.target.value) || 1))
+                      handleWeeksChange(v)
+                    }}
+                    type="number"
+                    min={1}
+                    max={12}
+                    required
+                    style={inputStyle}
+                  />
+                </Field>
+              </div>
+            </div>
+          ) : null}
+
           {/* Days section */}
-          <div>
+          {activeStep === 'training' ? (
+            <div>
             <p style={sectionTitleStyle}>Días de entrenamiento</p>
             <p style={{ fontSize: 12, color: '#6B7280', marginTop: -8, marginBottom: 12, lineHeight: 1.5 }}>
               Seleccioná la semana, activá los días y configurá los ejercicios.
@@ -852,7 +912,8 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                 Activá al menos un día arriba para armar la rutina.
               </p>
             )}
-          </div>
+            </div>
+          ) : null}
 
           {exercises.length === 0 && (
             <div

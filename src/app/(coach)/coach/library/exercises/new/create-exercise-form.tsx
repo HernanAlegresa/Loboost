@@ -6,6 +6,7 @@ import { createExerciseAction, type CreateExerciseState } from '@/features/exerc
 import { MUSCLE_GROUP_OPTIONS } from '@/features/exercises/muscle-groups'
 import CustomSelect from '@/components/ui/custom-select'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -58,13 +59,19 @@ export default function CreateExerciseForm() {
 
   useEffect(() => {
     if (state?.success) {
-      const timer = setTimeout(() => router.push('/coach/library?tab=exercises'), 1500)
+      const timer = setTimeout(() => router.push('/coach/library?tab=exercises'), 2200)
       return () => clearTimeout(timer)
     }
   }, [state, router])
 
   return (
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {state?.success ? (
+        <CoachSuccessOverlay
+          title="¡Ejercicio creado!"
+          hint="Redirigiendo a biblioteca..."
+        />
+      ) : null}
       <CoachSubpageHeader
         backHref="/coach/library?tab=exercises"
         title="Nuevo ejercicio"
@@ -133,26 +140,6 @@ export default function CreateExerciseForm() {
             </Field>
           </div>
         </div>
-
-        {state?.success && (
-          <div
-            role="status"
-            style={{
-              backgroundColor: 'rgba(181, 242, 61, 0.1)',
-              border: '1px solid rgba(181, 242, 61, 0.3)',
-              borderRadius: 12,
-              padding: '12px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <span style={{ fontSize: 16 }}>✓</span>
-            <p style={{ fontSize: 13, color: '#B5F23D', lineHeight: 1.45, margin: 0 }}>
-              ¡Ejercicio creado correctamente!
-            </p>
-          </div>
-        )}
 
         {state && !state.success && 'error' in state && (
           <div
