@@ -41,6 +41,13 @@ function formatFullDate(): string {
   return `${dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1)} ${day} de ${month}`
 }
 
+function formatShortDate(): string {
+  const now = new Date()
+  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+  return `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`
+}
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr + 'T00:00:00').toLocaleDateString('es-AR', {
     day: 'numeric',
@@ -205,18 +212,18 @@ export default async function ClientDashboardPage() {
       )}
 
       {data.weekStrip && data.weekStrip.length > 0 && (
-        <div>
-          <p style={SECTION_TITLE}>Esta semana</p>
-          <WeekStrip
-            days={data.weekStrip}
-            trainingHref={resumeHref}
-            currentWeek={data.activePlan!.currentWeek}
-          />
-        </div>
+        <WeekStrip
+          days={data.weekStrip}
+          trainingHref={resumeHref}
+          currentWeek={data.activePlan!.currentWeek}
+        />
       )}
 
       <div>
-        <p style={SECTION_TITLE}>Hoy</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <p style={{ ...SECTION_TITLE, marginBottom: 0 }}>Hoy</p>
+          <span style={{ fontSize: 12, color: '#B5F23D' }}>{formatShortDate()}</span>
+        </div>
         <TodayCard today={data.today} />
       </div>
 
