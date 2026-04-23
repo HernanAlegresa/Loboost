@@ -13,9 +13,9 @@ import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeft, Check } from 'lucide-react'
 import { completeSetAction } from '@/features/training/actions/complete-set'
-import { completeSessionAction } from '@/features/training/actions/complete-session'
 import { updateSetAction } from '@/features/training/actions/update-set'
 import VideoModal from '@/components/ui/video-modal'
+import SessionCheckinModal from '@/components/ui/session-checkin-modal'
 import type { LiveExercise, LiveSessionData } from '@/features/training/types'
 import type { PrevSetEntry } from './queries'
 import {
@@ -27,7 +27,7 @@ import {
   SAFE_HEADER_PADDING_TOP_COMPACT,
 } from '@/lib/ui/safe-area'
 
-type SetInputs = { weight: string; duration: string }
+type SetInputs = { weight: string; duration: string; reps: string }
 
 type FlatSet = {
   exerciseIndex: number
@@ -126,10 +126,6 @@ export default function LiveTraining({
   const [showSetCelebration, setShowSetCelebration] = useState(false)
   const [showPrCelebration, setShowPrCelebration] = useState(false)
   const [showCheckIn, setShowCheckIn] = useState(false)
-  const [checkInRpe, setCheckInRpe] = useState<number>(7)
-  const [checkInEnergy, setCheckInEnergy] = useState<number>(3)
-  const [checkInSleep, setCheckInSleep] = useState<number>(3)
-  const [checkInSoreness, setCheckInSoreness] = useState<number>(3)
   const [inputFocusIdx, setInputFocusIdx] = useState<number | null>(null)
   const [restTimer, setRestTimer] = useState<number | null>(null)
   const [restTimerTotal, setRestTimerTotal] = useState<number>(0)
@@ -160,6 +156,7 @@ export default function LiveTraining({
         m.set(makeKey(ex.clientPlanDayExerciseId, set.setNumber), {
           weight: set.weightKg != null ? String(set.weightKg) : '',
           duration: set.durationSeconds != null ? String(set.durationSeconds) : '',
+          reps: set.repsPerformed != null ? String(set.repsPerformed) : '',
         })
       }
     }
@@ -199,6 +196,7 @@ export default function LiveTraining({
           m.set(makeKey(ex.clientPlanDayExerciseId, set.setNumber), {
             weight: set.weightKg != null ? String(set.weightKg) : '',
             duration: set.durationSeconds != null ? String(set.durationSeconds) : '',
+            reps: set.repsPerformed != null ? String(set.repsPerformed) : '',
           })
         }
       }
@@ -270,7 +268,7 @@ export default function LiveTraining({
   }, [])
 
   function getInput(exId: string, setNum: number): SetInputs {
-    return inputs.get(makeKey(exId, setNum)) ?? { weight: '', duration: '' }
+    return inputs.get(makeKey(exId, setNum)) ?? { weight: '', duration: '', reps: '' }
   }
 
   function updateInput(exId: string, setNum: number, patch: Partial<SetInputs>) {
@@ -325,6 +323,7 @@ export default function LiveTraining({
       formData.set('clientPlanDayExerciseId', fs.clientPlanDayExerciseId)
       formData.set('setNumber', String(fs.setNumber))
       if (fs.type === 'strength' && inp.weight) formData.set('weightKg', inp.weight)
+      if (fs.type === 'strength' && inp.reps) formData.set('repsPerformed', inp.reps)
       if (fs.type === 'cardio' && inp.duration) formData.set('durationSeconds', inp.duration)
 
       const result = await completeSetAction(formData)
@@ -352,21 +351,6 @@ export default function LiveTraining({
     setShowCheckIn(true)
   }
 
-  async function handleCheckInSubmit(skip: boolean) {
-    setShowCheckIn(false)
-    startTransition(async () => {
-      await completeSessionAction(
-        session.sessionId,
-        skip ? undefined : checkInRpe,
-        undefined,
-        skip ? undefined : checkInEnergy,
-        skip ? undefined : checkInSleep,
-        skip ? undefined : checkInSoreness
-      )
-      setIsFinished(true)
-    })
-  }
-
   function handleUpdateSet(clientPlanDayExerciseId: string, setNumber: number) {
     const inp = getInput(clientPlanDayExerciseId, setNumber)
     startTransition(async () => {
@@ -376,34 +360,11 @@ export default function LiveTraining({
       formData.set('setNumber', String(setNumber))
       const ex = session.exercises.find((e) => e.clientPlanDayExerciseId === clientPlanDayExerciseId)
       if (ex?.type === 'strength') formData.set('weightKg', inp.weight)
+      if (ex?.type === 'strength' && inp.reps) formData.set('repsPerformed', inp.reps)
       if (ex?.type === 'cardio') formData.set('durationSeconds', inp.duration)
       const result = await updateSetAction(formData)
       if (result.success) setEditingKey(null)
     })
-  }
-
-  const ENERGY_LABELS: Record<number, string> = {
-    1: '💀 Agotado',
-    2: '😴 Bajo',
-    3: '😐 Normal',
-    4: '💪 Bien',
-    5: '🔥 Excelente',
-  }
-
-  const SLEEP_LABELS: Record<number, string> = {
-    1: '😵 Pésimo',
-    2: '🥱 Mal',
-    3: '😐 Regular',
-    4: '😌 Bien',
-    5: '✨ Muy bien',
-  }
-
-  const SORENESS_LABELS: Record<number, string> = {
-    1: '🔴 Mucho dolor',
-    2: '🟠 Bastante',
-    3: '🟡 Algo',
-    4: '🟢 Poco',
-    5: '✅ Sin dolor',
   }
 
   if (session.exercises.length === 0) {
@@ -444,177 +405,11 @@ export default function LiveTraining({
 
   if (showCheckIn) {
     return (
-      <div
-        style={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: LT.bg,
-          overflow: 'hidden',
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            flexShrink: 0,
-            paddingTop: `calc(20px + ${SAFE_AREA_TOP})`,
-            paddingLeft: 20,
-            paddingRight: 20,
-            paddingBottom: 20,
-            borderBottom: `1px solid ${LT.border}`,
-            textAlign: 'center',
-          }}
-        >
-          <p style={{ margin: 0, fontSize: 22, fontWeight: 800, color: LT.text }}>
-            ¿Cómo te sentís?
-          </p>
-          <p style={{ margin: '6px 0 0', fontSize: 13, color: LT.muted }}>
-            Rápido — después de este entrenamiento
-          </p>
-        </div>
-
-        {/* Sliders */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '28px 24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 32,
-          }}
-        >
-          {/* RPE */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
-                ESFUERZO PERCIBIDO (RPE)
-              </p>
-              <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: LT.lime }}>
-                {checkInRpe}/10
-              </p>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={10}
-              value={checkInRpe}
-              onChange={(e) => setCheckInRpe(Number(e.target.value))}
-              style={{ width: '100%', accentColor: LT.lime }}
-            />
-          </div>
-
-          {/* Energía */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
-                ENERGÍA
-              </p>
-              <p style={{ margin: 0, fontSize: 14, color: LT.text }}>
-                {ENERGY_LABELS[checkInEnergy]}
-              </p>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={5}
-              value={checkInEnergy}
-              onChange={(e) => setCheckInEnergy(Number(e.target.value))}
-              style={{ width: '100%', accentColor: LT.lime }}
-            />
-          </div>
-
-          {/* Sueño */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
-                CÓMO DORMISTE
-              </p>
-              <p style={{ margin: 0, fontSize: 14, color: LT.text }}>
-                {SLEEP_LABELS[checkInSleep]}
-              </p>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={5}
-              value={checkInSleep}
-              onChange={(e) => setCheckInSleep(Number(e.target.value))}
-              style={{ width: '100%', accentColor: LT.lime }}
-            />
-          </div>
-
-          {/* Dolor muscular */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: LT.secondary }}>
-                DOLOR MUSCULAR
-              </p>
-              <p style={{ margin: 0, fontSize: 14, color: LT.text }}>
-                {SORENESS_LABELS[checkInSoreness]}
-              </p>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={5}
-              value={checkInSoreness}
-              onChange={(e) => setCheckInSoreness(Number(e.target.value))}
-              style={{ width: '100%', accentColor: LT.lime }}
-            />
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            flexShrink: 0,
-            padding: `16px 20px calc(16px + ${SAFE_AREA_BOTTOM})`,
-            borderTop: `1px solid ${LT.border}`,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            backgroundColor: LT.bg,
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => handleCheckInSubmit(false)}
-            disabled={isPending}
-            style={{
-              width: '100%',
-              height: 52,
-              background: isPending
-                ? 'rgba(181,242,61,0.35)'
-                : `linear-gradient(180deg, ${LT.lime} 0%, #9FD82E 100%)`,
-              border: 'none',
-              borderRadius: 14,
-              color: '#0A0A0A',
-              fontWeight: 900,
-              fontSize: 16,
-              cursor: isPending ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {isPending ? 'Guardando...' : 'Guardar y salir'}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleCheckInSubmit(true)}
-            disabled={isPending}
-            style={{
-              width: '100%',
-              height: 40,
-              background: 'transparent',
-              border: 'none',
-              color: LT.muted,
-              fontSize: 13,
-              cursor: isPending ? 'not-allowed' : 'pointer',
-            }}
-          >
-            Saltar
-          </button>
-        </div>
-      </div>
+      <SessionCheckinModal
+        sessionId={session.sessionId}
+        onComplete={() => { setShowCheckIn(false); setIsFinished(true) }}
+        onSkip={() => { setShowCheckIn(false); setIsFinished(true) }}
+      />
     )
   }
 
@@ -1147,7 +942,7 @@ export default function LiveTraining({
                         </span>
                         <span style={{ fontSize: 20, color: LT.text, fontWeight: 800 }}>
                           {fs.type === 'strength'
-                            ? `${inp.weight || '—'} kg`
+                            ? `${inp.weight || '—'} kg × ${inp.reps || '—'} reps`
                             : `${inp.duration || '—'} seg`}
                         </span>
                       </div>
@@ -1172,18 +967,30 @@ export default function LiveTraining({
 
                   {isPast && editing ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'stretch' }}>
-                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 10 }}>
                         {fs.type === 'strength' ? (
-                          <input
-                            type="number"
-                            inputMode="decimal"
-                            placeholder="kg"
-                            value={inp.weight}
-                            onChange={(e) =>
-                              updateInput(fs.clientPlanDayExerciseId, fs.setNumber, { weight: e.target.value })
-                            }
-                            style={inputShell(true, false)}
-                          />
+                          <>
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              placeholder="kg"
+                              value={inp.weight}
+                              onChange={(e) =>
+                                updateInput(fs.clientPlanDayExerciseId, fs.setNumber, { weight: e.target.value })
+                              }
+                              style={{ ...inputShell(true, false), width: 'min(100%, 130px)', fontSize: 24 }}
+                            />
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              placeholder="reps"
+                              value={inp.reps}
+                              onChange={(e) =>
+                                updateInput(fs.clientPlanDayExerciseId, fs.setNumber, { reps: e.target.value })
+                              }
+                              style={{ ...inputShell(true, false), width: 'min(100%, 100px)', fontSize: 24 }}
+                            />
+                          </>
                         ) : (
                           <input
                             type="number"
@@ -1265,7 +1072,7 @@ export default function LiveTraining({
                         )
                       })()}
                       <motion.div
-                        style={{ display: 'flex', justifyContent: 'center', width: '100%' }}
+                        style={{ display: 'flex', justifyContent: 'center', gap: 10, width: '100%' }}
                         animate={
                           inputFocused
                             ? { scale: 1.03, y: -2 }
@@ -1275,18 +1082,32 @@ export default function LiveTraining({
                         transition={{ type: 'spring', stiffness: 420, damping: 28 }}
                       >
                         {fs.type === 'strength' ? (
-                          <input
-                            type="number"
-                            inputMode="decimal"
-                            placeholder="kg"
-                            value={inp.weight}
-                            onChange={(e) =>
-                              updateInput(fs.clientPlanDayExerciseId, fs.setNumber, { weight: e.target.value })
-                            }
-                            onFocus={() => setInputFocusIdx(idx)}
-                            onBlur={() => setInputFocusIdx((v) => (v === idx ? null : v))}
-                            style={inputShell(true, false)}
-                          />
+                          <>
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              placeholder="kg"
+                              value={inp.weight}
+                              onChange={(e) =>
+                                updateInput(fs.clientPlanDayExerciseId, fs.setNumber, { weight: e.target.value })
+                              }
+                              onFocus={() => setInputFocusIdx(idx)}
+                              onBlur={() => setInputFocusIdx((v) => (v === idx ? null : v))}
+                              style={{ ...inputShell(true, false), width: 'min(100%, 130px)', fontSize: 24 }}
+                            />
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              placeholder="reps"
+                              value={inp.reps}
+                              onChange={(e) =>
+                                updateInput(fs.clientPlanDayExerciseId, fs.setNumber, { reps: e.target.value })
+                              }
+                              onFocus={() => setInputFocusIdx(idx)}
+                              onBlur={() => setInputFocusIdx((v) => (v === idx ? null : v))}
+                              style={{ ...inputShell(true, false), width: 'min(100%, 100px)', fontSize: 24 }}
+                            />
+                          </>
                         ) : (
                           <input
                             type="number"

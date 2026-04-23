@@ -48,7 +48,6 @@ export default async function LogSessionPage({
       <LogSessionClient
         clientPlanDayId={clientPlanDayId}
         weekNumber={weekNumber}
-        initialSessionId={data.existingSessionId}
         exercises={data.exercises}
       />
     </div>

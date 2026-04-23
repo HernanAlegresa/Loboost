@@ -35,7 +35,10 @@ function DayStatusIcon({ status }: { status: PlanDayWithStatus['status'] }) {
       <span style={{ fontSize: 12, color: '#B5F23D', fontWeight: 700 }}>●</span>
     )
   }
-  return <span style={{ fontSize: 12, color: '#374151' }}>○</span>
+  if (status === 'past_missed') {
+    return <span style={{ fontSize: 12, color: '#F59E0B' }}>○</span>
+  }
+  return <span style={{ fontSize: 14, color: '#374151', fontWeight: 700 }}>—</span>
 }
 
 export default function PlanView({ data }: { data: ClientPlanViewData }) {
@@ -196,7 +199,9 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
                       ? 'rgba(181,242,61,0.4)'
                       : day.status === 'in_progress'
                         ? 'rgba(242,153,74,0.3)'
-                        : '#1F2227'
+                        : day.status === 'past_missed'
+                          ? 'rgba(245,158,11,0.25)'
+                          : '#1F2227'
                 }`,
                 borderRadius: 12,
                 padding: '14px 16px',
@@ -215,7 +220,9 @@ export default function PlanView({ data }: { data: ClientPlanViewData }) {
                         ? '#B5F23D'
                         : day.status === 'today'
                           ? '#F0F0F0'
-                          : '#9CA3AF',
+                          : day.status === 'upcoming'
+                            ? '#6B7280'
+                            : '#9CA3AF',
                   }}
                 >
                   {DAY_FULL[day.dayOfWeek]}
