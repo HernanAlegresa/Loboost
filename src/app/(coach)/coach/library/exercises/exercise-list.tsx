@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
-import { muscleGroupLabel } from '@/features/exercises/muscle-groups'
+import { useEffect, useMemo, useState, useTransition } from 'react'
+import { MUSCLE_GROUP_OPTIONS, muscleGroupLabel } from '@/features/exercises/muscle-groups'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -16,6 +16,12 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
   const [pendingId, setPendingId] = useState<string | null>(null)
   const [dialogExercise, setDialogExercise] = useState<ExerciseRow | null>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
+  const [selectedGroup, setSelectedGroup] = useState<string>('all')
+
+  const filteredExercises = useMemo(() => {
+    if (selectedGroup === 'all') return exercises
+    return exercises.filter((exercise) => exercise.muscle_group === selectedGroup)
+  }, [exercises, selectedGroup])
 
   useEffect(() => {
     if (!dialogExercise) return
@@ -87,7 +93,66 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
         onConfirm={confirmDelete}
       />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {exercises.map((ex) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 4 }}>
+          <button
+            type="button"
+            onClick={() => setSelectedGroup('all')}
+            style={{
+              border: selectedGroup === 'all' ? '1px solid #B5F23D' : '1px solid #2A2D34',
+              backgroundColor: selectedGroup === 'all' ? 'rgba(181,242,61,0.12)' : '#111317',
+              color: selectedGroup === 'all' ? '#B5F23D' : '#9CA3AF',
+              borderRadius: 9999,
+              minHeight: 32,
+              padding: '0 12px',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Todos
+          </button>
+          {MUSCLE_GROUP_OPTIONS.map((group) => {
+            const isActive = selectedGroup === group.value
+            return (
+              <button
+                key={group.value}
+                type="button"
+                onClick={() => setSelectedGroup(group.value)}
+                style={{
+                  border: isActive ? '1px solid #B5F23D' : '1px solid #2A2D34',
+                  backgroundColor: isActive ? 'rgba(181,242,61,0.12)' : '#111317',
+                  color: isActive ? '#B5F23D' : '#9CA3AF',
+                  borderRadius: 9999,
+                  minHeight: 32,
+                  padding: '0 12px',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                {group.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {filteredExercises.length === 0 ? (
+          <div
+            style={{
+              backgroundColor: '#111317',
+              border: '1px solid #1F2227',
+              borderRadius: 14,
+              padding: '18px 16px',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 13, color: '#9CA3AF' }}>
+              No hay ejercicios para ese grupo muscular.
+            </p>
+          </div>
+        ) : null}
+
+        {filteredExercises.map((ex) => (
           <motion.div
             key={ex.id}
             initial={{ opacity: 0, y: 6 }}
