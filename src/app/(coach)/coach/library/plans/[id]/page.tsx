@@ -36,7 +36,7 @@ function repsLabel(repsMin: number | null, repsMax: number | null): string {
 
 function WeekCard({ week }: { week: PlanDetailWeek }) {
   return (
-    <div
+    <details
       style={{
         backgroundColor: T.card,
         border: `1px solid ${T.border}`,
@@ -45,40 +45,45 @@ function WeekCard({ week }: { week: PlanDetailWeek }) {
         marginBottom: 12,
       }}
     >
-      <div
+      <summary
         style={{
+          listStyle: 'none',
+          cursor: 'pointer',
           padding: '12px 16px',
-          borderBottom: `1px solid ${T.border}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 12,
         }}
       >
         <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: T.text }}>
           Semana {week.weekNumber}
           {week.weekName ? ` — ${week.weekName}` : ''}
         </p>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: T.lime,
-            backgroundColor: 'rgba(181,242,61,0.1)',
-            padding: '2px 8px',
-            borderRadius: 20,
-          }}
-        >
-          {WEEK_TYPE_LABEL[week.weekType] ?? week.weekType}
-        </span>
-      </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: T.lime,
+              backgroundColor: 'rgba(181,242,61,0.1)',
+              padding: '2px 8px',
+              borderRadius: 20,
+            }}
+          >
+            {WEEK_TYPE_LABEL[week.weekType] ?? week.weekType}
+          </span>
+          <span style={{ color: '#6B7280', fontSize: 12 }}>Ver</span>
+        </div>
+      </summary>
 
       {week.days.length === 0 ? (
-        <p style={{ padding: '12px 16px', fontSize: 13, color: T.muted, margin: 0 }}>Sin días configurados</p>
+        <p style={{ padding: '0 16px 12px', fontSize: 13, color: T.muted, margin: 0 }}>Sin días configurados</p>
       ) : (
         week.days.map((day) => (
           <div
             key={day.id}
-            style={{ padding: '12px 16px', borderBottom: `1px solid ${T.border}` }}
+            style={{ padding: '12px 16px', borderTop: `1px solid ${T.border}` }}
           >
             <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: T.muted, letterSpacing: '0.05em' }}>
               {DAY_NAMES[day.dayOfWeek]}
@@ -103,7 +108,7 @@ function WeekCard({ week }: { week: PlanDetailWeek }) {
           </div>
         ))
       )}
-    </div>
+    </details>
   )
 }
 
