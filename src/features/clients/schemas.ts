@@ -23,7 +23,7 @@ export const createClientSchema = z.object({
   weightKg:        z.coerce.number().min(20).max(300),
   heightCm:        z.coerce.number().min(100).max(250),
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  daysPerWeek:     z.coerce.number().int().min(1).max(6),
+  daysPerWeek:     z.coerce.number().int().min(1).max(7),
   injuries:        z.string().max(500).optional(),
 })
 

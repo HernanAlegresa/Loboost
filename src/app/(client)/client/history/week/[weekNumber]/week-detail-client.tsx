@@ -77,6 +77,64 @@ function SessionCard({ session }: { session: WeekDetailSession }) {
             gap: 12,
           }}
         >
+          {(session.rpe != null || session.energyLevel != null || session.sorenessLevel != null) && (
+            <div
+              style={{
+                display: 'flex',
+                gap: 8,
+                flexWrap: 'wrap',
+                paddingBottom: 8,
+                borderBottom: '1px solid #1F2227',
+              }}
+            >
+              {session.rpe != null && (
+                <span
+                  style={{
+                    padding: '4px 10px',
+                    backgroundColor: 'rgba(181,242,61,0.08)',
+                    border: '1px solid rgba(181,242,61,0.2)',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    color: '#9CA3AF',
+                    fontWeight: 600,
+                  }}
+                >
+                  RPE {session.rpe}
+                </span>
+              )}
+              {session.energyLevel != null && (
+                <span
+                  style={{
+                    padding: '4px 10px',
+                    backgroundColor: 'rgba(255,255,255,0.04)',
+                    border: '1px solid #2A2D34',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    color: '#9CA3AF',
+                    fontWeight: 600,
+                  }}
+                >
+                  Energía {session.energyLevel}/5
+                </span>
+              )}
+              {session.sorenessLevel != null && (
+                <span
+                  style={{
+                    padding: '4px 10px',
+                    backgroundColor: 'rgba(255,255,255,0.04)',
+                    border: '1px solid #2A2D34',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    color: '#9CA3AF',
+                    fontWeight: 600,
+                  }}
+                >
+                  Dolor {session.sorenessLevel}/5
+                </span>
+              )}
+            </div>
+          )}
+
           {session.exercises.map((ex) => (
             <div key={ex.clientPlanDayExerciseId}>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#F0F0F0', marginBottom: 6 }}>

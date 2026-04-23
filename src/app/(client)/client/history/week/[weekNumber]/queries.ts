@@ -36,7 +36,7 @@ export async function getWeekDetailData(
 
   const { data: sessions } = await supabase
     .from('sessions')
-    .select('id, client_plan_day_id, status, completed_at, date')
+    .select('id, client_plan_day_id, status, completed_at, date, rpe, energy_level, soreness_level')
     .eq('client_id', clientId)
     .eq('status', 'completed')
     .in('client_plan_day_id', dayIds)
@@ -165,6 +165,9 @@ export async function getWeekDetailData(
       dayOfWeek: dayInfo?.day_of_week ?? 0,
       dateISO,
       completedAt: sess.completed_at,
+      rpe: sess.rpe ?? null,
+      energyLevel: sess.energy_level ?? null,
+      sorenessLevel: sess.soreness_level ?? null,
       exercises,
     }
   })
