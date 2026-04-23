@@ -67,7 +67,7 @@ export async function completeSetAction(
     p_exclude_session_id: result.data.sessionId,
   })
 
-  const isPR = prevMax == null || result.data.weightKg > (prevMax as number)
+  const isPR = prevMax != null && result.data.weightKg > (prevMax as number)
 
   return { success: true, isPR }
 }

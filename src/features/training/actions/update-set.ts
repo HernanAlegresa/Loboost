@@ -14,6 +14,7 @@ export async function updateSetAction(
   const setNumber = Number(formData.get('setNumber'))
   const rawWeight = formData.get('weightKg')
   const rawDuration = formData.get('durationSeconds')
+  const rawReps = formData.get('repsPerformed')
 
   const supabase = await createClient()
 
@@ -27,13 +28,16 @@ export async function updateSetAction(
 
   if (!session) return { success: false, error: 'Unauthorized' }
 
-  const patch: { weight_kg?: number | null; duration_seconds?: number | null } = {}
+  const patch: { weight_kg?: number | null; duration_seconds?: number | null; reps_performed?: number | null } = {}
 
   if (rawWeight !== null) {
     patch.weight_kg = rawWeight === '' ? null : Number(rawWeight)
   }
   if (rawDuration !== null) {
     patch.duration_seconds = rawDuration === '' ? null : Number(rawDuration)
+  }
+  if (rawReps !== null) {
+    patch.reps_performed = rawReps === '' ? null : Number(rawReps)
   }
 
   const { error } = await supabase
