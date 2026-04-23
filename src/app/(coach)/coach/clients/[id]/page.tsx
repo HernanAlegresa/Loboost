@@ -2,14 +2,15 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getClientProfileData } from './queries'
 import { getProgressKPIs } from './progress-queries'
+import { getClientSessionsForCoach } from './sessions/queries'
 import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import ClientProfileHeader from './client-profile-header'
 import ClientProfileTabsShell from './client-profile-tabs-shell'
 import ClientProfileHeroCard from './client-profile-hero-card'
 import ClientPlanHeatmapCard from './client-plan-heatmap-card'
 import ClientProgressContent from './client-progress-content'
+import ClientSessionsList from './client-sessions-list'
 import EditClientForm from './edit-client-form'
-import LogMeasurementForm from './log-measurement-form'
 
 export default async function ClientProfilePage({
   params,
@@ -29,6 +30,8 @@ export default async function ClientProfilePage({
   if (!profile) notFound()
 
   const kpis = await getProgressKPIs(id, profile.weightKg, profile.activePlan)
+  const sessions = await getClientSessionsForCoach(id, user.id)
+  if (sessions === null) notFound()
 
   return (
     <div
@@ -45,7 +48,6 @@ export default async function ClientProfilePage({
         statusColor={profile.statusColor}
       />
       <ClientProfileTabsShell
-        clientId={profile.id}
         profileContent={
           <>
             <ClientProfileHeroCard
@@ -74,7 +76,6 @@ export default async function ClientProfilePage({
                 injuries: profile.injuries,
               }}
             />
-            <LogMeasurementForm clientId={profile.id} />
             <ClientPlanHeatmapCard
               activePlan={profile.activePlan}
               initialWeekData={profile.currentWeekData}
@@ -90,6 +91,7 @@ export default async function ClientProfilePage({
             totalSessions={profile.totalSessions}
           />
         }
+        sessionsContent={<ClientSessionsList sessions={sessions} clientId={profile.id} />}
       />
     </div>
   )

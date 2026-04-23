@@ -110,6 +110,7 @@ type Props = {
   weeks: number
   days: ClientPlanDayForEdit[]
   exercises: ExercisePick[]
+  readOnly?: boolean
 }
 
 export default function EditClientPlanForm({
@@ -119,6 +120,7 @@ export default function EditClientPlanForm({
   weeks,
   days,
   exercises,
+  readOnly = false,
 }: Props) {
   const router = useRouter()
 
@@ -177,6 +179,7 @@ export default function EditClientPlanForm({
   }, [state, router, clientId])
 
   function updateLine(dayIdx: number, lineId: string, patch: Partial<ExerciseLine>) {
+    if (readOnly) return
     setWeekStates((prev) => {
       const next = prev.map((w, wi) => {
         if (wi !== activeWeekIdx) return w
@@ -195,6 +198,7 @@ export default function EditClientPlanForm({
   }
 
   function addExercise(dayIdx: number) {
+    if (readOnly) return
     setWeekStates((prev) => {
       const next = prev.map((w, wi) => {
         if (wi !== activeWeekIdx) return w
@@ -208,6 +212,7 @@ export default function EditClientPlanForm({
   }
 
   function removeExercise(dayIdx: number, lineId: string) {
+    if (readOnly) return
     setWeekStates((prev) => {
       const next = prev.map((w, wi) => {
         if (wi !== activeWeekIdx) return w
@@ -244,7 +249,7 @@ export default function EditClientPlanForm({
       ) : null}
       <CoachSubpageHeader
         backHref={`/coach/clients/${clientId}`}
-        title="Editar plan"
+        title={readOnly ? 'Plan asignado' : 'Editar plan'}
         subtitle={planName}
         backColor="#B5F23D"
         titleSize={20}
@@ -474,13 +479,15 @@ export default function EditClientPlanForm({
                               type="button"
                               onClick={() => removeExercise(activeDayIdx, line.id)}
                               aria-label={`Quitar ejercicio ${n}`}
+                              disabled={readOnly}
                               style={{
                                 flexShrink: 0,
                                 background: 'rgba(242, 82, 82, 0.1)',
                                 border: '1px solid rgba(242, 82, 82, 0.25)',
                                 borderRadius: 10,
                                 color: '#F25252',
-                                cursor: 'pointer',
+                                cursor: readOnly ? 'not-allowed' : 'pointer',
+                                opacity: readOnly ? 0.45 : 1,
                                 padding: '8px 10px',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -496,10 +503,11 @@ export default function EditClientPlanForm({
                               <label style={{ ...labelStyle, marginBottom: 6 }}>Movimiento</label>
                               <CustomSelect
                                 key={`${line.id}-${line.exerciseId}`}
-                                required
+                                required={!readOnly}
                                 value={line.exerciseId}
                                 onChange={(v) => updateLine(activeDayIdx, line.id, { exerciseId: v })}
                                 placeholder="Seleccioná de tu biblioteca…"
+                                disabled={readOnly}
                                 options={exercises.map((ex) => ({
                                   value: ex.id,
                                   label: `${ex.name} (${ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})`,
@@ -522,6 +530,7 @@ export default function EditClientPlanForm({
                                     updateLine(activeDayIdx, line.id, { sets: e.target.value })
                                   }
                                   inputMode="numeric"
+                                  disabled={readOnly}
                                   style={inputStyle}
                                 />
                               </div>
@@ -536,6 +545,7 @@ export default function EditClientPlanForm({
                                       }
                                       inputMode="numeric"
                                       placeholder="8"
+                                    disabled={readOnly}
                                       style={inputStyle}
                                     />
                                   </div>
@@ -548,6 +558,7 @@ export default function EditClientPlanForm({
                                       }
                                       inputMode="numeric"
                                       placeholder="12"
+                                    disabled={readOnly}
                                       style={inputStyle}
                                     />
                                   </div>
@@ -565,6 +576,7 @@ export default function EditClientPlanForm({
                                   updateLine(activeDayIdx, line.id, { restSeconds: e.target.value })
                                 }
                                 inputMode="numeric"
+                                disabled={readOnly}
                                 style={inputStyle}
                               />
                             </div>
@@ -574,29 +586,31 @@ export default function EditClientPlanForm({
                     })}
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => addExercise(activeDayIdx)}
-                    style={{
-                      width: '100%',
-                      marginTop: 16,
-                      minHeight: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      borderRadius: 12,
-                      border: '1px dashed #3D4A2E',
-                      backgroundColor: 'rgba(181, 242, 61, 0.06)',
-                      color: '#B5F23D',
-                      fontSize: 14,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Plus size={20} strokeWidth={2.5} />
-                    Agregar ejercicio
-                  </button>
+                  {!readOnly ? (
+                    <button
+                      type="button"
+                      onClick={() => addExercise(activeDayIdx)}
+                      style={{
+                        width: '100%',
+                        marginTop: 16,
+                        minHeight: 48,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        borderRadius: 12,
+                        border: '1px dashed #3D4A2E',
+                        backgroundColor: 'rgba(181, 242, 61, 0.06)',
+                        color: '#B5F23D',
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Plus size={20} strokeWidth={2.5} />
+                      Agregar ejercicio
+                    </button>
+                  ) : null}
                 </div>
               )}
             </div>
@@ -616,26 +630,28 @@ export default function EditClientPlanForm({
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isPending}
-            style={{
-              alignSelf: 'center',
-              width: 'fit-content',
-              minWidth: 0,
-              padding: '0 24px',
-              height: 48,
-              borderRadius: 12,
-              border: 'none',
-              fontSize: 15,
-              fontWeight: 700,
-              color: '#0A0A0A',
-              backgroundColor: isPending ? '#8BA82B' : '#B5F23D',
-              cursor: isPending ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {isPending ? 'Guardando...' : 'Guardar cambios'}
-          </button>
+          {!readOnly ? (
+            <button
+              type="submit"
+              disabled={isPending}
+              style={{
+                alignSelf: 'center',
+                width: 'fit-content',
+                minWidth: 0,
+                padding: '0 24px',
+                height: 48,
+                borderRadius: 12,
+                border: 'none',
+                fontSize: 15,
+                fontWeight: 700,
+                color: '#0A0A0A',
+                backgroundColor: isPending ? '#8BA82B' : '#B5F23D',
+                cursor: isPending ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {isPending ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+          ) : null}
         </form>
       </div>
     </div>

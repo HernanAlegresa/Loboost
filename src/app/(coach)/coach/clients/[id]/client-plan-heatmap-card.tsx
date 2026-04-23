@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getPlanFollowupStatusSummary, getWeekTrainingData } from './actions'
@@ -260,6 +261,53 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
               />
             ))}
           </div>
+        </div>
+
+        <div
+          style={{
+            borderTop: '1px solid #1A1D22',
+            padding: '12px 14px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 10,
+          }}
+        >
+          <Link
+            href={`/coach/clients/${clientId}/plan/edit?mode=view`}
+            style={{
+              minHeight: 40,
+              borderRadius: 10,
+              border: '1px solid #2A2D34',
+              backgroundColor: '#111317',
+              color: '#F0F0F0',
+              fontSize: 13,
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            Ver plan asignado
+          </Link>
+          <Link
+            href={`/coach/clients/${clientId}/plan/edit`}
+            style={{
+              minHeight: 40,
+              borderRadius: 10,
+              border: 'none',
+              backgroundColor: '#B5F23D',
+              color: '#0A0A0A',
+              fontSize: 13,
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            Editar plan asignado
+          </Link>
         </div>
 
         <div

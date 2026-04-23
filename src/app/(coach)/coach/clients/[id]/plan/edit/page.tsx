@@ -23,10 +23,14 @@ export type ClientPlanDayForEdit = {
 
 export default async function EditClientPlanPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ mode?: string }>
 }) {
   const { id: clientId } = await params
+  const { mode } = await searchParams
+  const readOnly = mode === 'view'
 
   const supabase = await createClient()
   const {
@@ -105,6 +109,7 @@ export default async function EditClientPlanPage({
       weeks={plan.weeks}
       days={days}
       exercises={exercises}
+      readOnly={readOnly}
     />
   )
 }
