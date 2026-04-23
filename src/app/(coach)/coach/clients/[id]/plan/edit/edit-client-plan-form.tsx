@@ -507,7 +507,6 @@ export default function EditClientPlanForm({
                                 value={line.exerciseId}
                                 onChange={(v) => updateLine(activeDayIdx, line.id, { exerciseId: v })}
                                 placeholder="Seleccioná de tu biblioteca…"
-                                disabled={readOnly}
                                 options={exercises.map((ex) => ({
                                   value: ex.id,
                                   label: `${ex.name} (${ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})`,
