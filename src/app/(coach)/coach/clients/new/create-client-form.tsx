@@ -52,6 +52,52 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
+function NumberInputWithUnit({
+  name,
+  unit,
+  required,
+  min,
+  max,
+  placeholder,
+}: {
+  name: string
+  unit: string
+  required?: boolean
+  min?: number
+  max?: number
+  placeholder?: string
+}) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        name={name}
+        type="number"
+        required={required}
+        min={min}
+        max={max}
+        placeholder={placeholder}
+        style={{ ...inputStyle, paddingRight: 36 }}
+      />
+      <span
+        style={{
+          position: 'absolute',
+          right: 10,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          fontSize: 12,
+          color: '#6B7280',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        }}
+      >
+        {unit}
+      </span>
+    </div>
+  )
+}
+
+const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+
 export default function CreateClientForm() {
   const router = useRouter()
   const [state, formAction, isPending] = useActionState<CreateClientState, FormData>(
@@ -59,6 +105,7 @@ export default function CreateClientForm() {
     null
   )
   const [showPassword, setShowPassword] = useState(false)
+  const [selectedDays, setSelectedDays] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     if (state?.success) {
@@ -68,6 +115,15 @@ export default function CreateClientForm() {
       return () => clearTimeout(timer)
     }
   }, [state, router])
+
+  function toggleDay(idx: number) {
+    setSelectedDays((prev) => {
+      const next = new Set(prev)
+      if (next.has(idx)) next.delete(idx)
+      else next.add(idx)
+      return next
+    })
+  }
 
   return (
     <>
@@ -124,7 +180,7 @@ export default function CreateClientForm() {
             action={formAction}
             style={{ padding: '0 20px 120px', display: 'flex', flexDirection: 'column', gap: 32 }}
           >
-          {/* Secci?n 1: Datos del cliente */}
+          {/* Sección 1: Datos del cliente */}
           <div>
             <p style={sectionTitleStyle}>Datos del cliente</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -135,7 +191,7 @@ export default function CreateClientForm() {
                   type="text"
                   required
                   style={inputStyle}
-                  placeholder="Sof?a Torres"
+                  placeholder="Sofía Torres"
                 />
               </Field>
 
@@ -154,37 +210,13 @@ export default function CreateClientForm() {
               {/* Edad / Peso / Altura en fila */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                 <Field label="Edad">
-                  <input
-                    name="age"
-                    type="number"
-                    required
-                    min={10}
-                    max={100}
-                    style={inputStyle}
-                    placeholder="25"
-                  />
+                  <NumberInputWithUnit name="age" unit="años" required min={10} max={100} placeholder="25" />
                 </Field>
-                <Field label="Peso (kg)">
-                  <input
-                    name="weightKg"
-                    type="number"
-                    required
-                    min={20}
-                    max={300}
-                    style={inputStyle}
-                    placeholder="65"
-                  />
+                <Field label="Peso">
+                  <NumberInputWithUnit name="weightKg" unit="kg" required min={20} max={300} placeholder="65" />
                 </Field>
-                <Field label="Alt (cm)">
-                  <input
-                    name="heightCm"
-                    type="number"
-                    required
-                    min={100}
-                    max={250}
-                    style={inputStyle}
-                    placeholder="165"
-                  />
+                <Field label="Altura">
+                  <NumberInputWithUnit name="heightCm" unit="cm" required min={100} max={250} placeholder="165" />
                 </Field>
               </div>
 
@@ -208,23 +240,52 @@ export default function CreateClientForm() {
                 />
               </Field>
 
-              <Field label="D?as disponibles por semana">
-                <CustomSelect
+              <Field label="Días de entrenamiento">
+                <input
+                  type="hidden"
                   name="daysPerWeek"
-                  required
-                  options={[1, 2, 3, 4, 5, 6].map((d) => ({
-                    value: String(d),
-                    label: `${d} ${d === 1 ? 'd?a' : 'd?as'}`,
-                  }))}
+                  value={selectedDays.size > 0 ? selectedDays.size : 1}
                 />
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {DAY_LABELS.map((day, idx) => {
+                    const active = selectedDays.has(idx)
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => toggleDay(idx)}
+                        style={{
+                          flex: '1 0 auto',
+                          minWidth: 40,
+                          height: 40,
+                          borderRadius: 10,
+                          border: `1px solid ${active ? '#B5F23D' : '#2A2D34'}`,
+                          backgroundColor: active ? 'rgba(181,242,61,0.12)' : '#111317',
+                          color: active ? '#B5F23D' : '#6B7280',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {day}
+                      </button>
+                    )
+                  })}
+                </div>
+                {selectedDays.size > 0 && (
+                  <p style={{ fontSize: 11, color: '#6B7280', marginTop: 6 }}>
+                    {selectedDays.size} {selectedDays.size === 1 ? 'día seleccionado' : 'días seleccionados'}
+                  </p>
+                )}
               </Field>
 
-              <Field label='Lesiones o limitaciones'>
+              <Field label="Lesiones o limitaciones">
                 <input
                   name="injuries"
                   type="text"
                   style={inputStyle}
-                  placeholder='Ej: "Rodilla derecha" o dejar vac?o si no hay'
+                  placeholder='Ej: "Rodilla derecha" o dejar vacío si no hay'
                 />
               </Field>
             </div>
@@ -233,7 +294,7 @@ export default function CreateClientForm() {
           {/* Divider */}
           <div style={{ height: 1, backgroundColor: '#1F2227' }} />
 
-          {/* Secci?n 2: Cuenta del cliente */}
+          {/* Sección 2: Cuenta del cliente */}
           <div>
             <p style={sectionTitleStyle}>Cuenta del cliente</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -248,7 +309,7 @@ export default function CreateClientForm() {
                 />
               </Field>
 
-              <Field label="Contrase?a">
+              <Field label="Contraseña">
                 <div style={{ position: 'relative' }}>
                   <input
                     name="password"
@@ -256,7 +317,7 @@ export default function CreateClientForm() {
                     required
                     minLength={8}
                     style={{ ...inputStyle, paddingRight: 44 }}
-                    placeholder="M?nimo 8 caracteres"
+                    placeholder="Mínimo 8 caracteres"
                   />
                   <button
                     type="button"

@@ -188,6 +188,9 @@ export type WeekDetailSession = {
   dayOfWeek: number
   dateISO: string
   completedAt: string | null
+  rpe: number | null
+  energyLevel: number | null
+  sorenessLevel: number | null
   exercises: WeekDetailExercise[]
 }
 

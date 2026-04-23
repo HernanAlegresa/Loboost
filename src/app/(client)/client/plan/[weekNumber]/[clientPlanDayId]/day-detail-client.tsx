@@ -11,13 +11,14 @@ function formatDateNumeric(iso: string): string {
   return `${Number(day)}/${Number(month)}/${year}`
 }
 
-export default function DayDetailClient({ data }: { data: DayDetailData }) {
+export default function DayDetailClient({ data, weekNumber }: { data: DayDetailData; weekNumber: number }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
 
   const isToday = data.dayStatus === 'today'
   const isUpcoming = data.dayStatus === 'upcoming'
+  const isPastMissed = data.dayStatus === 'past_missed'
   const isCompleted = data.sessionStatus === 'completed'
   const isInProgress = data.sessionStatus === 'in_progress'
 
@@ -147,28 +148,34 @@ export default function DayDetailClient({ data }: { data: DayDetailData }) {
       {!isCompleted && !isUpcoming && data.exercises.length > 0 && (
         <button
           type="button"
-          onClick={isInProgress ? handleResume : handleStart}
-          disabled={isPending}
+          onClick={
+            isInProgress
+              ? handleResume
+              : isPastMissed
+                ? () => router.push(`/client/history/week/${weekNumber}/log/${data.clientPlanDayId}`)
+                : handleStart
+          }
+          disabled={isPending && !isPastMissed}
           style={{
             marginTop: 8,
             width: '100%',
             padding: 14,
-            backgroundColor: isPending ? '#8BA82B' : '#B5F23D',
+            backgroundColor: isPending && !isPastMissed ? '#8BA82B' : '#B5F23D',
             color: '#0A0A0A',
             fontWeight: 700,
             fontSize: 15,
             borderRadius: 12,
             border: 'none',
-            cursor: isPending ? 'not-allowed' : 'pointer',
+            cursor: isPending && !isPastMissed ? 'not-allowed' : 'pointer',
           }}
         >
-          {isPending
+          {isPending && !isPastMissed
             ? 'Cargando...'
             : isInProgress
               ? 'Retomar entrenamiento'
-              : isToday
-                ? 'Empezar entrenamiento'
-                : 'Registrar entrenamiento'}
+              : isPastMissed
+                ? 'Registrar entrenamiento'
+                : 'Empezar entrenamiento'}
         </button>
       )}
 

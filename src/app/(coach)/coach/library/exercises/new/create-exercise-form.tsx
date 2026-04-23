@@ -57,7 +57,10 @@ export default function CreateExerciseForm() {
   )
 
   useEffect(() => {
-    if (state?.success) router.push('/coach/library?tab=exercises')
+    if (state?.success) {
+      const timer = setTimeout(() => router.push('/coach/library?tab=exercises'), 1500)
+      return () => clearTimeout(timer)
+    }
   }, [state, router])
 
   return (
@@ -130,6 +133,26 @@ export default function CreateExerciseForm() {
             </Field>
           </div>
         </div>
+
+        {state?.success && (
+          <div
+            role="status"
+            style={{
+              backgroundColor: 'rgba(181, 242, 61, 0.1)',
+              border: '1px solid rgba(181, 242, 61, 0.3)',
+              borderRadius: 12,
+              padding: '12px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <span style={{ fontSize: 16 }}>✓</span>
+            <p style={{ fontSize: 13, color: '#B5F23D', lineHeight: 1.45, margin: 0 }}>
+              ¡Ejercicio creado correctamente!
+            </p>
+          </div>
+        )}
 
         {state && !state.success && 'error' in state && (
           <div

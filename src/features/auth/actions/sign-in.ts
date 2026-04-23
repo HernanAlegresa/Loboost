@@ -25,6 +25,9 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword(result.data)
 
   if (error) {
+    if (error.message?.toLowerCase().includes('email not confirmed')) {
+      return { error: 'Revisá tu casilla de email para verificar tu cuenta.' }
+    }
     return { error: 'Email o contraseña incorrectos' }
   }
 

@@ -2,9 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { startSessionAction } from '@/features/training/actions/start-session'
-import { completeSetAction } from '@/features/training/actions/complete-set'
-import { completeSessionAction } from '@/features/training/actions/complete-session'
+import { logManualSessionAction } from '@/features/training/actions/log-manual-session'
+import SessionCheckinModal from '@/components/ui/session-checkin-modal'
 import type { LogSessionExercise } from './queries'
 
 const T = {
@@ -16,80 +15,64 @@ type SetState = {
   reps: string
   weight: string
   duration: string
-  completed: boolean
 }
 
 type Props = {
   clientPlanDayId: string
   weekNumber: number
-  initialSessionId: string | null
   exercises: LogSessionExercise[]
 }
 
-export default function LogSessionClient({ clientPlanDayId, weekNumber, initialSessionId, exercises }: Props) {
+export default function LogSessionClient({ clientPlanDayId, weekNumber, exercises }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [sessionId, setSessionId] = useState<string | null>(initialSessionId)
   const [sets, setSets] = useState<Record<string, SetState[]>>(() => {
     const initial: Record<string, SetState[]> = {}
     for (const ex of exercises) {
       initial[ex.clientPlanDayExerciseId] = Array.from({ length: ex.plannedSets }, () => ({
-        reps: '', weight: '', duration: '', completed: false,
+        reps: '', weight: '', duration: '',
       }))
     }
     return initial
   })
   const [error, setError] = useState<string | null>(null)
+  const [showCheckIn, setShowCheckIn] = useState(false)
+  const [savedSessionId, setSavedSessionId] = useState<string | null>(null)
 
-  function updateSet(exId: string, setIdx: number, field: keyof SetState, value: string | boolean) {
+  function updateSet(exId: string, setIdx: number, field: keyof SetState, value: string) {
     setSets((prev) => {
       const copy = { ...prev }
-      copy[exId] = copy[exId].map((s, i) => i === setIdx ? { ...s, [field]: value } : s)
+      copy[exId] = (copy[exId] ?? []).map((s, i) => i === setIdx ? { ...s, [field]: value } : s)
       return copy
     })
   }
 
-  async function ensureSession(): Promise<string | null> {
-    if (sessionId) return sessionId
-    const fd = new FormData()
-    fd.set('clientPlanDayId', clientPlanDayId)
-    const result = await startSessionAction(fd)
-    if ('error' in result) { setError(result.error ?? 'Error al iniciar sesión'); return null }
-    setSessionId(result.sessionId ?? null)
-    return result.sessionId ?? null
-  }
-
-  async function markSetComplete(exId: string, setIdx: number, ex: LogSessionExercise) {
-    const sid = await ensureSession()
-    if (!sid) return
-
-    const s = sets[exId][setIdx]
-    const fd = new FormData()
-    fd.set('sessionId', sid)
-    fd.set('clientPlanDayExerciseId', exId)
-    fd.set('setNumber', String(setIdx + 1))
-    if (ex.type === 'strength') {
-      if (s.reps) fd.set('repsPerformed', s.reps)
-      if (s.weight) fd.set('weightKg', s.weight)
-    } else {
-      if (s.duration) fd.set('durationSeconds', s.duration)
-    }
-
-    const result = await completeSetAction(fd)
-    if ('error' in result) { setError(result.error ?? 'Error al registrar serie'); return }
-    updateSet(exId, setIdx, 'completed', true)
-    setError(null)
-  }
-
-  function handleFinish() {
+  function handleSave() {
     startTransition(async () => {
-      const sid = await ensureSession()
-      if (!sid) return
-      const result = await completeSessionAction(sid)
-      if ('error' in result) { setError(result.error ?? 'Error al finalizar sesión'); return }
-      router.push(`/client/history/week/${weekNumber}`)
-      router.refresh()
+      const setsData = exercises.flatMap((ex) =>
+        (sets[ex.clientPlanDayExerciseId] ?? []).map((s, idx) => ({
+          clientPlanDayExerciseId: ex.clientPlanDayExerciseId,
+          setNumber: idx + 1,
+          weightKg: ex.type === 'strength' && s.weight ? parseFloat(s.weight) : null,
+          repsPerformed: ex.type === 'strength' && s.reps ? parseInt(s.reps) : null,
+          durationSeconds: ex.type === 'cardio' && s.duration ? parseInt(s.duration) : null,
+        }))
+      )
+      const result = await logManualSessionAction(clientPlanDayId, setsData)
+      if ('error' in result) { setError(result.error); return }
+      setSavedSessionId(result.sessionId)
+      setShowCheckIn(true)
     })
+  }
+
+  if (showCheckIn && savedSessionId) {
+    return (
+      <SessionCheckinModal
+        sessionId={savedSessionId}
+        onComplete={() => router.push(`/client/history/week/${weekNumber}`)}
+        onSkip={() => router.push(`/client/history/week/${weekNumber}`)}
+      />
+    )
   }
 
   const inputStyle = {
@@ -117,9 +100,9 @@ export default function LogSessionClient({ clientPlanDayId, weekNumber, initialS
             {(sets[ex.clientPlanDayExerciseId] ?? []).map((s, idx) => (
               <div key={idx} style={{
                 padding: '10px 12px',
-                backgroundColor: s.completed ? 'rgba(181,242,61,0.06)' : T.bg2,
+                backgroundColor: T.bg2,
                 borderRadius: 10,
-                border: `1px solid ${s.completed ? 'rgba(181,242,61,0.2)' : T.border}`,
+                border: `1px solid ${T.border}`,
               }}>
                 <p style={{ margin: '0 0 8px', fontSize: 12, color: T.muted }}>Serie {idx + 1}</p>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
@@ -130,7 +113,7 @@ export default function LogSessionClient({ clientPlanDayId, weekNumber, initialS
                         <input
                           type="number" step="0.5" value={s.weight}
                           onChange={(e) => updateSet(ex.clientPlanDayExerciseId, idx, 'weight', e.target.value)}
-                          style={inputStyle} disabled={s.completed}
+                          style={inputStyle}
                         />
                       </div>
                       <div style={{ flex: 1 }}>
@@ -138,7 +121,7 @@ export default function LogSessionClient({ clientPlanDayId, weekNumber, initialS
                         <input
                           type="number" value={s.reps}
                           onChange={(e) => updateSet(ex.clientPlanDayExerciseId, idx, 'reps', e.target.value)}
-                          style={inputStyle} disabled={s.completed}
+                          style={inputStyle}
                         />
                       </div>
                     </>
@@ -148,24 +131,9 @@ export default function LogSessionClient({ clientPlanDayId, weekNumber, initialS
                       <input
                         type="number" value={s.duration}
                         onChange={(e) => updateSet(ex.clientPlanDayExerciseId, idx, 'duration', e.target.value)}
-                        style={inputStyle} disabled={s.completed}
+                        style={inputStyle}
                       />
                     </div>
-                  )}
-                  {!s.completed ? (
-                    <button
-                      type="button"
-                      onClick={() => markSetComplete(ex.clientPlanDayExerciseId, idx, ex)}
-                      style={{
-                        padding: '8px 12px', backgroundColor: T.lime, border: 'none',
-                        borderRadius: 8, color: '#0A0A0A', fontSize: 12, fontWeight: 700,
-                        cursor: 'pointer', whiteSpace: 'nowrap',
-                      }}
-                    >
-                      ✓ Listo
-                    </button>
-                  ) : (
-                    <span style={{ fontSize: 16, color: T.lime }}>✓</span>
                   )}
                 </div>
               </div>
@@ -180,15 +148,15 @@ export default function LogSessionClient({ clientPlanDayId, weekNumber, initialS
 
       <button
         type="button"
-        onClick={handleFinish}
+        onClick={handleSave}
         disabled={isPending}
         style={{
           padding: '14px 0', backgroundColor: T.lime, border: 'none',
           borderRadius: 12, color: '#0A0A0A', fontSize: 15, fontWeight: 700,
-          cursor: 'pointer', opacity: isPending ? 0.6 : 1,
+          cursor: isPending ? 'not-allowed' : 'pointer', opacity: isPending ? 0.6 : 1,
         }}
       >
-        {isPending ? 'Guardando...' : 'Finalizar sesión'}
+        {isPending ? 'Guardando...' : 'Guardar sesión'}
       </button>
     </div>
   )

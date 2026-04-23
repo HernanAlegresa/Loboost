@@ -10,8 +10,8 @@ const FAB_SIZE_PX = 56
 const FAB_GAP_PX = 22
 
 const ACTIONS = [
-  { label: 'Nuevo ejercicio', icon: Dumbbell, href: '/coach/exercises/new' },
-  { label: 'Nuevo plan', icon: ClipboardList, href: '/coach/plans/new' },
+  { label: 'Nuevo ejercicio', icon: Dumbbell, href: '/coach/library/exercises/new' },
+  { label: 'Nuevo plan', icon: ClipboardList, href: '/coach/library/plans/new' },
   { label: 'Nuevo cliente', icon: UserPlus, href: '/coach/clients/new' },
 ]
 

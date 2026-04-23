@@ -20,7 +20,8 @@ export default async function DayDetailPage({
 }: {
   params: Promise<{ weekNumber: string; clientPlanDayId: string }>
 }) {
-  const { clientPlanDayId } = await params
+  const { weekNumber: wn, clientPlanDayId } = await params
+  const weekNumber = parseInt(wn, 10)
   const user = await getCurrentUser()
   if (!user) redirect('/login')
 
@@ -78,7 +79,7 @@ export default async function DayDetailPage({
         )}
       </div>
 
-      <DayDetailClient data={data} />
+      <DayDetailClient data={data} weekNumber={weekNumber} />
     </div>
   )
 }
