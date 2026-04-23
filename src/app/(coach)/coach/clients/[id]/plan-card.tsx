@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { ActivePlanSummary } from '@/features/clients/types'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -18,7 +19,13 @@ function formatDate(dateStr: string): string {
   })
 }
 
-export default function PlanCard({ activePlan }: { activePlan: ActivePlanSummary | null }) {
+export default function PlanCard({
+  activePlan,
+  clientId,
+}: {
+  activePlan: ActivePlanSummary | null
+  clientId: string
+}) {
   const SECTION_TITLE: React.CSSProperties = {
     fontSize: 11,
     fontWeight: 600,
@@ -134,6 +141,24 @@ export default function PlanCard({ activePlan }: { activePlan: ActivePlanSummary
           />
         </div>
         <p style={{ fontSize: 11, color: '#6B7280', marginTop: 6, textAlign: 'right' }}>{progressPct}%</p>
+
+        <Link
+          href={`/coach/clients/${clientId}/plan/edit`}
+          style={{
+            display: 'inline-block',
+            marginTop: 14,
+            fontSize: 13,
+            fontWeight: 600,
+            color: '#B5F23D',
+            backgroundColor: 'rgba(181,242,61,0.08)',
+            border: '1px solid rgba(181,242,61,0.25)',
+            borderRadius: 8,
+            padding: '8px 16px',
+            textDecoration: 'none',
+          }}
+        >
+          Editar plan
+        </Link>
       </div>
     </div>
   )
