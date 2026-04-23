@@ -198,9 +198,9 @@ export default function ClientProfileHeroCard({
       {injuries ? (
         <div
           style={{
-            marginTop: 14,
-            borderTop: '1px solid #1F2227',
-            paddingTop: 10,
+            marginTop: 2,
+            paddingTop: 2,
+            textAlign: 'center',
           }}
         >
           <p
@@ -209,13 +209,22 @@ export default function ClientProfileHeroCard({
               fontSize: 11,
               fontWeight: 600,
               color: '#6B7280',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              textAlign: 'center',
             }}
           >
             Lesiones / limitaciones
           </p>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: '#F0F0F0', lineHeight: 1.4 }}>
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontSize: 13,
+              fontWeight: 700,
+              color: '#F0F0F0',
+              lineHeight: 1.2,
+              textAlign: 'center',
+            }}
+          >
             {injuries}
           </p>
         </div>

@@ -1,7 +1,10 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { updateClientAction } from '@/features/clients/actions/update-client'
+import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
+import CustomSelect from '@/components/ui/custom-select'
 
 const T = {
   card: '#111317', border: '#1F2227', lime: '#B5F23D',
@@ -10,6 +13,7 @@ const T = {
 
 type Props = {
   clientId: string
+  cancelHref?: string
   initial: {
     age: number | null
     sex: 'male' | 'female' | 'other' | null
@@ -30,87 +34,167 @@ const inputStyle = {
 
 const labelStyle = { fontSize: 11, color: T.muted, marginBottom: 4, display: 'block' as const }
 
-export default function EditClientForm({ clientId, initial }: Props) {
-  const [open, setOpen] = useState(false)
+export default function EditClientForm({
+  clientId,
+  initial,
+  cancelHref,
+}: Props) {
+  const router = useRouter()
+  const [values, setValues] = useState(() => ({
+    goal: initial.goal ?? '',
+    age: initial.age != null ? String(initial.age) : '',
+    daysPerWeek: String(initial.daysPerWeek),
+    weightKg: initial.weightKg != null ? String(initial.weightKg) : '',
+    heightCm: initial.heightCm != null ? String(initial.heightCm) : '',
+    sex: initial.sex ?? '',
+    experienceLevel: initial.experienceLevel ?? '',
+    injuries: initial.injuries ?? '',
+  }))
 
   const action = async (_prev: unknown, formData: FormData) => {
-    const result = await updateClientAction(clientId, formData)
-    if (result.success) setOpen(false)
-    return result
+    return updateClientAction(clientId, formData)
   }
 
   const [state, formAction, pending] = useActionState(action, null)
+  const initialSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        goal: initial.goal ?? '',
+        age: initial.age != null ? String(initial.age) : '',
+        daysPerWeek: String(initial.daysPerWeek),
+        weightKg: initial.weightKg != null ? String(initial.weightKg) : '',
+        heightCm: initial.heightCm != null ? String(initial.heightCm) : '',
+        sex: initial.sex ?? '',
+        experienceLevel: initial.experienceLevel ?? '',
+        injuries: initial.injuries ?? '',
+      }),
+    [initial]
+  )
+  const currentSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        ...values,
+        goal: values.goal.trim(),
+        injuries: values.injuries.trim(),
+      }),
+    [values]
+  )
+  const hasChanges = currentSnapshot !== initialSnapshot
 
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        style={{
-          marginTop: 12, width: '100%', padding: '10px 0',
-          backgroundColor: 'transparent', border: `1px solid ${T.border}`,
-          borderRadius: 10, color: T.secondary, fontSize: 13, fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        Editar datos del cliente
-      </button>
-    )
-  }
+  useEffect(() => {
+    if (state && 'success' in state && state.success) {
+      const timer = setTimeout(() => {
+        router.push(cancelHref ?? `/coach/clients/${clientId}?tab=profile`)
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [state, router, clientId, cancelHref])
 
   return (
     <form action={formAction} style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {state && 'success' in state && state.success ? (
+        <CoachSuccessOverlay
+          title="¡Datos actualizados!"
+          hint="Volviendo al perfil del cliente..."
+        />
+      ) : null}
       <p style={{ fontSize: 13, fontWeight: 700, color: T.text, margin: 0 }}>Editar perfil</p>
 
       <div>
         <label style={labelStyle}>Objetivo</label>
-        <input name="goal" defaultValue={initial.goal ?? ''} style={inputStyle} placeholder="Ej: Ganar masa muscular" />
+        <input
+          name="goal"
+          value={values.goal}
+          onChange={(e) => setValues((prev) => ({ ...prev, goal: e.target.value }))}
+          style={inputStyle}
+          placeholder="Ej: Ganar masa muscular"
+        />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <div>
           <label style={labelStyle}>Edad</label>
-          <input name="age" type="number" defaultValue={initial.age ?? ''} style={inputStyle} min={10} max={100} />
+          <input
+            name="age"
+            type="number"
+            value={values.age}
+            onChange={(e) => setValues((prev) => ({ ...prev, age: e.target.value }))}
+            style={inputStyle}
+            min={10}
+            max={100}
+          />
         </div>
         <div>
           <label style={labelStyle}>Días / semana</label>
-          <input name="daysPerWeek" type="number" defaultValue={initial.daysPerWeek} style={inputStyle} min={1} max={7} />
+          <input
+            name="daysPerWeek"
+            type="number"
+            value={values.daysPerWeek}
+            onChange={(e) => setValues((prev) => ({ ...prev, daysPerWeek: e.target.value }))}
+            style={inputStyle}
+            min={1}
+            max={7}
+          />
         </div>
         <div>
           <label style={labelStyle}>Peso (kg)</label>
-          <input name="weightKg" type="number" step="0.1" defaultValue={initial.weightKg ?? ''} style={inputStyle} />
+          <input
+            name="weightKg"
+            type="number"
+            step="0.1"
+            value={values.weightKg}
+            onChange={(e) => setValues((prev) => ({ ...prev, weightKg: e.target.value }))}
+            style={inputStyle}
+          />
         </div>
         <div>
           <label style={labelStyle}>Altura (cm)</label>
-          <input name="heightCm" type="number" defaultValue={initial.heightCm ?? ''} style={inputStyle} />
+          <input
+            name="heightCm"
+            type="number"
+            value={values.heightCm}
+            onChange={(e) => setValues((prev) => ({ ...prev, heightCm: e.target.value }))}
+            style={inputStyle}
+          />
         </div>
       </div>
 
       <div>
         <label style={labelStyle}>Sexo</label>
-        <select name="sex" defaultValue={initial.sex ?? ''} style={{ ...inputStyle, appearance: 'none' as const }}>
-          <option value="">Sin especificar</option>
-          <option value="male">Masculino</option>
-          <option value="female">Femenino</option>
-          <option value="other">Otro</option>
-        </select>
+        <CustomSelect
+          name="sex"
+          value={values.sex}
+          onChange={(value) => setValues((prev) => ({ ...prev, sex: value }))}
+          placeholder="Sin especificar"
+          options={[
+            { value: 'male', label: 'Masculino' },
+            { value: 'female', label: 'Femenino' },
+            { value: 'other', label: 'Otro' },
+          ]}
+        />
       </div>
 
       <div>
         <label style={labelStyle}>Nivel de experiencia</label>
-        <select name="experienceLevel" defaultValue={initial.experienceLevel ?? ''} style={{ ...inputStyle, appearance: 'none' as const }}>
-          <option value="">Sin especificar</option>
-          <option value="beginner">Principiante</option>
-          <option value="intermediate">Intermedio</option>
-          <option value="advanced">Avanzado</option>
-        </select>
+        <CustomSelect
+          name="experienceLevel"
+          value={values.experienceLevel}
+          onChange={(value) => setValues((prev) => ({ ...prev, experienceLevel: value }))}
+          placeholder="Sin especificar"
+          options={[
+            { value: 'beginner', label: 'Principiante' },
+            { value: 'intermediate', label: 'Intermedio' },
+            { value: 'advanced', label: 'Avanzado' },
+          ]}
+        />
       </div>
 
       <div>
         <label style={labelStyle}>Lesiones / limitaciones</label>
         <textarea
           name="injuries"
-          defaultValue={initial.injuries ?? ''}
+          value={values.injuries}
+          onChange={(e) => setValues((prev) => ({ ...prev, injuries: e.target.value }))}
           style={{ ...inputStyle, minHeight: 70, resize: 'vertical' }}
           placeholder="Ej: Dolor lumbar crónico"
         />
@@ -123,10 +207,16 @@ export default function EditClientForm({ clientId, initial }: Props) {
       <div style={{ display: 'flex', gap: 10 }}>
         <button
           type="button"
-          onClick={() => setOpen(false)}
+          onClick={() => {
+            if (cancelHref) {
+              router.push(cancelHref)
+              return
+            }
+            router.back()
+          }}
           style={{
             flex: 1, padding: '11px 0', backgroundColor: 'transparent',
-            border: `1px solid ${T.border}`, borderRadius: 10,
+            border: 'none', borderRadius: 10,
             color: T.secondary, fontSize: 13, fontWeight: 600, cursor: 'pointer',
           }}
         >
@@ -134,12 +224,12 @@ export default function EditClientForm({ clientId, initial }: Props) {
         </button>
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || !hasChanges}
           style={{
-            flex: 1, padding: '11px 0', backgroundColor: T.lime,
+            flex: 1, padding: '11px 0', backgroundColor: pending || !hasChanges ? '#8BA82B' : T.lime,
             border: 'none', borderRadius: 10,
-            color: '#0A0A0A', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-            opacity: pending ? 0.6 : 1,
+            color: '#0A0A0A', fontSize: 13, fontWeight: 700, cursor: pending || !hasChanges ? 'not-allowed' : 'pointer',
+            opacity: pending || !hasChanges ? 0.65 : 1,
           }}
         >
           {pending ? 'Guardando...' : 'Guardar'}

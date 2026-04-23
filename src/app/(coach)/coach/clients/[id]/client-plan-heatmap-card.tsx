@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { getPlanFollowupStatusSummary, getWeekTrainingData } from './actions'
@@ -8,15 +7,6 @@ import type { PlanFollowupIssue, PlanFollowupStatusSummary } from './queries'
 import type { ActivePlanSummary, TrainingWeekData, DayStatus } from '@/features/clients/types'
 import HeatmapCellDot from '../../dashboard/heatmap-cell-dot'
 import type { WeeklyHeatmapCell } from '../../dashboard/weekly-heatmap-types'
-
-const SECTION_TITLE: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: '#6B7280',
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  marginBottom: 12,
-}
 
 const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
@@ -53,7 +43,6 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
   if (!activePlan || !weekData) {
     return (
       <div>
-        <p style={SECTION_TITLE}>Plan activo</p>
         <div
           style={{
             backgroundColor: '#111317',
@@ -129,93 +118,130 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
 
   return (
     <div>
-      <p style={SECTION_TITLE}>Plan activo</p>
       <div
         style={{
-          background: 'linear-gradient(170deg, #12161C 0%, #0F1217 100%)',
-          border: '1px solid #252A31',
-          borderRadius: 14,
-          overflow: 'hidden',
+          background: 'transparent',
+          border: 'none',
         }}
       >
         <div
           style={{
             padding: '12px 14px',
-            borderBottom: '1px solid #1F2227',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             gap: 10,
           }}
         >
-          <button
-            type="button"
-            onClick={() => navigateWeek(-1)}
-            disabled={!canGoPrev || isPending}
-            aria-label="Semana anterior"
+          <div
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              border: '1px solid #2A2D34',
-              background: 'transparent',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              color: canGoPrev && !isPending ? '#9CA3AF' : '#2A2D34',
-              cursor: canGoPrev && !isPending ? 'pointer' : 'default',
+              gap: 20,
+              width: '100%',
+              maxWidth: 270,
+              paddingBottom: 4,
             }}
           >
-            <ChevronLeft size={18} />
-          </button>
-
-          <div style={{ textAlign: 'center', minWidth: 0 }}>
-            <p
+            <button
+              type="button"
+              onClick={() => navigateWeek(-1)}
+              disabled={!canGoPrev || isPending}
+              aria-label="Semana anterior"
               style={{
-                margin: 0,
-                fontSize: 14,
-                fontWeight: 700,
-                color: '#F0F0F0',
-                lineHeight: 1.2,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                border: 'none',
+                background: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: canGoPrev && !isPending ? '#B5F23D' : '#2A2D34',
+                cursor: canGoPrev && !isPending ? 'pointer' : 'default',
               }}
             >
-              {plan.name}
-            </p>
-            <p style={{ margin: '3px 0 0', fontSize: 11, color: '#6B7280' }}>
-              Semana {data.weekNumber} de {data.totalWeeks}
-            </p>
-          </div>
+              <ChevronLeft size={30} strokeWidth={3.8} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => navigateWeek(1)}
-            disabled={!canGoNext || isPending}
-            aria-label="Semana siguiente"
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              border: '1px solid #2A2D34',
-              background: 'transparent',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: canGoNext && !isPending ? '#9CA3AF' : '#2A2D34',
-              cursor: canGoNext && !isPending ? 'pointer' : 'default',
-            }}
-          >
-            <ChevronRight size={18} />
-          </button>
+            <div style={{ textAlign: 'center', minWidth: 0, flex: 1 }}>
+              <div
+                style={{
+                  display: 'inline-flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  maxWidth: '100%',
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 15,
+                    color: '#F0F0F0',
+                    fontWeight: 600,
+                    letterSpacing: '0.04em',
+                    lineHeight: 1.2,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Semana {data.weekNumber} de {data.totalWeeks}
+                </p>
+                {data.weekNumber === plan.currentWeek ? (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: '#B5F23D',
+                      backgroundColor: 'rgba(181,242,61,0.12)',
+                      border: '1px solid rgba(181,242,61,0.35)',
+                      borderRadius: 9999,
+                      padding: '2px 8px',
+                      lineHeight: 1.1,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    Actual
+                  </span>
+                ) : null}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigateWeek(1)}
+              disabled={!canGoNext || isPending}
+              aria-label="Semana siguiente"
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                border: 'none',
+                background: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: canGoNext && !isPending ? '#B5F23D' : '#2A2D34',
+                cursor: canGoNext && !isPending ? 'pointer' : 'default',
+              }}
+            >
+              <ChevronRight size={30} strokeWidth={3.8} />
+            </button>
+          </div>
         </div>
 
         <div
           style={{
-            padding: '12px 14px 14px',
+            padding: '10px 14px 14px',
             opacity: isPending ? 0.45 : 1,
             transition: 'opacity 0.2s ease',
+            backgroundColor: '#111317',
+            borderRadius: 40,
+            border: '1px solid #252A31',
+            marginTop: -2,
           }}
         >
           <div
@@ -265,54 +291,6 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
 
         <div
           style={{
-            borderTop: '1px solid #1A1D22',
-            padding: '12px 14px',
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 10,
-          }}
-        >
-          <Link
-            href={`/coach/clients/${clientId}/plan/edit?mode=view`}
-            style={{
-              minHeight: 40,
-              borderRadius: 10,
-              border: '1px solid #2A2D34',
-              backgroundColor: '#111317',
-              color: '#F0F0F0',
-              fontSize: 13,
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-            }}
-          >
-            Ver plan asignado
-          </Link>
-          <Link
-            href={`/coach/clients/${clientId}/plan/edit`}
-            style={{
-              minHeight: 40,
-              borderRadius: 10,
-              border: 'none',
-              backgroundColor: '#B5F23D',
-              color: '#0A0A0A',
-              fontSize: 13,
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-            }}
-          >
-            Editar plan asignado
-          </Link>
-        </div>
-
-        <div
-          style={{
-            borderTop: '1px solid #1A1D22',
             padding: '12px 14px 14px',
             display: 'flex',
             flexDirection: 'column',

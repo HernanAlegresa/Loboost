@@ -1,4 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getClientProfileData } from './queries'
 import { getProgressKPIs } from './progress-queries'
@@ -10,7 +11,6 @@ import ClientProfileHeroCard from './client-profile-hero-card'
 import ClientPlanHeatmapCard from './client-plan-heatmap-card'
 import ClientProgressContent from './client-progress-content'
 import ClientSessionsList from './client-sessions-list'
-import EditClientForm from './edit-client-form'
 
 export default async function ClientProfilePage({
   params,
@@ -43,9 +43,9 @@ export default async function ClientProfilePage({
       }}
     >
       <ClientProfileHeader
+        clientId={id}
         fullName={profile.fullName}
         goal={profile.goal}
-        statusColor={profile.statusColor}
       />
       <ClientProfileTabsShell
         profileContent={
@@ -63,24 +63,93 @@ export default async function ClientProfilePage({
               injuries={profile.injuries}
               planExpired={isPlanExpired(profile.activePlan?.endDate ?? null)}
             />
-            <EditClientForm
-              clientId={profile.id}
-              initial={{
-                age: profile.age,
-                sex: profile.sex,
-                goal: profile.goal,
-                weightKg: profile.weightKg,
-                heightCm: profile.heightCm,
-                experienceLevel: profile.experienceLevel,
-                daysPerWeek: profile.daysPerWeek,
-                injuries: profile.injuries,
-              }}
-            />
-            <ClientPlanHeatmapCard
-              activePlan={profile.activePlan}
-              initialWeekData={profile.currentWeekData}
-              clientId={profile.id}
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+              {profile.activePlan ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: '#6B7280',
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Plan activo
+                  </p>
+                  <p
+                    style={{
+                      margin: 0,
+                      textAlign: 'center',
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: '#F0F0F0',
+                      lineHeight: 1.2,
+                      paddingBottom: 10,
+                    }}
+                  >
+                    {profile.activePlan.name}
+                  </p>
+                </div>
+              ) : null}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 26,
+                  paddingBottom: 16,
+                }}
+              >
+                <Link
+                  href={`/coach/clients/${profile.id}/plan/edit?mode=view`}
+                  style={{
+                    minHeight: 35,
+                    minWidth: 112,
+                    borderRadius: 20,
+                    border: '1px solid #2A2D34',
+                    backgroundColor: '#111317',
+                    color: '#F0F0F0',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textDecoration: 'none',
+                    padding: '0 12px',
+                  }}
+                >
+                  Ver plan
+                </Link>
+                <Link
+                  href={`/coach/clients/${profile.id}/plan/edit`}
+                  style={{
+                    minHeight: 35,
+                    minWidth: 112,
+                    borderRadius: 20,
+                    border: 'none',
+                    backgroundColor: '#B5F23D',
+                    color: '#0A0A0A',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textDecoration: 'none',
+                    padding: '0 12px',
+                  }}
+                >
+                  Editar plan
+                </Link>
+              </div>
+              <ClientPlanHeatmapCard
+                activePlan={profile.activePlan}
+                initialWeekData={profile.currentWeekData}
+                clientId={profile.id}
+              />
+            </div>
           </>
         }
         progressContent={
