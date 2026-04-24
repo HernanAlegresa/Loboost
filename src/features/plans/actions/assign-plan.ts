@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { calculateEndDate } from '@/features/plans/calculate-end-date'
 import { assignPlanSchema } from '@/features/plans/schemas'
+import { computeDayDate } from '@/features/clients/utils/training-utils'
 
 export type AssignPlanState =
   | { success: true; clientPlanId: string }
@@ -121,6 +122,8 @@ export async function assignPlanAction(
     const sortedDays = [...(week.plan_days ?? [])].sort((a, b) => a.order - b.order)
 
     for (const day of sortedDays) {
+      const scheduledDate = computeDayDate(result.data.startDate, week.week_number, day.day_of_week)
+
       const { data: clientDay, error: dayError } = await supabase
         .from('client_plan_days')
         .insert({
@@ -128,6 +131,7 @@ export async function assignPlanAction(
           week_number: week.week_number,
           day_of_week: day.day_of_week,
           order: day.order,
+          scheduled_date: scheduledDate,
         })
         .select('id')
         .single()
