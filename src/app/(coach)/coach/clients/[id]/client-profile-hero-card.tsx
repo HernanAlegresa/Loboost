@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import Avatar from '@/components/ui/avatar'
+import { CLIENT_STATUS_CONFIG } from '@/features/clients/types/client-status'
+import type { ClientStatus } from '@/features/clients/types/client-status'
 
 type Props = {
   clientId: string
   fullName: string
-  statusColor: 'active' | 'warning' | 'critical'
+  status: ClientStatus
   sex: 'male' | 'female' | 'other' | null
   experienceLevel: 'beginner' | 'intermediate' | 'advanced' | null
   age: number | null
@@ -40,7 +42,7 @@ const LEVEL_LABELS: Record<'beginner' | 'intermediate' | 'advanced', string> = {
 export default function ClientProfileHeroCard({
   clientId,
   fullName,
-  statusColor,
+  status,
   sex,
   experienceLevel,
   age,
@@ -50,8 +52,7 @@ export default function ClientProfileHeroCard({
   injuries,
   planExpired,
 }: Props) {
-  const ringColor =
-    statusColor === 'active' ? '#22C55E' : statusColor === 'warning' ? '#F2994A' : '#F25252'
+  const ringColor = CLIENT_STATUS_CONFIG[status].color
 
   const leftStats: HeroStat[] = [
     { label: 'Sexo', value: sex ? SEX_LABELS[sex] : '—' },

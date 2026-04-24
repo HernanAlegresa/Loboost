@@ -53,7 +53,7 @@ export default async function ClientProfilePage({
             <ClientProfileHeroCard
               clientId={id}
               fullName={profile.fullName}
-              statusColor={profile.statusColor}
+              status={profile.status}
               sex={profile.sex}
               experienceLevel={profile.experienceLevel}
               age={profile.age}
@@ -71,7 +71,7 @@ export default async function ClientProfilePage({
                       margin: 0,
                       fontSize: 10,
                       fontWeight: 600,
-                      color: '#6B7280',
+                      color: '#B5F23D',
                       letterSpacing: '0.08em',
                       textTransform: 'uppercase',
                     }}
