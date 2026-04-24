@@ -7,6 +7,67 @@ import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 import { CheckCircle2, Clock, Lock } from 'lucide-react'
 import type { CheckInWeek } from '../progress-queries'
 
+function computeCheckInSummary(
+  weeks: CheckInWeek[],
+  currentWeek: number
+): { registered: number; pending: number; missed: number } {
+  let registered = 0
+  let pending = 0
+  let missed = 0
+  for (const week of weeks) {
+    if (week.isFuture) continue
+    if (week.entry !== null) {
+      registered++
+    } else if (week.weekNumber === currentWeek) {
+      pending++
+    } else {
+      missed++
+    }
+  }
+  return { registered, pending, missed }
+}
+
+function SummaryPill({
+  value,
+  label,
+  color,
+}: {
+  value: number
+  label: string
+  color: string
+}) {
+  return (
+    <div
+      style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 3,
+        padding: '10px 8px',
+        backgroundColor: `${color}14`,
+        borderRadius: 10,
+        border: `1px solid ${color}30`,
+      }}
+    >
+      <span style={{ fontSize: 18, fontWeight: 700, color, lineHeight: 1 }}>{value}</span>
+      <span
+        style={{
+          fontSize: 9,
+          fontWeight: 600,
+          color,
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          textAlign: 'center',
+          lineHeight: 1.2,
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  )
+}
+
 export default async function CheckInsPage({
   params,
 }: {
@@ -53,6 +114,7 @@ export default async function CheckInsPage({
   }
 
   const summary = await getCheckInsSummary(id, activePlan)
+  const checkInCounts = computeCheckInSummary(summary.weeks, summary.currentWeek)
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -84,6 +146,13 @@ export default async function CheckInsPage({
         >
           {activePlan.name}
         </p>
+
+        {/* Summary strip */}
+        <div style={{ display: 'flex', gap: 8, padding: '0 20px 16px' }}>
+          <SummaryPill value={checkInCounts.registered} label="Registradas" color="#B5F23D" />
+          <SummaryPill value={checkInCounts.pending}    label="Pendiente"   color="#F2C94A" />
+          <SummaryPill value={checkInCounts.missed}     label="Sin registrar" color="#F25252" />
+        </div>
 
         {/* Week list */}
         <div style={{ display: 'flex', flexDirection: 'column', padding: '4px 20px 0' }}>
