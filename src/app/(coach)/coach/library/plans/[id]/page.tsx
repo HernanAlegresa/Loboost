@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Pencil, UserPlus } from 'lucide-react'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 import { getPlanDetailFull } from '../queries'
-import type { PlanDetailWeek } from '../queries'
+import WeekCollapsibleCard from './week-collapsible-card'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -19,98 +19,6 @@ const T = {
   secondary: '#9CA3AF',
 } as const
 
-const DAY_NAMES = ['', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
-
-const WEEK_TYPE_LABEL: Record<string, string> = {
-  normal: 'Normal',
-  deload: 'Deload',
-  peak: 'Peak',
-  test: 'Test',
-}
-
-function repsLabel(repsMin: number | null, repsMax: number | null): string {
-  if (repsMin == null) return ''
-  if (repsMax != null && repsMax !== repsMin) return `${repsMin}–${repsMax} reps`
-  return `${repsMin} reps`
-}
-
-function WeekCard({ week }: { week: PlanDetailWeek }) {
-  return (
-    <details
-      style={{
-        backgroundColor: T.card,
-        border: `1px solid ${T.border}`,
-        borderRadius: 16,
-        overflow: 'hidden',
-        marginBottom: 12,
-      }}
-    >
-      <summary
-        style={{
-          listStyle: 'none',
-          cursor: 'pointer',
-          padding: '12px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-        }}
-      >
-        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: T.text }}>
-          Semana {week.weekNumber}
-          {week.weekName ? ` — ${week.weekName}` : ''}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: T.lime,
-              backgroundColor: 'rgba(181,242,61,0.1)',
-              padding: '2px 8px',
-              borderRadius: 20,
-            }}
-          >
-            {WEEK_TYPE_LABEL[week.weekType] ?? week.weekType}
-          </span>
-          <span style={{ color: '#6B7280', fontSize: 12 }}>Ver</span>
-        </div>
-      </summary>
-
-      {week.days.length === 0 ? (
-        <p style={{ padding: '0 16px 12px', fontSize: 13, color: T.muted, margin: 0 }}>Sin días configurados</p>
-      ) : (
-        week.days.map((day) => (
-          <div
-            key={day.id}
-            style={{ padding: '12px 16px', borderTop: `1px solid ${T.border}` }}
-          >
-            <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: T.muted, letterSpacing: '0.05em' }}>
-              {DAY_NAMES[day.dayOfWeek]}
-            </p>
-            {day.exercises.map((ex) => (
-              <div
-                key={ex.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '6px 0',
-                  borderBottom: `1px solid rgba(31,34,39,0.5)`,
-                }}
-              >
-                <p style={{ margin: 0, fontSize: 13, color: T.text }}>{ex.name}</p>
-                <p style={{ margin: 0, fontSize: 12, color: T.secondary }}>
-                  {ex.sets} × {ex.type === 'cardio' ? `${ex.durationSeconds}s` : repsLabel(ex.repsMin, ex.repsMax)}
-                </p>
-              </div>
-            ))}
-          </div>
-        ))
-      )}
-    </details>
-  )
-}
 
 const btnPrimary: CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
@@ -163,7 +71,7 @@ export default async function PlanDetailPage({ params }: Props) {
 
         <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: '0.1em', marginBottom: 12 }}>ESTRUCTURA DEL PLAN</p>
         {plan.planWeeks.map((week) => (
-          <WeekCard key={week.id} week={week} />
+          <WeekCollapsibleCard key={week.id} week={week} />
         ))}
       </div>
     </div>

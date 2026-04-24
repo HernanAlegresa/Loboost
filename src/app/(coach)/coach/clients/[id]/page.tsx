@@ -158,6 +158,7 @@ export default async function ClientProfilePage({
             progressKPIs={kpis}
             activePlan={profile.activePlan}
             totalSessions={profile.totalSessions}
+            progressSeries={profile.progressSeries}
           />
         }
         sessionsContent={<ClientSessionsList sessions={sessions} clientId={profile.id} />}

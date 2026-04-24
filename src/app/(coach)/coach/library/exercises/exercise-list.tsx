@@ -23,6 +23,27 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
     return exercises.filter((exercise) => exercise.muscle_group === selectedGroup)
   }, [exercises, selectedGroup])
 
+  const orderedMuscleGroups = useMemo(() => {
+    const desiredOrder = [
+      'pecho',
+      'espalda',
+      'hombros',
+      'cuadriceps',
+      'isquiotibiales',
+      'gluteos',
+      'biceps',
+      'triceps',
+      'abdomen',
+      'pantorrillas',
+    ]
+
+    return desiredOrder
+      .map((value) => MUSCLE_GROUP_OPTIONS.find((option) => option.value === value))
+      .filter((option): option is (typeof MUSCLE_GROUP_OPTIONS)[number] => option !== undefined)
+  }, [])
+
+  const LIST_BOTTOM_PADDING_PX = 120
+
   useEffect(() => {
     if (!dialogExercise) return
     function onKeyDown(e: KeyboardEvent) {
@@ -92,149 +113,189 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
         onCancel={closeDelete}
         onConfirm={confirmDelete}
       />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 4 }}>
-          <button
-            type="button"
-            onClick={() => setSelectedGroup('all')}
-            style={{
-              border: selectedGroup === 'all' ? '1px solid #B5F23D' : '1px solid #2A2D34',
-              backgroundColor: selectedGroup === 'all' ? 'rgba(181,242,61,0.12)' : '#111317',
-              color: selectedGroup === 'all' ? '#B5F23D' : '#9CA3AF',
-              borderRadius: 9999,
-              minHeight: 32,
-              padding: '0 12px',
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            Todos
-          </button>
-          {MUSCLE_GROUP_OPTIONS.map((group) => {
-            const isActive = selectedGroup === group.value
-            return (
-              <button
-                key={group.value}
-                type="button"
-                onClick={() => setSelectedGroup(group.value)}
-                style={{
-                  border: isActive ? '1px solid #B5F23D' : '1px solid #2A2D34',
-                  backgroundColor: isActive ? 'rgba(181,242,61,0.12)' : '#111317',
-                  color: isActive ? '#B5F23D' : '#9CA3AF',
-                  borderRadius: 9999,
-                  minHeight: 32,
-                  padding: '0 12px',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                {group.label}
-              </button>
-            )
-          })}
-        </div>
-
-        {filteredExercises.length === 0 ? (
+      <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <div
+          style={{
+            flexShrink: 0,
+            backgroundColor: '#0A0A0A',
+            paddingTop: 10,
+            paddingBottom: 14,
+          }}
+        >
           <div
             style={{
-              backgroundColor: '#111317',
-              border: '1px solid #1F2227',
-              borderRadius: 14,
-              padding: '18px 16px',
-              textAlign: 'center',
-            }}
-          >
-            <p style={{ margin: 0, fontSize: 13, color: '#9CA3AF' }}>
-              No hay ejercicios para ese grupo muscular.
-            </p>
-          </div>
-        ) : null}
-
-        {filteredExercises.map((ex) => (
-          <motion.div
-            key={ex.id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: isPending && pendingId === ex.id ? 0.55 : 1, y: 0 }}
-            transition={{ duration: 0.18 }}
-            whileTap={{ scale: 0.985 }}
-            style={{
-              backgroundColor: '#111317',
-              border: '1px solid #1F2227',
-              borderRadius: 14,
-              padding: '14px 12px 14px 16px',
               display: 'flex',
-              alignItems: 'center',
-              gap: 12,
+              flexWrap: 'nowrap',
+              gap: 8,
+              marginBottom: 4,
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              paddingBottom: 2,
             }}
           >
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p
-                style={{
-                  fontSize: 15,
-                  fontWeight: 700,
-                  color: '#B5F23D',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  margin: 0,
-                }}
-              >
-                {ex.name}
-              </p>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: '#9CA3AF',
-                  margin: '5px 0 0',
-                  lineHeight: 1.45,
-                }}
-              >
-                {muscleGroupLabel(ex.muscle_group)}
+            <button
+              type="button"
+              onClick={() => setSelectedGroup('all')}
+              style={{
+                border: selectedGroup === 'all' ? '1px solid #B5F23D' : '1px solid #2A2D34',
+                backgroundColor: selectedGroup === 'all' ? 'rgba(181,242,61,0.12)' : '#111317',
+                color: selectedGroup === 'all' ? '#B5F23D' : '#9CA3AF',
+                borderRadius: 9999,
+                minHeight: 32,
+                padding: '0 12px',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+              }}
+            >
+              Todos
+            </button>
+            {orderedMuscleGroups.map((group) => {
+              const isActive = selectedGroup === group.value
+              return (
+                <button
+                  key={group.value}
+                  type="button"
+                  onClick={() => setSelectedGroup(group.value)}
+                  style={{
+                    border: isActive ? '1px solid #B5F23D' : '1px solid #2A2D34',
+                    backgroundColor: isActive ? 'rgba(181,242,61,0.12)' : '#111317',
+                    color: isActive ? '#B5F23D' : '#9CA3AF',
+                    borderRadius: 9999,
+                    minHeight: 32,
+                    padding: '0 12px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                >
+                  {group.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            overscrollBehaviorY: 'contain',
+            paddingBottom: LIST_BOTTOM_PADDING_PX,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+          }}
+        >
+          {filteredExercises.length === 0 ? (
+            <div
+              style={{
+                backgroundColor: '#111317',
+                border: '1px solid #1F2227',
+                borderRadius: 14,
+                padding: '18px 16px',
+                textAlign: 'center',
+              }}
+            >
+              <p style={{ margin: 0, fontSize: 13, color: '#9CA3AF' }}>
+                No hay ejercicios para ese grupo muscular.
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
-              <Link
-                href={`/coach/library/exercises/${ex.id}/edit`}
-                aria-label={`Editar ${ex.name}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: 44,
-                  minHeight: 44,
-                  color: '#9CA3AF',
-                  textDecoration: 'none',
-                  borderRadius: 8,
-                  transition: 'color 150ms ease',
-                }}
-              >
-                <Pencil size={18} />
-              </Link>
-              <button
-                type="button"
-                disabled={isPending}
-                onClick={() => openDelete(ex)}
-                aria-label={`Eliminar ejercicio ${ex.name}`}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: 44,
-                  minHeight: 44,
-                  cursor: isPending ? 'default' : 'pointer',
-                  color: '#F25252',
-                  borderRadius: 8,
-                }}
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
-          </motion.div>
-        ))}
+          ) : null}
+
+          {filteredExercises.map((ex) => (
+            <motion.div
+              key={ex.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: isPending && pendingId === ex.id ? 0.55 : 1, y: 0 }}
+              transition={{ duration: 0.18 }}
+              whileTap={{ scale: 0.985 }}
+              style={{
+                backgroundColor: '#111317',
+                border: '1px solid #1F2227',
+                borderRadius: 14,
+                padding: '14px 12px 14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: '#B5F23D',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    margin: 0,
+                  }}
+                >
+                  {ex.name}
+                </p>
+                <p
+                  style={{
+                    fontSize: 12,
+                    color: '#9CA3AF',
+                    margin: '5px 0 0',
+                    lineHeight: 1.45,
+                  }}
+                >
+                  {muscleGroupLabel(ex.muscle_group)}
+                </p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+                <Link
+                  href={`/coach/library/exercises/${ex.id}/edit`}
+                  aria-label={`Editar ${ex.name}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: 44,
+                    minHeight: 44,
+                    color: '#9CA3AF',
+                    textDecoration: 'none',
+                    borderRadius: 8,
+                    transition: 'color 150ms ease',
+                  }}
+                >
+                  <Pencil size={18} />
+                </Link>
+                <button
+                  type="button"
+                  disabled={isPending}
+                  onClick={() => openDelete(ex)}
+                  aria-label={`Eliminar ejercicio ${ex.name}`}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: 44,
+                    minHeight: 44,
+                    cursor: isPending ? 'default' : 'pointer',
+                    color: '#F25252',
+                    borderRadius: 8,
+                  }}
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </>
   )
