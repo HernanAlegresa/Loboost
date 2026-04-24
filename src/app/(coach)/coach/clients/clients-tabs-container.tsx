@@ -8,7 +8,10 @@ import { useSearchParams } from 'next/navigation'
 import type { DashboardClientSummary } from '../dashboard/queries'
 import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
-import ClientCard, { type ClientHealthState } from './client-card'
+import ClientCard from './client-card'
+import type { ClientStatus } from '@/features/clients/types/client-status'
+
+type ClientHealthState = 'en_riesgo' | 'atrasado' | 'al_dia' | 'sin_plan'
 import ClientsFilters, { type ClientsFilterId } from './clients-filters'
 import ActivityFeedItem from './activity-feed-item'
 import ClientsStatesInfoSheet from './clients-states-info-sheet'
@@ -23,6 +26,7 @@ type ClientListItem = {
   id: string
   fullName: string
   state: ClientHealthState
+  status: ClientStatus
   completedThisWeek: number
   plannedDaysPerWeek: number
   daysSinceLastSession: number | null
@@ -72,8 +76,8 @@ const STATE_SORT_RANK: Record<ClientHealthState, number> = {
 
 function mapToHealthState(client: DashboardClientSummary): ClientHealthState {
   if (!client.hasActivePlan) return 'sin_plan'
-  if (client.listState === 'critico') return 'en_riesgo'
-  if (client.listState === 'atencion') return 'atrasado'
+  if (client.status === 'riesgo') return 'en_riesgo'
+  if (client.status === 'atencion') return 'atrasado'
   return 'al_dia'
 }
 
@@ -172,6 +176,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
         id: client.id,
         fullName: client.fullName,
         state: mapToHealthState(client),
+        status: client.status,
         completedThisWeek: client.completedThisWeek,
         plannedDaysPerWeek: client.daysPerWeek,
         daysSinceLastSession: client.daysSinceLastSession,
@@ -570,7 +575,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                       key={client.id}
                       clientId={client.id}
                       fullName={client.fullName}
-                      state={client.state}
+                      status={client.status}
                       completedThisWeek={client.completedThisWeek}
                       plannedDaysPerWeek={client.plannedDaysPerWeek}
                       planExpired={client.planExpired}

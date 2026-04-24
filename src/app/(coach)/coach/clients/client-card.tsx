@@ -3,23 +3,13 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import Avatar from '@/components/ui/avatar'
-
-export type ClientHealthState = 'en_riesgo' | 'atrasado' | 'al_dia' | 'sin_plan'
-
-const STATE_UI: Record<
-  ClientHealthState,
-  { accent: string }
-> = {
-  en_riesgo: { accent: '#F25252' },
-  atrasado: { accent: '#F2994A' },
-  al_dia: { accent: '#22C55E' },
-  sin_plan: { accent: '#9CA3AF' },
-}
+import { CLIENT_STATUS_CONFIG } from '@/features/clients/types/client-status'
+import type { ClientStatus } from '@/features/clients/types/client-status'
 
 type Props = {
   clientId: string
   fullName: string
-  state: ClientHealthState
+  status: ClientStatus
   completedThisWeek: number
   plannedDaysPerWeek: number
   planExpired?: boolean
@@ -29,14 +19,13 @@ type Props = {
 export default function ClientCard({
   clientId,
   fullName,
-  state,
+  status,
   completedThisWeek,
   plannedDaysPerWeek,
   planExpired,
   daysSinceLastSession,
 }: Props) {
-  const stateUi = STATE_UI[state]
-  const accent = stateUi.accent
+  const accent = CLIENT_STATUS_CONFIG[status].color
 
   return (
     <motion.div
