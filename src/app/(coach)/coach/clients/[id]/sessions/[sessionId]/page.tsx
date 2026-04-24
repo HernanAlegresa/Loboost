@@ -11,6 +11,28 @@ const T = {
 
 const DAY_NAMES = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
+const LEVEL_COLORS = ['', '#F25252', '#F2994A', '#F2C94A', '#4CAF82', '#B5F23D'] as const
+
+function SemanticDot({ level }: { level: number }) {
+  const color = LEVEL_COLORS[Math.min(Math.max(level, 1), 5)] ?? '#6B7280'
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        width: 8,
+        height: 8,
+        borderRadius: 9999,
+        backgroundColor: color,
+        flexShrink: 0,
+      }}
+    />
+  )
+}
+
+const ENERGY_LABELS = ['', 'Agotado', 'Bajo', 'Normal', 'Bien', 'Excelente']
+const SLEEP_LABELS  = ['', 'Pésimo',  'Mal',  'Regular', 'Bien', 'Muy bien']
+const SORENESS_LABELS = ['', 'Mucho', 'Bastante', 'Algo', 'Poco', 'Sin dolor']
+
 function repsRange(min: number | null, max: number | null): string {
   if (min == null) return '—'
   if (max != null && max !== min) return `${min}–${max}`
@@ -40,7 +62,7 @@ function ExerciseCard({ ex }: { ex: SessionExerciseDetail }) {
               key={set.setNumber}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '7px 10px',
+                padding: '12px 10px',
                 backgroundColor: set.completed ? 'rgba(181,242,61,0.06)' : 'rgba(255,255,255,0.02)',
                 borderRadius: 8,
               }}
@@ -119,25 +141,34 @@ export default async function SessionDetailPage({
             {session.energyLevel != null && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <p style={{ margin: 0, fontSize: 13, color: T.muted }}>Energía</p>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.text }}>
-                  {['', '💀 Agotado', '😴 Bajo', '😐 Normal', '💪 Bien', '🔥 Excelente'][session.energyLevel]}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <SemanticDot level={session.energyLevel} />
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text }}>
+                    {ENERGY_LABELS[session.energyLevel] ?? '—'}
+                  </p>
+                </div>
               </div>
             )}
             {session.sleepQuality != null && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <p style={{ margin: 0, fontSize: 13, color: T.muted }}>Sueño</p>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.text }}>
-                  {['', '😵 Pésimo', '🥱 Mal', '😐 Regular', '😌 Bien', '✨ Muy bien'][session.sleepQuality]}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <SemanticDot level={session.sleepQuality} />
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text }}>
+                    {SLEEP_LABELS[session.sleepQuality] ?? '—'}
+                  </p>
+                </div>
               </div>
             )}
             {session.sorenessLevel != null && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <p style={{ margin: 0, fontSize: 13, color: T.muted }}>Dolor muscular</p>
-                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.text }}>
-                  {['', '🔴 Mucho', '🟠 Bastante', '🟡 Algo', '🟢 Poco', '✅ Sin dolor'][session.sorenessLevel]}
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <SemanticDot level={session.sorenessLevel} />
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.text }}>
+                    {SORENESS_LABELS[session.sorenessLevel] ?? '—'}
+                  </p>
+                </div>
               </div>
             )}
             {session.notes && (
@@ -158,7 +189,41 @@ export default async function SessionDetailPage({
           </div>
         )}
 
-        <p style={{ fontSize: 11, fontWeight: 700, color: T.muted, letterSpacing: '0.1em', marginBottom: 12 }}>EJERCICIOS</p>
+        {(() => {
+          const totalPlanned = session.exercises.reduce((s, ex) => s + ex.plannedSets, 0)
+          const totalCompleted = session.exercises.reduce(
+            (s, ex) => s + ex.sets.filter((set) => set.completed).length,
+            0
+          )
+          if (totalPlanned === 0) return null
+          const pct = Math.round((totalCompleted / totalPlanned) * 100)
+          const color = pct === 100 ? '#B5F23D' : '#F2C94A'
+          return (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 12,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: T.muted,
+                  letterSpacing: '0.1em',
+                  margin: 0,
+                }}
+              >
+                EJERCICIOS
+              </p>
+              <p style={{ fontSize: 13, fontWeight: 700, color, margin: 0 }}>
+                {totalCompleted}/{totalPlanned} series · {pct}%
+              </p>
+            </div>
+          )
+        })()}
         {session.exercises.map((ex) => (
           <ExerciseCard key={ex.clientPlanDayExerciseId} ex={ex} />
         ))}

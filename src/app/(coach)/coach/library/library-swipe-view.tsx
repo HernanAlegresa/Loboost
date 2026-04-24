@@ -272,11 +272,12 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
           style={{
             flex: '0 0 100%',
             minWidth: 0,
+            minHeight: 0,
             scrollSnapAlign: 'start',
-            overflowY: 'auto',
+            overflowY: 'hidden',
             overflowX: 'hidden',
             overscrollBehaviorY: 'contain',
-            padding: `${LIBRARY_LIST_TOP_INSET_PX}px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
+            padding: '0 20px',
             backgroundColor: '#0A0A0A',
           }}
         >

@@ -106,6 +106,9 @@ export type Database = {
           day_of_week: number
           id: string
           order: number
+          scheduled_date: string
+          slot_status: string
+          updated_at: string
           week_number: number
         }
         Insert: {
@@ -113,6 +116,9 @@ export type Database = {
           day_of_week: number
           id?: string
           order: number
+          scheduled_date: string
+          slot_status?: string
+          updated_at?: string
           week_number: number
         }
         Update: {
@@ -120,6 +126,9 @@ export type Database = {
           day_of_week?: number
           id?: string
           order?: number
+          scheduled_date?: string
+          slot_status?: string
+          updated_at?: string
           week_number?: number
         }
         Relationships: [

@@ -14,7 +14,6 @@ const TAB_LABELS: Record<ClientProfileTab, string> = {
 const TABS: ClientProfileTab[] = ['profile', 'progress', 'sessions']
 const LIST_BOTTOM_GAP_PX = 0
 const PANEL_BOTTOM_PADDING_PX = 120
-const TAB_INDICATOR_MARGIN_TOP_PX = 3
 const PROFILE_SECTION_GAP_PX = 32
 const PROGRESS_SECTION_GAP_PX = 24
 
@@ -26,15 +25,7 @@ type Props = {
 
 export default function ClientProfileTabsShell({ profileContent, progressContent, sessionsContent }: Props) {
   const viewportRef = useRef<HTMLDivElement | null>(null)
-  const tabsTrackRef = useRef<HTMLDivElement | null>(null)
-  const tabTextRefs = useRef<Record<ClientProfileTab, HTMLSpanElement | null>>({
-    profile: null,
-    progress: null,
-    sessions: null,
-  })
   const [activeTab, setActiveTab] = useState<ClientProfileTab>('profile')
-  const [panelWidth, setPanelWidth] = useState(0)
-  const [indicator, setIndicator] = useState({ left: 0, width: 0 })
 
   // On mount: if ?tab=... is in the URL, jump to that panel instantly
   useEffect(() => {
@@ -63,40 +54,6 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
 
   const tabs = useMemo(() => TABS, [])
 
-  useEffect(() => {
-    function syncPanelWidth() {
-      const viewport = viewportRef.current
-      if (!viewport) return
-      setPanelWidth(viewport.clientWidth)
-    }
-
-    const viewport = viewportRef.current
-    if (!viewport) return
-
-    syncPanelWidth()
-    const observer = new ResizeObserver(syncPanelWidth)
-    observer.observe(viewport)
-    return () => observer.disconnect()
-  }, [])
-
-  useEffect(() => {
-    function syncIndicator() {
-      const track = tabsTrackRef.current
-      const textEl = tabTextRefs.current[activeTab]
-      if (!track || !textEl) return
-      const trackRect = track.getBoundingClientRect()
-      const textRect = textEl.getBoundingClientRect()
-      setIndicator({
-        left: textRect.left - trackRect.left,
-        width: textRect.width,
-      })
-    }
-
-    syncIndicator()
-    const raf = requestAnimationFrame(syncIndicator)
-    return () => cancelAnimationFrame(raf)
-  }, [activeTab, panelWidth])
-
   function scrollToTab(tab: ClientProfileTab) {
     const viewport = viewportRef.current
     if (!viewport) return
@@ -121,83 +78,82 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
     }
   }
 
+  const activeIndex = tabs.indexOf(activeTab)
+  const prevTab = activeIndex > 0 ? tabs[activeIndex - 1] : null
+  const nextTab = activeIndex < tabs.length - 1 ? tabs[activeIndex + 1] : null
+
   return (
     <>
       <div
         style={{
           flexShrink: 0,
-          padding: '10px 20px 0',
+          padding: '10px 28px 0',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-          <div style={{ width: 40, flexShrink: 0, minHeight: 46 }} aria-hidden />
-
-          <div ref={tabsTrackRef} style={{ flex: 1, minWidth: 0, minHeight: 46 }}>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                alignItems: 'end',
-                minHeight: 46,
-              }}
-            >
-              {tabs.map((tab) => {
-                const isActive = tab === activeTab
-                return (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => scrollToTab(tab)}
-                    style={{
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: 'transparent',
-                      color: isActive ? '#F0F0F0' : '#6B7280',
-                      padding: '6px 8px',
-                      fontSize: isActive ? 20 : 18,
-                      fontWeight: 700,
-                      lineHeight: 1.2,
-                      transition: 'color 140ms ease',
-                      textAlign: tab === 'profile' ? 'left' : tab === 'sessions' ? 'right' : 'center',
-                    }}
-                  >
-                    <span
-                      ref={(node) => {
-                        tabTextRefs.current[tab] = node
-                      }}
-                    >
-                      {TAB_LABELS[tab]}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-
-            <div
-              style={{
-                marginTop: TAB_INDICATOR_MARGIN_TOP_PX,
-                marginBottom: 0,
-                height: 2,
-                position: 'relative',
-                width: '100%',
-              }}
-            >
-              <div
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', justifyContent: 'center', alignItems: 'center', columnGap: 30 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', minWidth: 74 }}>
+            {prevTab ? (
+              <button
+                type="button"
+                onClick={() => scrollToTab(prevTab)}
                 style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: indicator.left,
-                  height: 2,
-                  width: indicator.width,
-                  backgroundColor: '#B5F23D',
-                  borderRadius: 9999,
-                  transition: 'left 220ms ease, width 220ms ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: '#6B7280',
+                  padding: '6px 0',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
                 }}
-              />
-            </div>
+              >
+                {TAB_LABELS[prevTab]}
+              </button>
+            ) : (
+              <div style={{ minHeight: 34 }} aria-hidden />
+            )}
           </div>
 
-          <div style={{ width: 40, flexShrink: 0, minHeight: 46 }} aria-hidden />
+          <button
+            type="button"
+            onClick={() => scrollToTab(activeTab)}
+            style={{
+              border: 'none',
+              cursor: 'default',
+              backgroundColor: 'transparent',
+              color: '#F0F0F0',
+              padding: '6px 0 8px',
+              fontSize: 20,
+              fontWeight: 700,
+              lineHeight: 1.2,
+              borderBottom: '2px solid #B5F23D',
+            }}
+          >
+            {TAB_LABELS[activeTab]}
+          </button>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-start', minWidth: 74 }}>
+            {nextTab ? (
+              <button
+                type="button"
+                onClick={() => scrollToTab(nextTab)}
+                style={{
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent',
+                  color: '#6B7280',
+                  padding: '6px 0',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                }}
+              >
+                {TAB_LABELS[nextTab]}
+              </button>
+            ) : (
+              <div style={{ minHeight: 34 }} aria-hidden />
+            )}
+          </div>
         </div>
       </div>
 
@@ -251,7 +207,7 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
             overflowX: 'hidden',
             overscrollBehaviorY: 'contain',
             WebkitOverflowScrolling: 'touch',
-            padding: `20px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
+            padding: `24px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
             backgroundColor: '#0A0A0A',
           }}
         >

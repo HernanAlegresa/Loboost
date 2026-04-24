@@ -404,6 +404,73 @@ export async function getWeeklyLoadData(
   })
 }
 
+// ── Nav tile stats ────────────────────────────────────────────────────────────
+
+export type NavTileStats = {
+  exercisesWithProgress: number
+  totalTonnageKg: number
+}
+
+export async function getNavTileStats(
+  clientId: string,
+  activePlan: ActivePlanSummary | null
+): Promise<NavTileStats> {
+  if (!activePlan) return { exercisesWithProgress: 0, totalTonnageKg: 0 }
+
+  const supabase = await createClient()
+
+  const { data: planDayRows } = await supabase
+    .from('client_plan_days')
+    .select('id')
+    .eq('client_plan_id', activePlan.id)
+
+  const planDayIds = (planDayRows ?? []).map((d) => d.id)
+  if (!planDayIds.length) return { exercisesWithProgress: 0, totalTonnageKg: 0 }
+
+  const { data: sessionRows } = await supabase
+    .from('sessions')
+    .select('id')
+    .eq('client_id', clientId)
+    .in('client_plan_day_id', planDayIds)
+    .eq('status', 'completed')
+
+  const sessionIds = (sessionRows ?? []).map((s) => s.id)
+  if (!sessionIds.length) return { exercisesWithProgress: 0, totalTonnageKg: 0 }
+
+  const [pdeRows, weightRows] = await Promise.all([
+    supabase
+      .from('session_sets')
+      .select('client_plan_day_exercise_id')
+      .in('session_id', sessionIds)
+      .eq('completed', true),
+    supabase
+      .from('session_sets')
+      .select('weight_kg')
+      .in('session_id', sessionIds)
+      .eq('completed', true)
+      .not('weight_kg', 'is', null),
+  ])
+
+  const uniquePdeIds = [
+    ...new Set((pdeRows.data ?? []).map((s) => s.client_plan_day_exercise_id)),
+  ]
+
+  let exercisesWithProgress = 0
+  if (uniquePdeIds.length) {
+    const { data: exRows } = await supabase
+      .from('client_plan_day_exercises')
+      .select('exercise_id')
+      .in('id', uniquePdeIds)
+    exercisesWithProgress = new Set((exRows ?? []).map((e) => e.exercise_id)).size
+  }
+
+  const totalTonnageKg = Math.round(
+    (weightRows.data ?? []).reduce((sum, s) => sum + Number(s.weight_kg ?? 0), 0)
+  )
+
+  return { exercisesWithProgress, totalTonnageKg }
+}
+
 // ── Exercise weekly history (grid) ────────────────────────────────────────────
 
 export type ExerciseSetDetail = {

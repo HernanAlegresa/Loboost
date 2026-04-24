@@ -1,3 +1,5 @@
+import type { ClientStatus } from '@/features/clients/types/client-status'
+
 export type CreateClientState =
   | { success: true; clientId: string; clientName: string }
   | { success: false; error: string }
@@ -64,7 +66,7 @@ export type ClientProfileData = {
   id: string
   fullName: string
   goal: string | null
-  statusColor: 'active' | 'warning' | 'critical'
+  status: ClientStatus
   weeklyCompliance: number
   daysSinceLastSession: number | null
   totalSessions: number

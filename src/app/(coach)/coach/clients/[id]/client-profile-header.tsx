@@ -1,28 +1,20 @@
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
-
-const STATUS_CONFIG = {
-  active: { label: 'Al día', color: '#22C55E' },
-  warning: { label: 'Atención', color: '#F2994A' },
-  critical: { label: 'Crítico', color: '#F25252' },
-} as const
+import { ChevronLeft, Pencil } from 'lucide-react'
 
 type Props = {
+  clientId: string
   fullName: string
   goal: string | null
-  statusColor: 'active' | 'warning' | 'critical'
 }
 
-export default function ClientProfileHeader({ fullName, goal, statusColor }: Props) {
-  const { label, color } = STATUS_CONFIG[statusColor]
-
+export default function ClientProfileHeader({ clientId, fullName, goal }: Props) {
   return (
     <div
       style={{
         backgroundColor: '#0A0A0A',
         padding: '12px 20px',
         display: 'grid',
-        gridTemplateColumns: '44px 1fr 44px',
+        gridTemplateColumns: '44px 1fr auto',
         alignItems: 'center',
         columnGap: 12,
         flexShrink: 0,
@@ -72,20 +64,26 @@ export default function ClientProfileHeader({ fullName, goal, statusColor }: Pro
         </p>
       </div>
 
-      <div style={{ width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <span
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <Link
+          href={`/coach/clients/${clientId}/edit`}
+          aria-label="Editar datos del cliente"
+          title="Editar datos del cliente"
           style={{
-            flexShrink: 0,
-            color,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
-            textAlign: 'right',
+            width: 32,
+            height: 32,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#0F1014',
+            border: '1px solid #1F2227',
+            borderRadius: 9999,
+            color: '#9CA3AF',
+            textDecoration: 'none',
           }}
         >
-          {label}
-        </span>
+          <Pencil size={14} />
+        </Link>
       </div>
     </div>
   )

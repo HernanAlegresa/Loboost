@@ -80,6 +80,7 @@ function BarChart({
           <button
             key={week.weekNumber}
             onClick={() => onSelectWeek(week.weekNumber)}
+            aria-label={`Semana ${week.weekNumber}: ${val !== null ? `${val} ${METRIC_CONFIG[metric].unit}` : 'sin datos'}`}
             style={{
               display: 'flex',
               flexDirection: 'column',
