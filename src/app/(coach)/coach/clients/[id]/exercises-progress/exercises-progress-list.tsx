@@ -74,28 +74,64 @@ function TabBar({
 function ExerciseCard({ ex, clientId }: { ex: ExerciseProgressData; clientId: string }) {
   const bw = ex.peakTopSetKg === null
 
+  const trendConfig = {
+    up:     { arrow: '↑', color: '#B5F23D' },
+    down:   { arrow: '↓', color: '#F25252' },
+    stable: { arrow: '→', color: '#6B7280' },
+    none:   null,
+  }[ex.trend]
+
   return (
     <Link
       href={`/coach/clients/${clientId}/exercises-progress/${ex.exerciseId}`}
       style={{ textDecoration: 'none', display: 'block', marginBottom: 8 }}
     >
-      <div style={{ background: 'linear-gradient(160deg,#12161C 0%,#0F1217 100%)', border: '1px solid #252A31', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-end', gap: 12 }}>
+      <div
+        style={{
+          background: 'linear-gradient(160deg,#12161C 0%,#0F1217 100%)',
+          border: '1px solid #252A31',
+          borderRadius: 14,
+          padding: '14px 16px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          cursor: 'pointer',
+          minHeight: 44,
+        }}
+      >
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: 18, fontWeight: 400, color: '#B5F23D', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p
+            style={{
+              fontSize: 18,
+              fontWeight: 400,
+              color: '#B5F23D',
+              margin: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {ex.exerciseName}
           </p>
           <p style={{ fontSize: 12, color: '#6B7280', margin: '3px 0 0' }}>
             {ex.sessionCount} {ex.sessionCount === 1 ? 'sesión' : 'sesiones'}
           </p>
-          {!bw && ex.peakTopSetKg !== null ? (
-            <p style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', margin: '4px 0 0' }}>
-              {ex.peakTopSetKg} kg
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+          {!bw && ex.lastTopSetKg !== null ? (
+            <p style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1 }}>
+              {ex.lastTopSetKg} kg
             </p>
           ) : null}
+          {trendConfig && (
+            <span
+              style={{ fontSize: 12, fontWeight: 700, color: trendConfig.color, lineHeight: 1 }}
+            >
+              {trendConfig.arrow}
+            </span>
+          )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <ChevronRight size={20} color="#B5F23D" strokeWidth={2.5} />
-        </div>
+        <ChevronRight size={20} color="#B5F23D" strokeWidth={2.5} />
       </div>
     </Link>
   )
