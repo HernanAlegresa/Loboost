@@ -5,6 +5,8 @@ import {
   computeDayDate,
   computeDayStatus,
 } from '@/features/clients/utils/training-utils'
+import { computeClientStatus } from '@/features/clients/utils/compute-client-status'
+import type { ClientStatus } from '@/features/clients/types/client-status'
 import type {
   ClientProfileData,
   ActivePlanSummary,
@@ -129,16 +131,6 @@ export async function getClientProfileData(
     completedDays: completedInLastWeek,
   })
 
-  const hasActivePlan = plan !== null
-  let statusColor: 'active' | 'warning' | 'critical'
-  if (!hasActivePlan || (daysSinceLastSession !== null && daysSinceLastSession > 7)) {
-    statusColor = 'critical'
-  } else if (daysSinceLastSession !== null && daysSinceLastSession > 3) {
-    statusColor = 'warning'
-  } else {
-    statusColor = 'active'
-  }
-
   let activePlan: ActivePlanSummary | null = null
   if (plan) {
     activePlan = {
@@ -163,11 +155,13 @@ export async function getClientProfileData(
     )
   }
 
+  const status: ClientStatus = await computeClientStatus(clientId, activePlan)
+
   return {
     id: clientId,
     fullName: profileResult.data.full_name ?? 'Sin nombre',
     goal: cp?.goal ?? null,
-    statusColor,
+    status,
     weeklyCompliance,
     daysSinceLastSession,
     totalSessions,
