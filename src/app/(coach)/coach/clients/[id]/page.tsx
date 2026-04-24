@@ -167,7 +167,13 @@ export default async function ClientProfilePage({
             clientStatus={profile.status}
           />
         }
-        sessionsContent={<ClientSessionsList sessions={sessions} clientId={profile.id} />}
+        sessionsContent={
+          <ClientSessionsList
+            sessions={sessions}
+            clientId={profile.id}
+            hasPlan={profile.activePlan !== null}
+          />
+        }
       />
     </div>
   )
