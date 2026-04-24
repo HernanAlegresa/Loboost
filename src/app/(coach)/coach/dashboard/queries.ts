@@ -4,8 +4,11 @@ import { getClientAlerts } from '@/lib/analytics/alerts'
 import {
   computeDayDate,
   computeDayStatus,
+  getCurrentWeek,
   getTodayISO,
 } from '@/features/clients/utils/training-utils'
+import { computeClientStatus } from '@/features/clients/utils/compute-client-status'
+import type { ClientStatus } from '@/features/clients/types/client-status'
 import type { DayStatus } from '@/features/clients/types'
 import type { AlertType } from '@/types/domain'
 import type {
@@ -33,12 +36,11 @@ export type DashboardClientSummary = {
   completedThisWeek: number
   hasActivePlan: boolean
   planStatus: 'active' | 'paused' | 'inactive'
-  trackingStatus: 'on_track' | 'attention' | 'critical' | null
+  status: ClientStatus
   lastSessionDate: Date | null
   daysSinceLastSession: number | null
   weeklyCompliance: number
   alerts: AlertType[]
-  listState: CoachClientListState
   activePlanEndDate: string | null
 }
 
@@ -51,9 +53,9 @@ export type DashboardData = {
   weeklyHeatmap: CoachWeeklyHeatmap
 }
 
-/** Clientes con seguimiento activo que el coach debería revisar primero (crítico + atención). */
+/** Clientes con seguimiento activo que el coach debería revisar primero (riesgo + atención). */
 export function countCoachClientsNeedingAttention(clients: DashboardClientSummary[]): number {
-  return clients.filter((c) => c.listState === 'critico' || c.listState === 'atencion').length
+  return clients.filter((c) => c.status === 'riesgo' || c.status === 'atencion').length
 }
 
 function localISOFromDate(d: Date): string {
@@ -326,81 +328,77 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       ? currentWeekCount > 0 ? 100 : 0
       : Math.round(((currentWeekCount - prevWeekCount) / prevWeekCount) * 100)
 
-  const clients: DashboardClientSummary[] = profiles.map((profile) => {
-    const cp = clientProfilesMap.get(profile.id)
-    const hasActivePlan = activePlanClientIds.has(profile.id)
-    const latestPlanStatus = latestPlanStatusMap.get(profile.id)
-    const planStatus: 'active' | 'paused' | 'inactive' = hasActivePlan
-      ? 'active'
-      : latestPlanStatus === 'paused'
-      ? 'paused'
-      : 'inactive'
-    const daysPerWeek = cp?.days_per_week ?? 3
+  const clients: DashboardClientSummary[] = await Promise.all(
+    profiles.map(async (profile) => {
+      const cp = clientProfilesMap.get(profile.id)
+      const hasActivePlan = activePlanClientIds.has(profile.id)
+      const latestPlanStatus = latestPlanStatusMap.get(profile.id)
+      const planStatus: 'active' | 'paused' | 'inactive' = hasActivePlan
+        ? 'active'
+        : latestPlanStatus === 'paused'
+        ? 'paused'
+        : 'inactive'
+      const daysPerWeek = cp?.days_per_week ?? 3
 
-    const clientSessions = allSessions.filter((s) => s.client_id === profile.id)
-    const mostRecent = clientSessions[0]
-    const lastSessionDate =
-      mostRecent?.completed_at ? new Date(mostRecent.completed_at) : null
+      const clientSessions = allSessions.filter((s) => s.client_id === profile.id)
+      const mostRecent = clientSessions[0]
+      const lastSessionDate =
+        mostRecent?.completed_at ? new Date(mostRecent.completed_at) : null
 
-    const daysSinceLastSession =
-      lastSessionDate !== null
-        ? Math.floor((now - lastSessionDate.getTime()) / (1000 * 60 * 60 * 24))
+      const daysSinceLastSession =
+        lastSessionDate !== null
+          ? Math.floor((now - lastSessionDate.getTime()) / (1000 * 60 * 60 * 24))
+          : null
+
+      const completedInLastWeek = clientSessions.filter((s) => {
+        if (!s.completed_at) return false
+        return new Date(s.completed_at).getTime() >= sevenDaysAgo
+      }).length
+
+      const weeklyCompliance = calculateWeeklyCompliance({
+        expectedDays: daysPerWeek,
+        completedDays: completedInLastWeek,
+      })
+
+      const alerts = getClientAlerts({
+        lastSessionDate,
+        weeklyCompliance,
+        hasActivePlan,
+      })
+
+      const activePlanRow = activePlanRows.find((p) => p.client_id === profile.id) ?? null
+      const activePlan = activePlanRow
+        ? {
+            id: activePlanRow.id,
+            name: '',
+            weeks: activePlanRow.weeks,
+            currentWeek: getCurrentWeek(activePlanRow.start_date, activePlanRow.weeks),
+            startDate: activePlanRow.start_date,
+            endDate: activePlanRow.end_date,
+            status: 'active' as const,
+            daysPerWeek: daysPerWeek,
+          }
         : null
 
-    const completedInLastWeek = clientSessions.filter((s) => {
-      if (!s.completed_at) return false
-      return new Date(s.completed_at).getTime() >= sevenDaysAgo
-    }).length
+      const status: ClientStatus = await computeClientStatus(profile.id, activePlan)
 
-    const weeklyCompliance = calculateWeeklyCompliance({
-      expectedDays: daysPerWeek,
-      completedDays: completedInLastWeek,
+      return {
+        id: profile.id,
+        fullName: profile.full_name ?? 'Sin nombre',
+        goal: cp?.goal ?? null,
+        daysPerWeek,
+        completedThisWeek: completedInLastWeek,
+        hasActivePlan,
+        planStatus,
+        status,
+        lastSessionDate,
+        daysSinceLastSession,
+        weeklyCompliance,
+        alerts,
+        activePlanEndDate: activePlanEndDateMap.get(profile.id) ?? null,
+      }
     })
-
-    const trackingStatus: 'on_track' | 'attention' | 'critical' | null = hasActivePlan
-      ? daysSinceLastSession === null || daysSinceLastSession > 7
-        ? 'critical'
-        : daysSinceLastSession > 3
-        ? 'attention'
-        : 'on_track'
-      : null
-
-    const alerts = getClientAlerts({
-      lastSessionDate,
-      weeklyCompliance,
-      hasActivePlan,
-    })
-
-    let listState: CoachClientListState
-    if (planStatus === 'paused') {
-      listState = 'en_pausa'
-    } else if (planStatus === 'inactive') {
-      listState = 'inactivo'
-    } else if (trackingStatus === 'on_track') {
-      listState = 'al_dia'
-    } else if (trackingStatus === 'attention') {
-      listState = 'atencion'
-    } else {
-      listState = 'critico'
-    }
-
-    return {
-      id: profile.id,
-      fullName: profile.full_name ?? 'Sin nombre',
-      goal: cp?.goal ?? null,
-      daysPerWeek,
-      completedThisWeek: completedInLastWeek,
-      hasActivePlan,
-      planStatus,
-      trackingStatus,
-      lastSessionDate,
-      daysSinceLastSession,
-      weeklyCompliance,
-      alerts,
-      listState,
-      activePlanEndDate: activePlanEndDateMap.get(profile.id) ?? null,
-    }
-  })
+  )
 
   return {
     clients,

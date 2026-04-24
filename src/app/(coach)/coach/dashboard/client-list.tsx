@@ -6,7 +6,9 @@ import Link from 'next/link'
 import Avatar from '@/components/ui/avatar'
 import FilterTabs, { type FilterTabItem } from '@/components/ui/filter-tabs'
 import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
-import type { CoachClientListState, DashboardClientSummary } from './queries'
+import type { DashboardClientSummary } from './queries'
+import { CLIENT_STATUS_CONFIG } from '@/features/clients/types/client-status'
+import type { ClientStatus } from '@/features/clients/types/client-status'
 
 /** Franja fija bajo los chips (fuera del scroll) + solape para evitar rendijas en WebKit. */
 const CHROME_BELOW_FILTERS_PX = 14
@@ -26,15 +28,7 @@ function resolveScrollPaddingBottom(
   return COACH_LIST_SCROLL_END_ABOVE_NAV
 }
 
-const STATE_COLORS: Record<CoachClientListState, string> = {
-  al_dia: '#22C55E',
-  atencion: '#F2994A',
-  critico: '#F25252',
-  en_pausa: '#38BDF8',
-  inactivo: '#9CA3AF',
-}
-
-type FilterId = 'todos' | CoachClientListState
+type FilterId = 'todos' | ClientStatus
 
 const FILTER_ITEMS: FilterTabItem[] = [
   {
@@ -44,58 +38,53 @@ const FILTER_ITEMS: FilterTabItem[] = [
     activeColor: '#0A0A0A',
   },
   {
-    id: 'al_dia',
+    id: 'al-dia',
     label: 'Al día',
-    activeBackground: STATE_COLORS.al_dia,
+    activeBackground: CLIENT_STATUS_CONFIG['al-dia'].color,
     activeColor: '#0A0A0A',
   },
   {
     id: 'atencion',
     label: 'Atención',
-    activeBackground: STATE_COLORS.atencion,
+    activeBackground: CLIENT_STATUS_CONFIG['atencion'].color,
     activeColor: '#0A0A0A',
   },
   {
-    id: 'critico',
-    label: 'Crítico',
-    activeBackground: STATE_COLORS.critico,
+    id: 'riesgo',
+    label: 'Riesgo',
+    activeBackground: CLIENT_STATUS_CONFIG['riesgo'].color,
     activeColor: '#F0F0F0',
   },
   {
-    id: 'en_pausa',
-    label: 'En pausa',
-    activeBackground: STATE_COLORS.en_pausa,
-    activeColor: '#0A0A0A',
-  },
-  {
-    id: 'inactivo',
-    label: 'Inactivo',
+    id: 'sin-datos',
+    label: 'Sin datos',
     activeBackground: '#6B7280',
     activeColor: '#F0F0F0',
   },
 ]
 
+const STATUS_SORT_RANK: Record<ClientStatus, number> = {
+  'riesgo':    0,
+  'atencion':  1,
+  'al-dia':    2,
+  'sin-datos': 3,
+}
+
 function filterTabItemsWithCounts(
   clients: DashboardClientSummary[],
   activeFilter: FilterId
 ): FilterTabItem[] {
-  const stateCount: Record<CoachClientListState, number> = {
-    al_dia: 0,
-    atencion: 0,
-    critico: 0,
-    en_pausa: 0,
-    inactivo: 0,
+  const statusCount: Record<ClientStatus, number> = {
+    'al-dia': 0, 'atencion': 0, 'riesgo': 0, 'sin-datos': 0,
   }
   for (const c of clients) {
-    stateCount[c.listState]++
+    statusCount[c.status]++
   }
   return FILTER_ITEMS.map((item) => {
     const isActive = item.id === activeFilter
-    if (!isActive) {
-      return { ...item, label: item.label }
-    }
+    if (!isActive) return { ...item, label: item.label }
     const n =
-      item.id === 'todos' ? clients.length : stateCount[item.id as CoachClientListState]
+      item.id === 'todos' ? clients.length : statusCount[item.id as ClientStatus] ?? 0
     return {
       ...item,
       label: item.id === 'todos' ? `Todos (${n})` : `${item.label} (${n})`,
@@ -103,21 +92,12 @@ function filterTabItemsWithCounts(
   })
 }
 
-/** Orden en vista Todos: más urgente arriba */
-const STATE_SORT_RANK: Record<CoachClientListState, number> = {
-  critico: 0,
-  atencion: 1,
-  al_dia: 2,
-  en_pausa: 3,
-  inactivo: 4,
-}
-
 function compareForTodosView(a: DashboardClientSummary, b: DashboardClientSummary): number {
-  const ra = STATE_SORT_RANK[a.listState]
-  const rb = STATE_SORT_RANK[b.listState]
+  const ra = STATUS_SORT_RANK[a.status]
+  const rb = STATUS_SORT_RANK[b.status]
   if (ra !== rb) return ra - rb
 
-  const urgent = a.listState === 'critico' || a.listState === 'atencion'
+  const urgent = a.status === 'riesgo' || a.status === 'atencion'
   if (urgent) {
     const aDays = a.daysSinceLastSession ?? 10_000
     const bDays = b.daysSinceLastSession ?? 10_000
@@ -136,21 +116,6 @@ function compareByRecentActivity(a: DashboardClientSummary, b: DashboardClientSu
   const bT = b.lastSessionDate?.getTime() ?? 0
   if (bT !== aT) return bT - aT
   return a.fullName.localeCompare(b.fullName, 'es', { sensitivity: 'base' })
-}
-
-function getClientStateLabel(listState: CoachClientListState): string {
-  switch (listState) {
-    case 'al_dia':
-      return 'Al día'
-    case 'atencion':
-      return 'Atención'
-    case 'critico':
-      return 'Crítico'
-    case 'en_pausa':
-      return 'En pausa'
-    case 'inactivo':
-      return 'Inactivo'
-  }
 }
 
 function getLastActivityLabel(daysSinceLastSession: number | null): string {
@@ -182,7 +147,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
 
   const filtered = sortedClients.filter((client) => {
     if (activeFilter === 'todos') return true
-    return client.listState === activeFilter
+    return client.status === activeFilter
   })
 
   const emptyFilterLabel =
@@ -282,7 +247,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
           ) : (
             <AnimatePresence mode="popLayout">
               {filtered.map((client, i) => {
-                const accent = STATE_COLORS[client.listState]
+                const cfg = CLIENT_STATUS_CONFIG[client.status]
                 return (
               <motion.div
                 key={client.id}
@@ -303,7 +268,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
                     style={{
                       background: 'linear-gradient(165deg, #12161C 0%, #0F1217 100%)',
                       border: '1px solid #252A31',
-                      borderLeft: `3px solid ${accent}`,
+                      borderLeft: `3px solid ${cfg.color}`,
                       borderRadius: 14,
                       padding: '14px 16px',
                       display: 'flex',
@@ -312,7 +277,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
                       boxShadow: '0 6px 20px rgba(0,0,0,0.22)',
                     }}
                   >
-                    <Avatar fullName={client.fullName} ringColor={accent} size="md" />
+                    <Avatar fullName={client.fullName} ringColor={cfg.color} size="md" />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p
                         style={{
@@ -329,7 +294,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
                       <p
                         style={{
                           fontSize: 12,
-                          color: accent,
+                          color: cfg.color,
                           marginTop: 2,
                           fontWeight: 600,
                           overflow: 'hidden',
@@ -339,7 +304,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
                           letterSpacing: '0.04em',
                         }}
                       >
-                        {getClientStateLabel(client.listState)}
+                        {cfg.label}
                       </p>
                     </div>
                     {client.hasActivePlan ? (
