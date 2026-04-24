@@ -85,12 +85,8 @@ export default async function WeeklyLoadPage({
           </p>
         </div>
 
-        {/* Totals strip */}
-        <div style={{ display: 'flex', gap: 10, padding: '12px 20px 0' }}>
-          <TotalPill label="Tonelaje" value={`${(totalTonnage / 1000).toFixed(1)} t`} />
-          <TotalPill label="Sesiones" value={totalSessions.toString()} />
-          <TotalPill label="Series" value={totalSets.toString()} />
-        </div>
+        {/* KPI strip */}
+        <KpiStrip tonnage={totalTonnage} sessions={totalSessions} sets={totalSets} />
 
         {/* Interactive chart */}
         <WeeklyLoadChart
@@ -103,34 +99,67 @@ export default async function WeeklyLoadPage({
   )
 }
 
-function TotalPill({ label, value }: { label: string; value: string }) {
+function KpiStrip({
+  tonnage,
+  sessions,
+  sets,
+}: {
+  tonnage: number
+  sessions: number
+  sets: number
+}) {
+  const tonnageStr = tonnage >= 1000 ? `${(tonnage / 1000).toFixed(1)} t` : `${tonnage} kg`
+
+  const items = [
+    { value: tonnageStr, label: 'Tonelaje' },
+    { value: sessions.toString(), label: 'Sesiones' },
+    { value: sets.toString(), label: 'Series' },
+  ]
+
   return (
     <div
       style={{
-        flex: 1,
-        background: 'linear-gradient(160deg, #12161C 0%, #0F1217 100%)',
-        border: '1px solid #252A31',
-        borderRadius: 12,
-        padding: '10px 10px 8px',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 4,
+        gap: 1,
+        margin: '12px 20px 0',
+        backgroundColor: '#111317',
+        border: '1px solid #1F2227',
+        borderRadius: 14,
+        overflow: 'hidden',
       }}
     >
-      <span style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', lineHeight: 1 }}>{value}</span>
-      <span
-        style={{
-          fontSize: 9,
-          fontWeight: 600,
-          color: '#6B7280',
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          textAlign: 'center',
-        }}
-      >
-        {label}
-      </span>
+      {items.map((item, idx) => (
+        <div
+          key={item.label}
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 5,
+            padding: '14px 8px',
+            borderLeft: idx > 0 ? '1px solid #1F2227' : 'none',
+          }}
+        >
+          <span
+            style={{ fontSize: 22, fontWeight: 700, color: '#F0F0F0', lineHeight: 1 }}
+          >
+            {item.value}
+          </span>
+          <span
+            style={{
+              fontSize: 9,
+              fontWeight: 600,
+              color: '#6B7280',
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              textAlign: 'center',
+            }}
+          >
+            {item.label}
+          </span>
+        </div>
+      ))}
     </div>
   )
 }
