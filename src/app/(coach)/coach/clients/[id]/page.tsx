@@ -2,7 +2,8 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getClientProfileData } from './queries'
-import { getProgressKPIs } from './progress-queries'
+import { getProgressKPIs, getNavTileStats } from './progress-queries'
+import type { NavTileStats } from './progress-queries'
 import { getClientSessionsForCoach } from './sessions/queries'
 import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import ClientProfileHeader from './client-profile-header'
@@ -29,8 +30,11 @@ export default async function ClientProfilePage({
   const profile = await getClientProfileData(id, user.id)
   if (!profile) notFound()
 
-  const kpis = await getProgressKPIs(id, profile.weightKg, profile.activePlan)
-  const sessions = await getClientSessionsForCoach(id, user.id)
+  const [kpis, sessions, navTileStats] = await Promise.all([
+    getProgressKPIs(id, profile.weightKg, profile.activePlan),
+    getClientSessionsForCoach(id, user.id),
+    getNavTileStats(id, profile.activePlan),
+  ])
   if (sessions === null) notFound()
 
   return (
@@ -159,6 +163,8 @@ export default async function ClientProfilePage({
             activePlan={profile.activePlan}
             totalSessions={profile.totalSessions}
             progressSeries={profile.progressSeries}
+            navTileStats={navTileStats}
+            clientStatus={profile.status}
           />
         }
         sessionsContent={<ClientSessionsList sessions={sessions} clientId={profile.id} />}
