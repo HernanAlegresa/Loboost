@@ -1,7 +1,19 @@
 import Link from 'next/link'
-import { ChevronRight, ClipboardList, Dumbbell, BarChart2 } from 'lucide-react'
+import {
+  ChevronRight,
+  ClipboardList,
+  Dumbbell,
+  BarChart2,
+  CheckCircle2,
+  AlertTriangle,
+  AlertOctagon,
+  MinusCircle,
+} from 'lucide-react'
 import type { ProgressKPIs } from './progress-queries'
+import type { NavTileStats } from './progress-queries'
 import type { ActivePlanSummary } from '@/features/clients/types'
+import type { ClientStatus } from '@/features/clients/types/client-status'
+import { CLIENT_STATUS_CONFIG } from '@/features/clients/types/client-status'
 import ProgressOverview from './progress-overview'
 
 type Props = {
@@ -10,6 +22,8 @@ type Props = {
   activePlan: ActivePlanSummary | null
   totalSessions: number
   progressSeries: Array<{ label: string; completed: number }>
+  navTileStats: NavTileStats
+  clientStatus: ClientStatus
 }
 
 const SECTION_OVERLINE: React.CSSProperties = {
@@ -19,6 +33,49 @@ const SECTION_OVERLINE: React.CSSProperties = {
   color: '#6B7280',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
+}
+
+const STATUS_MESSAGES: Record<ClientStatus, string> = {
+  'al-dia':    'Todos los entrenamientos registrados al día.',
+  'atencion':  'Tiene días sin completar esta semana.',
+  'riesgo':    'Semanas anteriores con registros faltando.',
+  'sin-datos': 'Sin registros en ningún entrenamiento.',
+}
+
+const STATUS_ICONS: Record<ClientStatus, React.ReactNode> = {
+  'al-dia':    <CheckCircle2 size={16} strokeWidth={2.5} />,
+  'atencion':  <AlertTriangle size={16} strokeWidth={2.5} />,
+  'riesgo':    <AlertOctagon size={16} strokeWidth={2.5} />,
+  'sin-datos': <MinusCircle size={16} strokeWidth={2.5} />,
+}
+
+function StatusBanner({ status }: { status: ClientStatus }) {
+  const cfg = CLIENT_STATUS_CONFIG[status]
+  return (
+    <div
+      style={{
+        backgroundColor: cfg.bg,
+        borderLeft: `3px solid ${cfg.color}`,
+        borderRadius: 12,
+        padding: '12px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+      }}
+    >
+      <span style={{ color: cfg.color, flexShrink: 0, display: 'flex' }}>
+        {STATUS_ICONS[status]}
+      </span>
+      <div>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: cfg.color, lineHeight: 1 }}>
+          {cfg.label}
+        </p>
+        <p style={{ margin: '4px 0 0', fontSize: 12, color: '#9CA3AF', lineHeight: 1.4 }}>
+          {STATUS_MESSAGES[status]}
+        </p>
+      </div>
+    </div>
+  )
 }
 
 function KpiItem({
@@ -73,15 +130,7 @@ function KpiItem({
         {value}
       </p>
       {sub ? (
-        <p
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: subColor,
-            textAlign: 'center',
-            margin: 0,
-          }}
-        >
+        <p style={{ fontSize: 11, fontWeight: 600, color: subColor, textAlign: 'center', margin: 0 }}>
           {sub}
         </p>
       ) : null}
@@ -92,13 +141,7 @@ function KpiItem({
 function KpiDivider() {
   return (
     <div
-      style={{
-        width: 1,
-        height: 44,
-        background: '#252A31',
-        flexShrink: 0,
-        alignSelf: 'center',
-      }}
+      style={{ width: 1, height: 44, background: '#252A31', flexShrink: 0, alignSelf: 'center' }}
     />
   )
 }
@@ -109,12 +152,14 @@ function NavTile({
   icon,
   title,
   subtitle,
+  preview,
 }: {
   href: string
   iconBg: string
   icon: React.ReactNode
   title: string
   subtitle: string
+  preview?: string
 }) {
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>
@@ -127,6 +172,8 @@ function NavTile({
           display: 'flex',
           alignItems: 'center',
           gap: 14,
+          cursor: 'pointer',
+          minHeight: 44,
         }}
       >
         <div
@@ -149,10 +196,34 @@ function NavTile({
             {subtitle}
           </p>
         </div>
+        {preview ? (
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: '#9CA3AF',
+              flexShrink: 0,
+              marginRight: 4,
+            }}
+          >
+            {preview}
+          </span>
+        ) : null}
         <ChevronRight size={18} color="#6B7280" strokeWidth={2.5} style={{ flexShrink: 0 }} />
       </div>
     </Link>
   )
+}
+
+function computeTrend(
+  points: Array<{ completed: number }>
+): { arrow: string; label: string; color: string } {
+  if (points.length < 4) return { arrow: '→', label: 'Estable', color: '#6B7280' }
+  const recent = points.slice(-2).reduce((s, p) => s + p.completed, 0)
+  const prior = points.slice(-4, -2).reduce((s, p) => s + p.completed, 0)
+  if (recent > prior) return { arrow: '↑', label: 'Subiendo', color: '#B5F23D' }
+  if (recent < prior) return { arrow: '↓', label: 'Bajando', color: '#F2C94A' }
+  return { arrow: '→', label: 'Estable', color: '#6B7280' }
 }
 
 export default function ClientProgressContent({
@@ -161,6 +232,8 @@ export default function ClientProgressContent({
   activePlan,
   totalSessions,
   progressSeries,
+  navTileStats,
+  clientStatus,
 }: Props) {
   const { weightInitialKg, weightCurrentKg, weightDeltaKg, checkInsSubmitted, checkInsExpected } =
     progressKPIs
@@ -176,8 +249,22 @@ export default function ClientProgressContent({
           ? '#B5F23D'
           : '#9CA3AF'
 
+  const trend = computeTrend(progressSeries)
+
+  const tonnageStr =
+    navTileStats.totalTonnageKg > 0
+      ? navTileStats.totalTonnageKg >= 1000
+        ? `${(navTileStats.totalTonnageKg / 1000).toFixed(1)} t`
+        : `${navTileStats.totalTonnageKg} kg`
+      : undefined
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+      {/* Estado operativo */}
+      <StatusBanner status={clientStatus} />
+
+      {/* Resumen KPIs */}
       <div>
         <p style={SECTION_OVERLINE}>Resumen</p>
         <div
@@ -202,10 +289,7 @@ export default function ClientProgressContent({
               subColor={deltaColor}
             />
             <KpiDivider />
-            <KpiItem
-              label="Check-ins"
-              value={`${checkInsSubmitted}/${checkInsExpected}`}
-            />
+            <KpiItem label="Check-ins" value={`${checkInsSubmitted}/${checkInsExpected}`} />
           </div>
           <p
             style={{
@@ -224,11 +308,26 @@ export default function ClientProgressContent({
         </div>
       </div>
 
+      {/* Actividad */}
       <div>
         <p style={SECTION_OVERLINE}>Actividad</p>
         <ProgressOverview points={progressSeries} />
+        {progressSeries.length >= 4 && (
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: trend.color,
+              textAlign: 'right',
+              margin: '6px 0 0',
+            }}
+          >
+            {trend.arrow} {trend.label}
+          </p>
+        )}
       </div>
 
+      {/* Seguimiento */}
       <div>
         <p style={SECTION_OVERLINE}>Seguimiento</p>
         {activePlan ? (
@@ -239,6 +338,11 @@ export default function ClientProgressContent({
               icon={<ClipboardList size={20} color="#B5F23D" />}
               title="Check-ins semanales"
               subtitle="Peso registrado semana a semana"
+              preview={
+                checkInsExpected > 0
+                  ? `${checkInsSubmitted}/${checkInsExpected}`
+                  : undefined
+              }
             />
             <NavTile
               href={`/coach/clients/${clientId}/exercises-progress`}
@@ -246,6 +350,11 @@ export default function ClientProgressContent({
               icon={<Dumbbell size={20} color="#63B3ED" />}
               title="Progreso de ejercicios"
               subtitle="Evolución de carga por ejercicio"
+              preview={
+                navTileStats.exercisesWithProgress > 0
+                  ? `${navTileStats.exercisesWithProgress} ejerc.`
+                  : undefined
+              }
             />
             <NavTile
               href={`/coach/clients/${clientId}/weekly-load`}
@@ -253,6 +362,7 @@ export default function ClientProgressContent({
               icon={<BarChart2 size={20} color="#F6AD55" />}
               title="Carga semanal"
               subtitle="Volumen, intensidad y tonelaje"
+              preview={tonnageStr}
             />
           </div>
         ) : (
@@ -266,7 +376,7 @@ export default function ClientProgressContent({
             }}
           >
             <p style={{ fontSize: 14, color: '#9CA3AF', margin: 0, lineHeight: 1.5 }}>
-              Asigna un plan activo para abrir check-ins, progreso por ejercicio y carga semanal.
+              Asigná un plan activo para abrir check-ins, progreso por ejercicio y carga semanal.
             </p>
           </div>
         )}
