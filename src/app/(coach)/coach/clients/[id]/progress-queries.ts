@@ -60,7 +60,23 @@ export type WeeklyLoadPoint = {
   tonnageKg: number
   avgIntensityKg: number | null
   sessionCount: number
+  plannedSets: number
+  plannedSessions: number
 }
+
+export type MuscleWeekPoint = {
+  weekNumber: number
+  breakdown: Array<{ muscleGroup: string; completedSets: number }>
+}
+
+export type WeeklyLoadEnriched = {
+  weeks: WeeklyLoadPoint[]
+  muscleByWeek: MuscleWeekPoint[]
+}
+
+export const MUSCLE_GROUPS_ORDER = [
+  'Piernas', 'Empuje', 'Espalda', 'Hombros', 'Core', 'Brazos', 'Cardio', 'Otro',
+] as const
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -339,6 +355,8 @@ export async function getWeeklyLoadData(
       tonnageKg: 0,
       avgIntensityKg: null,
       sessionCount: 0,
+      plannedSets: 0,
+      plannedSessions: 0,
     }))
 
   if (!planDays || planDays.length === 0) return emptyWeeks()
@@ -400,6 +418,8 @@ export async function getWeeklyLoadData(
           ? Math.round((agg.totalWeightKg / agg.weightedCount) * 10) / 10
           : null,
       sessionCount: agg?.sessionIds.size ?? 0,
+      plannedSets: 0,
+      plannedSessions: 0,
     }
   })
 }
