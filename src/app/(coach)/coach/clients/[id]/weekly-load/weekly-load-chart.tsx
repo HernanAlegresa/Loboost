@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import type { WeeklyLoadPoint } from '../progress-queries'
+import type { WeeklyLoadPoint, MuscleWeekPoint } from '../progress-queries'
 import { getWeekDateRange, formatDateRange } from '../date-utils'
 
 type Metric = 'tonnage' | 'intensity' | 'sets'
@@ -45,7 +45,7 @@ function BarChart({
   data: WeeklyLoadPoint[]
   metric: Metric
   currentWeek: number
-  selectedWeek: number | null
+  selectedWeek: number
   onSelectWeek: (w: number) => void
 }) {
   const { getValue } = METRIC_CONFIG[metric]
@@ -74,13 +74,14 @@ function BarChart({
         const pct = val !== null ? (val / maxVal) * 100 : 0
         const isCurrent = week.weekNumber === currentWeek
         const isSelected = week.weekNumber === selectedWeek
+        const isFuture = week.weekNumber > currentWeek
         const hasData = val !== null && val > 0
 
         return (
           <button
             key={week.weekNumber}
             onClick={() => onSelectWeek(week.weekNumber)}
-            aria-label={`Semana ${week.weekNumber}: ${val !== null ? `${val} ${METRIC_CONFIG[metric].unit}` : 'sin datos'}`}
+            aria-label={`Semana ${week.weekNumber}${isFuture ? ': semana futura' : `: ${val !== null ? `${val} ${METRIC_CONFIG[metric].unit}` : 'sin datos'}`}`}
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -101,7 +102,7 @@ function BarChart({
                 fontWeight: 700,
                 color: hasData ? barColor : '#4B5563',
                 lineHeight: 1,
-                visibility: val !== null ? 'visible' : 'hidden',
+                visibility: val !== null && !isFuture ? 'visible' : 'hidden',
               }}
             >
               {val !== null
@@ -122,21 +123,29 @@ function BarChart({
                 alignItems: 'flex-end',
                 borderRadius: 6,
                 overflow: 'hidden',
-                background: isSelected ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)',
-                outline: isCurrent
-                  ? `1.5px solid ${barColor}`
+                background: isFuture
+                  ? '#1A1E24'
                   : isSelected
-                    ? '1.5px solid rgba(255,255,255,0.25)'
+                    ? 'rgba(255,255,255,0.08)'
+                    : 'rgba(255,255,255,0.06)',
+                outline: isCurrent
+                  ? '1.5px solid #B5F23D'
+                  : isSelected
+                    ? '1.5px solid rgba(255,255,255,0.2)'
                     : 'none',
                 outlineOffset: 2,
+                boxShadow: isCurrent ? '0 0 8px rgba(181,242,61,0.3)' : 'none',
                 transition: 'outline 0.15s',
               }}
             >
               <div
                 style={{
                   width: '100%',
-                  height: `${Math.max(pct, hasData ? 4 : 0)}%`,
-                  background: hasData ? (isCurrent ? barColor : `${barColor}99`) : 'transparent',
+                  height: isFuture ? '0%' : `${Math.max(pct, hasData ? 4 : 0)}%`,
+                  background:
+                    hasData && !isFuture
+                      ? `linear-gradient(to bottom, ${barColor}, ${barColor}99)`
+                      : 'transparent',
                   borderRadius: 6,
                   transition: 'height 0.3s ease',
                 }}
@@ -148,7 +157,13 @@ function BarChart({
               style={{
                 fontSize: 9,
                 fontWeight: isCurrent ? 700 : 600,
-                color: isCurrent ? barColor : isSelected ? '#9CA3AF' : '#6B7280',
+                color: isFuture
+                  ? '#374151'
+                  : isCurrent
+                    ? '#B5F23D'
+                    : isSelected
+                      ? '#9CA3AF'
+                      : '#6B7280',
                 letterSpacing: '0.04em',
               }}
             >
@@ -270,33 +285,35 @@ function WeekRow({
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export default function WeeklyLoadChart({
-  data,
+  weeks,
+  muscleByWeek,
   currentWeek,
   planStartDate,
 }: {
-  data: WeeklyLoadPoint[]
+  weeks: WeeklyLoadPoint[]
+  muscleByWeek: MuscleWeekPoint[]
   currentWeek: number
   planStartDate: string
 }) {
   const [metric, setMetric] = useState<Metric>('tonnage')
-  const [selectedWeek, setSelectedWeek] = useState<number | null>(null)
+  const [selectedWeek, setSelectedWeek] = useState<number>(currentWeek)
 
-  // Pre-compute date ranges once — stable until planStartDate/data changes
+  // Pre-compute date ranges once — stable until planStartDate/weeks changes
   const dateRanges = useMemo(
     () =>
-      data.map((w) => {
+      weeks.map((w) => {
         const { start, end } = getWeekDateRange(planStartDate, w.weekNumber)
         return formatDateRange(start, end)
       }),
-    [data, planStartDate]
+    [weeks, planStartDate]
   )
 
-  const totalSessions = data.reduce((s, w) => s + w.sessionCount, 0)
+  const totalSessions = weeks.filter(w => w.weekNumber <= currentWeek).reduce((s, w) => s + w.sessionCount, 0)
   const hasData = totalSessions > 0
   const barColor = METRIC_COLORS[metric]
 
   function handleSelectWeek(weekNumber: number) {
-    setSelectedWeek((prev) => (prev === weekNumber ? null : weekNumber))
+    setSelectedWeek(weekNumber)
   }
 
   return (
@@ -331,7 +348,7 @@ export default function WeeklyLoadChart({
         {hasData ? (
           <>
             <BarChart
-              data={data}
+              data={weeks}
               metric={metric}
               currentWeek={currentWeek}
               selectedWeek={selectedWeek}
@@ -362,7 +379,7 @@ export default function WeeklyLoadChart({
 
       {/* Week detail list */}
       <div style={{ padding: '8px 20px 0' }}>
-        {data.map((week, i) => (
+        {weeks.map((week, i) => (
           <WeekRow
             key={week.weekNumber}
             week={week}
