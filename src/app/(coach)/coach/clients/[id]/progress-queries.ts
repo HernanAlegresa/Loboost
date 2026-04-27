@@ -424,6 +424,175 @@ export async function getWeeklyLoadData(
   })
 }
 
+export async function getWeeklyLoadEnrichedData(
+  clientId: string,
+  activePlan: ActivePlanSummary
+): Promise<WeeklyLoadEnriched> {
+  const supabase = await createClient()
+
+  const { data: planDays } = await supabase
+    .from('client_plan_days')
+    .select('id, week_number')
+    .eq('client_plan_id', activePlan.id)
+
+  const buildEmpty = (): WeeklyLoadEnriched => ({
+    weeks: Array.from({ length: activePlan.weeks }, (_, i) => ({
+      weekNumber: i + 1,
+      weekLabel: `S${i + 1}`,
+      completedSets: 0,
+      tonnageKg: 0,
+      avgIntensityKg: null,
+      sessionCount: 0,
+      plannedSets: 0,
+      plannedSessions: 0,
+    })),
+    muscleByWeek: Array.from({ length: activePlan.weeks }, (_, i) => ({
+      weekNumber: i + 1,
+      breakdown: MUSCLE_GROUPS_ORDER.map((mg) => ({ muscleGroup: mg, completedSets: 0 })),
+    })),
+  })
+
+  if (!planDays || planDays.length === 0) return buildEmpty()
+
+  const planDayIds = planDays.map((d) => d.id)
+  const weekByDayId = new Map(planDays.map((d) => [d.id, d.week_number]))
+
+  // Planned sessions per week = number of plan days per week
+  const plannedSessionsByWeek = new Map<number, number>()
+  for (const pd of planDays) {
+    plannedSessionsByWeek.set(pd.week_number, (plannedSessionsByWeek.get(pd.week_number) ?? 0) + 1)
+  }
+
+  // Plan day exercises: sets count + muscle group via join
+  const { data: planDayExercises } = await supabase
+    .from('client_plan_day_exercises')
+    .select('id, client_plan_day_id, sets, exercises(muscle_group)')
+    .in('client_plan_day_id', planDayIds)
+
+  const plannedSetsByWeek = new Map<number, number>()
+  const muscleGroupByPdeId = new Map<string, string>()
+
+  for (const pde of planDayExercises ?? []) {
+    const weekNumber = weekByDayId.get(pde.client_plan_day_id)
+    if (weekNumber == null) continue
+    const exRef = pde.exercises as { muscle_group: string } | null
+    const rawMg = exRef?.muscle_group ?? ''
+    const mg = (MUSCLE_GROUPS_ORDER as readonly string[]).includes(rawMg) ? rawMg : 'Otro'
+    muscleGroupByPdeId.set(pde.id, mg)
+    if (typeof pde.sets === 'number' && pde.sets > 0) {
+      plannedSetsByWeek.set(weekNumber, (plannedSetsByWeek.get(weekNumber) ?? 0) + pde.sets)
+    }
+  }
+
+  // Completed sessions
+  const { data: sessions } = await supabase
+    .from('sessions')
+    .select('id, client_plan_day_id')
+    .eq('client_id', clientId)
+    .in('client_plan_day_id', planDayIds)
+    .eq('status', 'completed')
+
+  if (!sessions || sessions.length === 0) {
+    return {
+      weeks: Array.from({ length: activePlan.weeks }, (_, i) => {
+        const w = i + 1
+        return {
+          weekNumber: w,
+          weekLabel: `S${w}`,
+          completedSets: 0,
+          tonnageKg: 0,
+          avgIntensityKg: null,
+          sessionCount: 0,
+          plannedSets: plannedSetsByWeek.get(w) ?? 0,
+          plannedSessions: plannedSessionsByWeek.get(w) ?? 0,
+        }
+      }),
+      muscleByWeek: Array.from({ length: activePlan.weeks }, (_, i) => ({
+        weekNumber: i + 1,
+        breakdown: MUSCLE_GROUPS_ORDER.map((mg) => ({ muscleGroup: mg, completedSets: 0 })),
+      })),
+    }
+  }
+
+  const sessionIds = sessions.map((s) => s.id)
+  const sessionWeekMap = new Map<string, number>()
+  for (const s of sessions) {
+    const week = weekByDayId.get(s.client_plan_day_id) ?? 0
+    sessionWeekMap.set(s.id, week)
+  }
+
+  const { data: sessionSets } = await supabase
+    .from('session_sets')
+    .select('session_id, client_plan_day_exercise_id, weight_kg')
+    .in('session_id', sessionIds)
+    .eq('completed', true)
+
+  type WeekAgg = {
+    totalWeightKg: number
+    setCount: number
+    weightedCount: number
+    sessionIds: Set<string>
+    muscleSets: Map<string, number>
+  }
+  const weekAgg = new Map<number, WeekAgg>()
+
+  for (const set of sessionSets ?? []) {
+    const week = sessionWeekMap.get(set.session_id) ?? 0
+    if (week === 0) continue
+    if (!weekAgg.has(week)) {
+      weekAgg.set(week, {
+        totalWeightKg: 0,
+        setCount: 0,
+        weightedCount: 0,
+        sessionIds: new Set(),
+        muscleSets: new Map(),
+      })
+    }
+    const agg = weekAgg.get(week)!
+    agg.sessionIds.add(set.session_id)
+    agg.setCount++
+    if (set.weight_kg != null) {
+      agg.totalWeightKg += Number(set.weight_kg)
+      agg.weightedCount++
+    }
+    const mg = muscleGroupByPdeId.get(set.client_plan_day_exercise_id) ?? 'Otro'
+    agg.muscleSets.set(mg, (agg.muscleSets.get(mg) ?? 0) + 1)
+  }
+
+  const weeks: WeeklyLoadPoint[] = Array.from({ length: activePlan.weeks }, (_, i) => {
+    const w = i + 1
+    const { start } = getWeekDateRange(activePlan.startDate, w)
+    const agg = weekAgg.get(w)
+    return {
+      weekNumber: w,
+      weekLabel: `S${w} · ${start.slice(5, 10).replace('-', '/')}`,
+      completedSets: agg?.setCount ?? 0,
+      tonnageKg: Math.round(agg?.totalWeightKg ?? 0),
+      avgIntensityKg:
+        agg && agg.weightedCount > 0
+          ? Math.round((agg.totalWeightKg / agg.weightedCount) * 10) / 10
+          : null,
+      sessionCount: agg?.sessionIds.size ?? 0,
+      plannedSets: plannedSetsByWeek.get(w) ?? 0,
+      plannedSessions: plannedSessionsByWeek.get(w) ?? 0,
+    }
+  })
+
+  const muscleByWeek: MuscleWeekPoint[] = Array.from({ length: activePlan.weeks }, (_, i) => {
+    const w = i + 1
+    const agg = weekAgg.get(w)
+    return {
+      weekNumber: w,
+      breakdown: MUSCLE_GROUPS_ORDER.map((mg) => ({
+        muscleGroup: mg,
+        completedSets: agg?.muscleSets.get(mg) ?? 0,
+      })),
+    }
+  })
+
+  return { weeks, muscleByWeek }
+}
+
 // ── Nav tile stats ────────────────────────────────────────────────────────────
 
 export type NavTileStats = {
