@@ -120,7 +120,7 @@ export default function ExerciseWeekGrid({
             style={{
               width: '100%',
               borderCollapse: 'collapse',
-              minWidth: week.maxSets * 80 + 120,
+              minWidth: Math.max(1, week.maxSets) * 80 + 120,
             }}
           >
             <thead>
@@ -138,22 +138,37 @@ export default function ExerciseWeekGrid({
                     borderBottom: '1px solid #1A1E24',
                   }}
                 />
-                {Array.from({ length: week.maxSets }, (_, i) => (
+                {week.maxSets === 0 ? (
                   <th
-                    key={i + 1}
                     style={{
                       padding: '12px 10px 10px',
                       textAlign: 'center',
                       fontSize: 14,
                       fontWeight: 600,
-                      color: '#9CA3AF',
+                      color: '#4B5563',
                       borderBottom: '1px solid #1A1E24',
-                      whiteSpace: 'nowrap',
                     }}
                   >
-                    S{i + 1}
+                    —
                   </th>
-                ))}
+                ) : (
+                  Array.from({ length: week.maxSets }, (_, i) => (
+                    <th
+                      key={i + 1}
+                      style={{
+                        padding: '12px 10px 10px',
+                        textAlign: 'center',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: '#9CA3AF',
+                        borderBottom: '1px solid #1A1E24',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      S{i + 1}
+                    </th>
+                  ))
+                )}
               </tr>
             </thead>
             <tbody>
@@ -171,27 +186,44 @@ export default function ExerciseWeekGrid({
                   >
                     {day.dayLabel}
                   </td>
-                  {Array.from({ length: week.maxSets }, (_, i) => {
-                    const set = day.sets[i]
-                    const kg = set?.weightKg ?? null
-                    const hasValue = kg !== null
-                    return (
-                      <td
-                        key={i}
-                        style={{
-                          padding: '11px 10px',
-                          textAlign: 'center',
-                          fontSize: 15,
-                          fontWeight: hasValue ? 600 : 400,
-                          color: hasValue ? '#B5F23D' : '#2D3340',
-                          borderTop: rowIdx > 0 ? '1px solid #1A1E24' : undefined,
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {isBodyweight ? 'PC' : hasValue ? `${kg} kg` : '—'}
-                      </td>
-                    )
-                  })}
+                  {day.sets.length === 0 ? (
+                    <td
+                      key="empty"
+                      colSpan={Math.max(1, week.maxSets)}
+                      style={{
+                        padding: '11px 10px',
+                        textAlign: 'center',
+                        fontSize: 15,
+                        fontWeight: 400,
+                        color: '#2D3340',
+                        borderTop: rowIdx > 0 ? '1px solid #1A1E24' : undefined,
+                      }}
+                    >
+                      —
+                    </td>
+                  ) : (
+                    Array.from({ length: week.maxSets }, (_, i) => {
+                      const set = day.sets[i]
+                      const kg = set?.weightKg ?? null
+                      const hasValue = kg !== null
+                      return (
+                        <td
+                          key={i}
+                          style={{
+                            padding: '11px 10px',
+                            textAlign: 'center',
+                            fontSize: 15,
+                            fontWeight: hasValue ? 600 : 400,
+                            color: hasValue ? '#B5F23D' : '#2D3340',
+                            borderTop: rowIdx > 0 ? '1px solid #1A1E24' : undefined,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {isBodyweight ? 'PC' : hasValue ? `${kg} kg` : '—'}
+                        </td>
+                      )
+                    })
+                  )}
                 </tr>
               ))}
             </tbody>
