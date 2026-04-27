@@ -72,8 +72,6 @@ function TabBar({
 // ── Exercise card ─────────────────────────────────────────────────────────────
 
 function ExerciseCard({ ex, clientId }: { ex: ExerciseProgressData; clientId: string }) {
-  const bw = ex.peakTopSetKg === null
-
   const trendConfig = {
     up:     { arrow: '↑', color: '#B5F23D' },
     down:   { arrow: '↓', color: '#F25252' },
@@ -117,16 +115,9 @@ function ExerciseCard({ ex, clientId }: { ex: ExerciseProgressData; clientId: st
             {ex.sessionCount} {ex.sessionCount === 1 ? 'sesión' : 'sesiones'}
           </p>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
-          {!bw && ex.lastTopSetKg !== null ? (
-            <p style={{ fontSize: 16, fontWeight: 700, color: '#ffffff', margin: 0, lineHeight: 1 }}>
-              {ex.lastTopSetKg} kg
-            </p>
-          ) : null}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
           {trendConfig && (
-            <span
-              style={{ fontSize: 12, fontWeight: 700, color: trendConfig.color, lineHeight: 1 }}
-            >
+            <span style={{ fontSize: 12, fontWeight: 700, color: trendConfig.color, lineHeight: 1 }}>
               {trendConfig.arrow}
             </span>
           )}

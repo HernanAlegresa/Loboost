@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { getCurrentWeek } from '@/features/clients/utils/training-utils'
+import { getCurrentWeek, computeDayDate } from '@/features/clients/utils/training-utils'
 import type { ActivePlanSummary } from '@/features/clients/types'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -535,18 +535,18 @@ export async function getExerciseWeeklyHistory(
     weeks: [],
   }
 
-  // Only fetch plan days up to and including the current week
+  // Fetch plan days with day_of_week up to currentWeek
   const { data: planDays } = await supabase
     .from('client_plan_days')
-    .select('id, week_number')
+    .select('id, week_number, day_of_week')
     .eq('client_plan_id', activePlan.id)
     .lte('week_number', activePlan.currentWeek)
 
   if (!planDays || planDays.length === 0) return empty
 
   const planDayIds = planDays.map((d) => d.id)
-  const weekByDayId = new Map(planDays.map((d) => [d.id, d.week_number]))
 
+  // Find which plan days have this exercise assigned
   const { data: pdes } = await supabase
     .from('client_plan_day_exercises')
     .select('id, client_plan_day_id')
@@ -556,32 +556,54 @@ export async function getExerciseWeeklyHistory(
   if (!pdes || pdes.length === 0) return empty
 
   const pdeIds = pdes.map((p) => p.id)
+  const assignedPlanDayIds = new Set(pdes.map((p) => p.client_plan_day_id))
+
+  // Build plan structure: weekNumber → sorted day_of_week[]
+  const weekByDayId = new Map(planDays.map((d) => [d.id, d.week_number]))
+  const weekDowMap = new Map<number, number[]>()
+  for (const pd of planDays) {
+    if (!assignedPlanDayIds.has(pd.id)) continue
+    if (!weekDowMap.has(pd.week_number)) weekDowMap.set(pd.week_number, [])
+    weekDowMap.get(pd.week_number)!.push(pd.day_of_week)
+  }
+
+  // Fetch completed sessions for plan days that have this exercise
+  const assignedPlanDayIdArr = planDays
+    .filter((pd) => assignedPlanDayIds.has(pd.id))
+    .map((pd) => pd.id)
 
   const { data: sessions } = await supabase
     .from('sessions')
     .select('id, client_plan_day_id, date')
     .eq('client_id', clientId)
-    .in('client_plan_day_id', planDayIds)
+    .in('client_plan_day_id', assignedPlanDayIdArr)
     .eq('status', 'completed')
 
-  if (!sessions || sessions.length === 0) return empty
+  const sessionList = sessions ?? []
+  const sessionIds = sessionList.map((s) => s.id)
+  const dateBySessionId = new Map(sessionList.map((s) => [s.id, s.date]))
+  const planDayBySessionId = new Map(sessionList.map((s) => [s.id, s.client_plan_day_id]))
 
-  const sessionIds = sessions.map((s) => s.id)
-  const dateBySessionId = new Map(sessions.map((s) => [s.id, s.date]))
-  const planDayBySessionId = new Map(sessions.map((s) => [s.id, s.client_plan_day_id]))
+  // Fetch sets only if there are sessions
+  let sets: Array<{
+    session_id: string
+    client_plan_day_exercise_id: string
+    weight_kg: number | null
+    set_number: number
+  }> = []
+  if (sessionIds.length > 0) {
+    const { data } = await supabase
+      .from('session_sets')
+      .select('session_id, client_plan_day_exercise_id, weight_kg, set_number')
+      .in('session_id', sessionIds)
+      .in('client_plan_day_exercise_id', pdeIds)
+      .eq('completed', true)
+      .order('set_number', { ascending: true })
+    sets = data ?? []
+  }
 
-  const { data: sets } = await supabase
-    .from('session_sets')
-    .select('session_id, client_plan_day_exercise_id, weight_kg, set_number')
-    .in('session_id', sessionIds)
-    .in('client_plan_day_exercise_id', pdeIds)
-    .eq('completed', true)
-    .order('set_number', { ascending: true })
-
-  if (!sets || sets.length === 0) return empty
-
-  // weekNumber → date → setNumber → weightKg
-  const weekMap = new Map<number, Map<string, Map<number, number | null>>>()
+  // Aggregate sets: weekNumber → date → setNumber → weightKg
+  const weekSetMap = new Map<number, Map<string, Map<number, number | null>>>()
   let peakTopSetKg: number | null = null
 
   for (const set of sets) {
@@ -591,34 +613,43 @@ export async function getExerciseWeeklyHistory(
     const weekNumber = weekByDayId.get(planDayId) ?? 0
     if (weekNumber === 0) continue
 
-    if (!weekMap.has(weekNumber)) weekMap.set(weekNumber, new Map())
-    const dayMap = weekMap.get(weekNumber)!
+    if (!weekSetMap.has(weekNumber)) weekSetMap.set(weekNumber, new Map())
+    const dayMap = weekSetMap.get(weekNumber)!
     if (!dayMap.has(date)) dayMap.set(date, new Map())
     const setMap = dayMap.get(date)!
 
     const kg = set.weight_kg != null ? Number(set.weight_kg) : null
-    // Keep existing value if already set for this set_number
     if (!setMap.has(set.set_number)) setMap.set(set.set_number, kg)
-
     if (kg !== null && (peakTopSetKg === null || kg > peakTopSetKg)) peakTopSetKg = kg
   }
 
-  const weeks: ExerciseWeekGrid[] = Array.from(weekMap.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([weekNumber, dayMap]) => {
-      const days: ExerciseDayData[] = Array.from(dayMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([date, setMap]) => {
-          const maxSetNum = Math.max(...setMap.keys())
-          const sets: ExerciseSetDetail[] = Array.from({ length: maxSetNum }, (_, i) => ({
-            setNumber: i + 1,
-            weightKg: setMap.get(i + 1) ?? null,
-          }))
-          return { date, dayLabel: formatDayLabel(date), sets }
-        })
-      const maxSets = days.reduce((m, d) => Math.max(m, d.sets.length), 0)
-      return { weekNumber, days, maxSets }
+  // Build weeks from plan structure (plan-first, 1 → currentPlanWeek)
+  const weeks: ExerciseWeekGrid[] = []
+
+  for (let w = 1; w <= activePlan.currentWeek; w++) {
+    const assignedDows = weekDowMap.get(w)
+    if (!assignedDows || assignedDows.length === 0) continue
+
+    const daySetMapForWeek = weekSetMap.get(w)
+
+    const days: ExerciseDayData[] = [...assignedDows].sort((a, b) => a - b).map((dow) => {
+      const date = computeDayDate(activePlan.startDate, w, dow)
+      const setsForDay: ExerciseSetDetail[] = []
+
+      const setMap = daySetMapForWeek?.get(date)
+      if (setMap && setMap.size > 0) {
+        const maxSetNum = Math.max(...setMap.keys())
+        for (let i = 1; i <= maxSetNum; i++) {
+          setsForDay.push({ setNumber: i, weightKg: setMap.get(i) ?? null })
+        }
+      }
+
+      return { date, dayLabel: formatDayLabel(date), sets: setsForDay }
     })
+
+    const maxSets = days.reduce((m, d) => Math.max(m, d.sets.length), 0)
+    weeks.push({ weekNumber: w, days, maxSets })
+  }
 
   return {
     exerciseId,

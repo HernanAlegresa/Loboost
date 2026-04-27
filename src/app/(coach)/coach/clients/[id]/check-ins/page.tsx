@@ -136,12 +136,12 @@ export default async function CheckInsPage({
         {/* Plan name — centred, lime */}
         <p
           style={{
-            fontSize: 15,
+            fontSize: 18,
             fontWeight: 700,
             color: '#B5F23D',
             textAlign: 'center',
             margin: 0,
-            padding: '20px 20px 8px',
+            padding: '28px 20px 20px',
           }}
         >
           {activePlan.name}
