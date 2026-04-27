@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { WeeklyLoadPoint, MuscleWeekPoint } from '../progress-queries'
+import { MUSCLE_GROUPS_ORDER } from '../progress-queries'
 import { getWeekDateRange, formatDateRange } from '../date-utils'
 
 type Metric = 'tonnage' | 'intensity' | 'sets'
@@ -130,7 +131,7 @@ function BarChart({
                     : 'rgba(255,255,255,0.06)',
                 outline: isCurrent
                   ? '1.5px solid #B5F23D'
-                  : isSelected
+                  : isSelected && !isFuture
                     ? '1.5px solid rgba(255,255,255,0.2)'
                     : 'none',
                 outlineOffset: 2,
@@ -195,9 +196,12 @@ function WeekRow({
   const val = getValue(week)
   const isCurrent = week.weekNumber === currentWeek
   const isPastMissed = week.weekNumber < currentWeek && week.sessionCount === 0
+  const isFuture = week.weekNumber > currentWeek
 
   let sessionLabel: React.ReactNode
-  if (isCurrent && week.sessionCount === 0) {
+  if (isFuture) {
+    sessionLabel = <span style={{ color: '#374151' }}>Próxima</span>
+  } else if (isCurrent && week.sessionCount === 0) {
     sessionLabel = <span style={{ color: '#F2C94A' }}>En curso</span>
   } else if (isPastMissed) {
     sessionLabel = <span style={{ color: '#F25252' }}>Sin sesiones</span>
@@ -229,7 +233,7 @@ function WeekRow({
             style={{
               fontSize: 14,
               fontWeight: 600,
-              color: isPastMissed ? '#4B5563' : '#F0F0F0',
+              color: isPastMissed || isFuture ? '#4B5563' : '#F0F0F0',
               margin: 0,
               lineHeight: 1,
             }}
@@ -282,6 +286,189 @@ function WeekRow({
   )
 }
 
+function MuscleGroupBreakdown({
+  breakdown,
+  weekNumber,
+}: {
+  breakdown: Array<{ muscleGroup: string; completedSets: number }>
+  weekNumber: number
+}) {
+  const hasAny = breakdown.some((b) => b.completedSets > 0)
+  const maxSets = Math.max(...breakdown.map((b) => b.completedSets), 1)
+
+  const ordered = MUSCLE_GROUPS_ORDER.map(
+    (mg) => breakdown.find((b) => b.muscleGroup === mg) ?? { muscleGroup: mg, completedSets: 0 }
+  )
+
+  if (!hasAny) {
+    return (
+      <div style={{ padding: '16px 20px 4px' }}>
+        <p style={{ fontSize: 11, color: '#4B5563', margin: 0, textAlign: 'center' }}>
+          Sin sesiones en semana {weekNumber}
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: '16px 20px 0' }}>
+      <p
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: '#6B7280',
+          textTransform: 'uppercase',
+          letterSpacing: '0.07em',
+          margin: '0 0 10px',
+        }}
+      >
+        Grupos musculares
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {ordered.map(({ muscleGroup, completedSets }) => {
+          const pct = (completedSets / maxSets) * 100
+          const hasData = completedSets > 0
+          return (
+            <div key={muscleGroup} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: hasData ? '#9CA3AF' : '#4B5563',
+                  width: 60,
+                  flexShrink: 0,
+                }}
+              >
+                {muscleGroup}
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: 8,
+                  borderRadius: 4,
+                  background: '#1F2227',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    width: `${pct}%`,
+                    height: '100%',
+                    background: hasData ? '#B5F23D66' : 'transparent',
+                    borderRadius: 4,
+                    transition: 'width 0.3s ease',
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: hasData ? '#F0F0F0' : '#4B5563',
+                  width: 32,
+                  textAlign: 'right',
+                  flexShrink: 0,
+                }}
+              >
+                {hasData ? completedSets : '—'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function AdherenceBlock({
+  week,
+  weekNumber,
+}: {
+  week: WeeklyLoadPoint
+  weekNumber: number
+}) {
+  if (week.plannedSessions === 0) return null
+
+  const sessionPct =
+    week.plannedSets > 0 ? Math.round((week.completedSets / week.plannedSets) * 100) : null
+
+  let label = ''
+  let labelColor = '#6B7280'
+  if (sessionPct !== null) {
+    if (sessionPct >= 90) {
+      label = 'Carga dentro del rango'
+      labelColor = '#22C55E'
+    } else if (sessionPct >= 70) {
+      label = 'Carga moderada'
+      labelColor = '#F59E0B'
+    } else {
+      label = 'Carga baja — revisar'
+      labelColor = '#F87171'
+    }
+  }
+
+  const sessionDots = Array.from(
+    { length: week.plannedSessions },
+    (_, i) => i < week.sessionCount
+  )
+
+  return (
+    <div style={{ padding: '16px 20px 0' }}>
+      <p
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: '#6B7280',
+          textTransform: 'uppercase',
+          letterSpacing: '0.07em',
+          margin: '0 0 10px',
+        }}
+      >
+        Adherencia — Semana {weekNumber}
+      </p>
+
+      <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+        {sessionDots.map((done, i) => (
+          <span key={i} style={{ fontSize: 16, color: done ? '#B5F23D' : '#374151', lineHeight: 1 }}>
+            {done ? '●' : '○'}
+          </span>
+        ))}
+        <span style={{ fontSize: 11, color: '#6B7280', alignSelf: 'center', marginLeft: 4 }}>
+          {week.sessionCount}/{week.plannedSessions} sesiones
+        </span>
+      </div>
+
+      {week.plannedSets > 0 && (
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>Series</span>
+            <span style={{ fontSize: 11, color: '#9CA3AF' }}>
+              {week.completedSets}/{week.plannedSets}
+            </span>
+          </div>
+          <div
+            style={{ height: 6, borderRadius: 3, background: '#1F2227', overflow: 'hidden' }}
+          >
+            <div
+              style={{
+                width: `${Math.min((week.completedSets / week.plannedSets) * 100, 100)}%`,
+                height: '100%',
+                background: '#B5F23D66',
+                borderRadius: 3,
+                transition: 'width 0.3s ease',
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {label && (
+        <p style={{ fontSize: 12, fontWeight: 600, color: labelColor, margin: 0 }}>
+          {label}
+        </p>
+      )}
+    </div>
+  )
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export default function WeeklyLoadChart({
@@ -307,6 +494,9 @@ export default function WeeklyLoadChart({
       }),
     [weeks, planStartDate]
   )
+
+  const selectedWeekData = weeks.find((w) => w.weekNumber === selectedWeek)
+  const selectedMuscleData = muscleByWeek.find((m) => m.weekNumber === selectedWeek)
 
   const totalSessions = weeks.filter(w => w.weekNumber <= currentWeek).reduce((s, w) => s + w.sessionCount, 0)
   const hasData = totalSessions > 0
@@ -366,6 +556,19 @@ export default function WeeklyLoadChart({
           </div>
         )}
       </div>
+
+      {/* Muscle group breakdown — reactivo a selectedWeek */}
+      {selectedMuscleData && (
+        <MuscleGroupBreakdown
+          breakdown={selectedMuscleData.breakdown}
+          weekNumber={selectedWeek}
+        />
+      )}
+
+      {/* Adherencia — reactivo a selectedWeek */}
+      {selectedWeekData && (
+        <AdherenceBlock week={selectedWeekData} weekNumber={selectedWeek} />
+      )}
 
       {/* Legend */}
       {hasData && (
