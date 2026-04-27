@@ -6,6 +6,7 @@ import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
 import Avatar from '@/components/ui/avatar'
 import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 import ExerciseWeekGrid from './exercise-week-grid'
+import RefreshOnFocus from './refresh-on-focus'
 
 // ── PR strip ──────────────────────────────────────────────────────────────────
 
@@ -97,6 +98,7 @@ export default async function ExerciseDetailPage({
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <RefreshOnFocus />
       <CoachSubpageHeader
         backHref={`/coach/clients/${id}/exercises-progress`}
         title={exerciseName}
@@ -123,7 +125,7 @@ export default async function ExerciseDetailPage({
         {weeks.length === 0 ? (
           <div style={{ padding: '48px 20px', textAlign: 'center' }}>
             <p style={{ fontSize: 14, color: '#4B5563' }}>
-              Sin sesiones completadas para este ejercicio.
+              Este ejercicio no está asignado en el plan aún.
             </p>
           </div>
         ) : (
