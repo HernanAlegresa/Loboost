@@ -5,60 +5,85 @@ type ProgressPoint = {
 
 type Props = {
   points: ProgressPoint[]
+  currentWeekIndex?: number
+  trendArrow?: string
+  trendLabel?: string
+  trendColor?: string
 }
 
-export default function ProgressOverview({ points }: Props) {
+function barColor(index: number, currentWeekIndex: number): string {
+  if (index < currentWeekIndex) return '#4ADE80'           // past  → green
+  if (index === currentWeekIndex) return '#B5F23D'         // current → lima
+  return 'rgba(240,240,240,0.16)'                          // future → white dim
+}
+
+export default function ProgressOverview({
+  points,
+  currentWeekIndex = -1,
+  trendArrow,
+  trendLabel,
+  trendColor,
+}: Props) {
   const max = Math.max(1, ...points.map((p) => p.completed))
-  const total = points.reduce((acc, p) => acc + p.completed, 0)
+
+  if (points.length === 0) return null
 
   return (
-    <div
-      style={{
-        backgroundColor: '#111317',
-        border: '1px solid #1F2227',
-        borderRadius: 14,
-        padding: '14px 14px 12px',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <p style={{ fontSize: 13, color: '#F0F0F0', fontWeight: 600 }}>Últimas 6 semanas</p>
-        <p style={{ fontSize: 12, color: '#6B7280' }}>
-          {total} {total === 1 ? 'sesión' : 'sesiones'}
+    <div>
+      {trendLabel && (
+        <p
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: trendColor ?? '#6B7280',
+            margin: '0 0 12px',
+          }}
+        >
+          {trendArrow} {trendLabel}
         </p>
-      </div>
+      )}
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 14, alignItems: 'flex-end' }}>
-        {points.map((point) => {
-          const barHeight = Math.max(6, Math.round((point.completed / max) * 52))
-          const isCurrent = point === points[points.length - 1]
-          return (
-            <div key={point.label} style={{ flex: 1, textAlign: 'center' }}>
-              <div
-                style={{
-                  height: 56,
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
-                }}
-              >
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'] }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            alignItems: 'flex-end',
+            minWidth: 'max-content',
+          }}
+        >
+          {points.map((point, index) => {
+            const barHeight = Math.max(8, Math.round((point.completed / max) * 80))
+            return (
+              <div key={point.label} style={{ width: 56, textAlign: 'center', flexShrink: 0 }}>
                 <div
                   style={{
-                    width: '100%',
-                    maxWidth: 24,
-                    height: barHeight,
-                    borderRadius: 8,
-                    backgroundColor: isCurrent ? '#B5F23D' : '#2A2D34',
-                    transition: 'height 220ms ease',
+                    height: 88,
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
                   }}
-                />
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: barHeight,
+                      borderRadius: 8,
+                      backgroundColor: barColor(index, currentWeekIndex),
+                      transition: 'height 220ms ease',
+                    }}
+                  />
+                </div>
+                <p style={{ fontSize: 12, color: '#6B7280', marginTop: 7, marginBottom: 0 }}>
+                  {point.label}
+                </p>
+                <p style={{ fontSize: 14, color: '#F0F0F0', marginTop: 3, marginBottom: 0, fontWeight: 600 }}>
+                  {point.completed}
+                </p>
               </div>
-              <p style={{ fontSize: 10, color: '#6B7280', marginTop: 6 }}>{point.label}</p>
-              <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2, fontWeight: 600 }}>
-                {point.completed}
-              </p>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </div>
   )

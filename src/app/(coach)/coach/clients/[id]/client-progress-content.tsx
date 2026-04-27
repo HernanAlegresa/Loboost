@@ -29,10 +29,11 @@ type Props = {
 const SECTION_OVERLINE: React.CSSProperties = {
   margin: '0 0 10px',
   fontSize: 10,
-  fontWeight: 600,
+  fontWeight: 400,
   color: '#6B7280',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
+  textAlign: 'center',
 }
 
 const STATUS_MESSAGES: Record<ClientStatus, string> = {
@@ -78,7 +79,7 @@ function StatusBanner({ status }: { status: ClientStatus }) {
   )
 }
 
-function KpiItem({
+function KpiCard({
   label,
   value,
   sub,
@@ -94,14 +95,14 @@ function KpiItem({
   return (
     <div
       style={{
-        flex: 1,
-        minWidth: 0,
+        backgroundColor: '#111317',
+        border: '1px solid #1F2227',
+        borderRadius: 14,
+        padding: '12px 6px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: 7,
-        padding: '18px 8px',
+        gap: 10,
       }}
     >
       <p
@@ -119,7 +120,7 @@ function KpiItem({
       </p>
       <p
         style={{
-          fontSize: 24,
+          fontSize: 22,
           fontWeight: 700,
           color: valueColor,
           lineHeight: 1,
@@ -138,28 +139,16 @@ function KpiItem({
   )
 }
 
-function KpiDivider() {
-  return (
-    <div
-      style={{ width: 1, height: 44, background: '#252A31', flexShrink: 0, alignSelf: 'center' }}
-    />
-  )
-}
-
 function NavTile({
   href,
-  iconBg,
   icon,
   title,
   subtitle,
-  preview,
 }: {
   href: string
-  iconBg: string
   icon: React.ReactNode
   title: string
   subtitle: string
-  preview?: string
 }) {
   return (
     <Link href={href} style={{ textDecoration: 'none', display: 'block' }}>
@@ -181,7 +170,7 @@ function NavTile({
             width: 42,
             height: 42,
             borderRadius: 12,
-            background: iconBg,
+            background: '#B5F23D',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -196,20 +185,7 @@ function NavTile({
             {subtitle}
           </p>
         </div>
-        {preview ? (
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 700,
-              color: '#9CA3AF',
-              flexShrink: 0,
-              marginRight: 4,
-            }}
-          >
-            {preview}
-          </span>
-        ) : null}
-        <ChevronRight size={18} color="#6B7280" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+        <ChevronRight size={18} color="#B5F23D" strokeWidth={2.5} style={{ flexShrink: 0 }} />
       </div>
     </Link>
   )
@@ -230,9 +206,7 @@ export default function ClientProgressContent({
   clientId,
   progressKPIs,
   activePlan,
-  totalSessions,
   progressSeries,
-  navTileStats,
   clientStatus,
 }: Props) {
   const { weightInitialKg, weightCurrentKg, weightDeltaKg, checkInsSubmitted, checkInsExpected } =
@@ -250,13 +224,18 @@ export default function ClientProgressContent({
           : '#9CA3AF'
 
   const trend = computeTrend(progressSeries)
+  const showTrend = progressSeries.length >= 4
 
-  const tonnageStr =
-    navTileStats.totalTonnageKg > 0
-      ? navTileStats.totalTonnageKg >= 1000
-        ? `${(navTileStats.totalTonnageKg / 1000).toFixed(1)} t`
-        : `${navTileStats.totalTonnageKg} kg`
-      : undefined
+  // If plan has ended (today past endDate), currentWeek is capped at totalWeeks
+  // → set index beyond array length so all bars render as past (green)
+  const planEnded = activePlan
+    ? new Date() > new Date(activePlan.endDate + 'T23:59:59Z')
+    : false
+  const currentWeekIndex = activePlan
+    ? planEnded
+      ? activePlan.weeks        // all bars past
+      : activePlan.currentWeek - 1  // 0-indexed
+    : -1
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
@@ -266,103 +245,60 @@ export default function ClientProgressContent({
 
       {/* Resumen KPIs */}
       <div>
-        <p style={SECTION_OVERLINE}>Resumen</p>
-        <div
-          style={{
-            backgroundColor: '#111317',
-            border: '1px solid #1F2227',
-            borderRadius: 14,
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'stretch' }}>
-            <KpiItem
-              label="Peso inicial"
-              value={weightInitialKg !== null ? `${weightInitialKg} kg` : '—'}
-            />
-            <KpiDivider />
-            <KpiItem
-              label="Peso actual"
-              value={weightCurrentKg !== null ? `${weightCurrentKg} kg` : '—'}
-              valueColor="#B5F23D"
-              sub={deltaStr ?? undefined}
-              subColor={deltaColor}
-            />
-            <KpiDivider />
-            <KpiItem label="Check-ins" value={`${checkInsSubmitted}/${checkInsExpected}`} />
-          </div>
-          <p
-            style={{
-              margin: 0,
-              padding: '10px 16px 14px',
-              textAlign: 'center',
-              fontSize: 12,
-              fontWeight: 600,
-              color: '#6B7280',
-              borderTop: '1px solid #1F2227',
-            }}
-          >
-            {totalSessions}{' '}
-            {totalSessions === 1 ? 'sesión completada en total' : 'sesiones completadas en total'}
-          </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 90px)', gap: 35, margin: '0 auto', width: 'fit-content' }}>
+          <KpiCard
+            label="Peso inicial"
+            value={weightInitialKg !== null ? `${weightInitialKg} kg` : '—'}
+          />
+          <KpiCard
+            label="Peso actual"
+            value={weightCurrentKg !== null ? `${weightCurrentKg} kg` : '—'}
+            valueColor="#B5F23D"
+            sub={deltaStr ?? undefined}
+            subColor={deltaColor}
+          />
+          <KpiCard
+            label="Check-ins"
+            value={`${checkInsSubmitted}/${checkInsExpected}`}
+          />
         </div>
       </div>
 
-      {/* Actividad */}
-      <div>
-        <p style={SECTION_OVERLINE}>Actividad</p>
-        <ProgressOverview points={progressSeries} />
-        {progressSeries.length >= 4 && (
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: trend.color,
-              textAlign: 'right',
-              margin: '6px 0 0',
-            }}
-          >
-            {trend.arrow} {trend.label}
-          </p>
-        )}
-      </div>
+      {/* Actividad semanal */}
+      {progressSeries.length > 0 && (
+        <div style={{ paddingTop: 10 }}>
+          <p style={SECTION_OVERLINE}>Actividad semanal / sesiones completadas</p>
+          <ProgressOverview
+            points={progressSeries}
+            currentWeekIndex={currentWeekIndex}
+            trendArrow={showTrend ? trend.arrow : undefined}
+            trendLabel={showTrend ? trend.label : undefined}
+            trendColor={showTrend ? trend.color : undefined}
+          />
+        </div>
+      )}
 
       {/* Seguimiento */}
       <div>
-        <p style={SECTION_OVERLINE}>Seguimiento</p>
         {activePlan ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 15, maxWidth: 320, margin: '0 auto', width: '100%', paddingTop: 10 }}>
             <NavTile
               href={`/coach/clients/${clientId}/check-ins`}
-              iconBg="rgba(181,242,61,0.12)"
-              icon={<ClipboardList size={20} color="#B5F23D" />}
+              icon={<ClipboardList size={20} color="#0A0A0A" />}
               title="Check-ins semanales"
               subtitle="Peso registrado semana a semana"
-              preview={
-                checkInsExpected > 0
-                  ? `${checkInsSubmitted}/${checkInsExpected}`
-                  : undefined
-              }
             />
             <NavTile
               href={`/coach/clients/${clientId}/exercises-progress`}
-              iconBg="rgba(99,179,237,0.12)"
-              icon={<Dumbbell size={20} color="#63B3ED" />}
+              icon={<Dumbbell size={20} color="#0A0A0A" />}
               title="Progreso de ejercicios"
               subtitle="Evolución de carga por ejercicio"
-              preview={
-                navTileStats.exercisesWithProgress > 0
-                  ? `${navTileStats.exercisesWithProgress} ejerc.`
-                  : undefined
-              }
             />
             <NavTile
               href={`/coach/clients/${clientId}/weekly-load`}
-              iconBg="rgba(246,173,85,0.12)"
-              icon={<BarChart2 size={20} color="#F6AD55" />}
+              icon={<BarChart2 size={20} color="#0A0A0A" />}
               title="Carga semanal"
               subtitle="Volumen, intensidad y tonelaje"
-              preview={tonnageStr}
             />
           </div>
         ) : (

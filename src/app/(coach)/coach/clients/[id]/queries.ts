@@ -17,41 +17,29 @@ import type {
   DayStatus,
 } from '@/features/clients/types'
 
-function startOfWeek(date: Date): Date {
-  const d = new Date(date)
-  const daysSinceMonday = (d.getDay() + 6) % 7
-  d.setHours(0, 0, 0, 0)
-  d.setDate(d.getDate() - daysSinceMonday)
-  return d
-}
+function buildProgressSeries(
+  completedAtValues: Array<string | null>,
+  activePlan: { weeks: number; startDate: string } | null
+): Array<{ label: string; completed: number }> {
+  if (!activePlan) return []
 
-function buildProgressSeries(completedAtValues: Array<string | null>): Array<{ label: string; completed: number }> {
-  const now = new Date()
-  const currentWeekStart = startOfWeek(now)
-  const buckets: Array<{ label: string; completed: number; start: Date; end: Date }> = []
-
-  for (let i = 5; i >= 0; i--) {
-    const weekStart = new Date(currentWeekStart)
-    weekStart.setDate(weekStart.getDate() - i * 7)
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekEnd.getDate() + 7)
-    const label = `${weekStart.getDate()}/${weekStart.getMonth() + 1}`
-    buckets.push({ label, completed: 0, start: weekStart, end: weekEnd })
-  }
+  const planStart = new Date(activePlan.startDate + 'T00:00:00Z')
+  const buckets = Array.from({ length: activePlan.weeks }, (_, i) => {
+    const start = new Date(planStart)
+    start.setUTCDate(start.getUTCDate() + i * 7)
+    const end = new Date(start)
+    end.setUTCDate(end.getUTCDate() + 7)
+    return { label: `Sem ${i + 1}`, completed: 0, startTime: start.getTime(), endTime: end.getTime() }
+  })
 
   for (const completedAt of completedAtValues) {
     if (!completedAt) continue
-    const date = new Date(completedAt)
-    const time = date.getTime()
-    for (const bucket of buckets) {
-      if (time >= bucket.start.getTime() && time < bucket.end.getTime()) {
-        bucket.completed++
-        break
-      }
-    }
+    const time = new Date(completedAt).getTime()
+    const bucket = buckets.find((b) => time >= b.startTime && time < b.endTime)
+    if (bucket) bucket.completed++
   }
 
-  return buckets.map((b) => ({ label: b.label, completed: b.completed }))
+  return buckets.map(({ label, completed }) => ({ label, completed }))
 }
 
 export async function getClientProfileData(
@@ -60,10 +48,22 @@ export async function getClientProfileData(
 ): Promise<ClientProfileData | null> {
   const supabase = await createClient()
 
+  // Fetch plan first so we can use its start_date as the sessions lower-bound
+  const planResult = await supabase
+    .from('client_plans')
+    .select('id, name, weeks, start_date, end_date, status')
+    .eq('client_id', clientId)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  const plan = planResult.data
+  const sessionsFromDate = plan
+    ? new Date(plan.start_date + 'T00:00:00Z').toISOString()
+    : new Date(Date.now() - 56 * 86400000).toISOString()
+
   const [
     profileResult,
     cpResult,
-    planResult,
     recentSessionsResult,
     totalSessionsResult,
     noteResult,
@@ -79,17 +79,11 @@ export async function getClientProfileData(
       .eq('id', clientId)
       .maybeSingle(),
     supabase
-      .from('client_plans')
-      .select('id, name, weeks, start_date, end_date, status')
-      .eq('client_id', clientId)
-      .eq('status', 'active')
-      .maybeSingle(),
-    supabase
       .from('sessions')
       .select('completed_at')
       .eq('client_id', clientId)
       .eq('status', 'completed')
-      .gte('completed_at', new Date(Date.now() - 56 * 86400000).toISOString())
+      .gte('completed_at', sessionsFromDate)
       .order('completed_at', { ascending: false }),
     supabase
       .from('sessions')
@@ -109,9 +103,22 @@ export async function getClientProfileData(
   if (!profileResult.data || profileResult.data.coach_id !== coachId) return null
 
   const cp = cpResult.data
-  const plan = planResult.data
   const recentSessions = recentSessionsResult.data ?? []
-  const progressSeries = buildProgressSeries(recentSessions.map((s) => s.completed_at))
+
+  let activePlan: ActivePlanSummary | null = null
+  if (plan) {
+    activePlan = {
+      id: plan.id,
+      name: plan.name,
+      weeks: plan.weeks,
+      startDate: plan.start_date,
+      endDate: plan.end_date,
+      status: plan.status as 'active' | 'completed' | 'paused',
+      currentWeek: getCurrentWeek(plan.start_date, plan.weeks),
+    }
+  }
+
+  const progressSeries = buildProgressSeries(recentSessions.map((s) => s.completed_at), activePlan)
   const totalSessions = totalSessionsResult.count ?? 0
   const coachNote = noteResult.data?.content ?? ''
   const now = Date.now()
@@ -130,19 +137,6 @@ export async function getClientProfileData(
     expectedDays: daysPerWeek,
     completedDays: completedInLastWeek,
   })
-
-  let activePlan: ActivePlanSummary | null = null
-  if (plan) {
-    activePlan = {
-      id: plan.id,
-      name: plan.name,
-      weeks: plan.weeks,
-      startDate: plan.start_date,
-      endDate: plan.end_date,
-      status: plan.status as 'active' | 'completed' | 'paused',
-      currentWeek: getCurrentWeek(plan.start_date, plan.weeks),
-    }
-  }
 
   let currentWeekData: TrainingWeekData | null = null
   if (activePlan) {
