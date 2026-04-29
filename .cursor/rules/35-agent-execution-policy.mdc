@@ -8,23 +8,26 @@ alwaysApply: true
 ## Default posture
 
 - Act directly on low-risk, reversible, and clearly scoped tasks.
-- Escalate with a clarifying question only when ambiguity materially changes implementation.
+- Share a brief proposal and wait for approval on non-trivial changes before implementing.
 
-## Mandatory escalation cases
+## Low risk — act directly
 
-Ask before proceeding when changes involve:
-- auth/security model or permission boundaries,
-- destructive migrations/data deletion risk,
-- public contract changes (API, payload, workflow semantics),
-- multiple architecture-valid options with different long-term cost.
+- UI adjustments and styling
+- Variable or component renaming
+- TypeScript type fixes
+- Small refactors with no behavioral change
+- Test fixes with clear failing evidence
 
-## Decision template (required for non-trivial changes)
+## High risk — stop, ask, and wait for explicit approval
 
-1. Context
-2. Options (recommended + fallback)
-3. Decision
-4. Risks
-5. Validation
+Do not proceed until the user confirms. Asking is not enough.
+
+- Database schema changes or migrations
+- Business logic that affects core domain behavior
+- Relations between entities (e.g., `plans` vs `client_plans`)
+- Authentication, permissions, or ownership boundaries
+- Public API contracts or payload structure changes
+- Any destructive or irreversible operation
 
 ## Anti-generic response guardrails
 
@@ -37,3 +40,4 @@ Ask before proceeding when changes involve:
 
 - Be concise, specific, and implementation-oriented.
 - Avoid verbose theory unless requested.
+- One clarifying question max when ambiguity exists — never a list.

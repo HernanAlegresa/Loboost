@@ -1,0 +1,26 @@
+---
+description: Session start protocol, vertical slice workflow, and skill invocation
+alwaysApply: true
+---
+
+# Workflow Protocol
+
+## Session start
+
+- Check `docs/decisions/` if the task touches business logic or prior decisions.
+- If requirements are unclear, use `grill-me` before proposing anything.
+
+## Vertical slices
+
+Work in minimal end-to-end slices (DB + logic + UI). Verify each slice before starting the next.
+
+## Skills
+
+| Task | Claude Code | Cursor |
+|---|---|---|
+| Alignment before feature | `grill-me` | `grill-me` |
+| Break into slices | `slice` | `slice` |
+| Business logic / backend | `backend` | `backend-server-actions` |
+| TDD | `superpowers:test-driven-development` | `testing-quality-gates` |
+| Debugging | `superpowers:systematic-debugging` | — |
+| Final verification | `done` | `done` |

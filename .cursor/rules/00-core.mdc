@@ -18,6 +18,20 @@ When rules conflict, apply this order:
 4. `30-ui-ux`
 5. `40-delivery`
 
+## Language
+
+- Respond always in Spanish. Clear, direct, and concise.
+- Avoid verbose explanations unless explicitly requested.
+
+## Alignment before implementation
+
+- For non-trivial tasks, share a brief proposal and wait for approval before writing code.
+- Keep proposals short — a few lines, not a document.
+- Level 2 (simple/localized): files affected + one line per change.
+- Level 3 (business logic, DB, or multi-layer): add data flow, side effects, and risks.
+- Always include: files involved, objective per change, known risks.
+- For ambiguous requirements, ask one targeted question before proposing.
+
 ## Operating constraints
 
 - Prefer concrete edits over generic advice.
