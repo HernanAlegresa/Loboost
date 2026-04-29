@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import type { WeeklyLoadPoint, MuscleWeekPoint } from '../progress-queries'
-import { MUSCLE_GROUPS_ORDER } from '../progress-queries'
+import { MUSCLE_GROUPS_ORDER } from './muscle-groups-order'
 import { getWeekDateRange, formatDateRange } from '../date-utils'
 
 type Metric = 'tonnage' | 'intensity' | 'sets'

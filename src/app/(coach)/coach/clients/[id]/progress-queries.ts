@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentWeek, computeDayDate } from '@/features/clients/utils/training-utils'
 import type { ActivePlanSummary } from '@/features/clients/types'
+import { MUSCLE_GROUPS_ORDER } from './weekly-load/muscle-groups-order'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -74,9 +75,7 @@ export type WeeklyLoadEnriched = {
   muscleByWeek: MuscleWeekPoint[]
 }
 
-export const MUSCLE_GROUPS_ORDER = [
-  'Piernas', 'Empuje', 'Espalda', 'Hombros', 'Core', 'Brazos', 'Cardio', 'Otro',
-] as const
+export { MUSCLE_GROUPS_ORDER }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

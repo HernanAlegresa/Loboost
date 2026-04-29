@@ -39,27 +39,25 @@ function SummaryPill({
   return (
     <div
       style={{
-        flex: 1,
+        flex: '0 0 86px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 3,
-        padding: '10px 8px',
-        backgroundColor: `${color}14`,
-        borderRadius: 10,
-        border: `1px solid ${color}30`,
+        gap: 8,
+        padding: '8px 6px',
       }}
     >
-      <span style={{ fontSize: 18, fontWeight: 700, color, lineHeight: 1 }}>{value}</span>
+      <span style={{ fontSize: 25, fontWeight: 700, color, lineHeight: 1 }}>{value}</span>
       <span
         style={{
-          fontSize: 9,
+          fontSize: 10,
           fontWeight: 600,
           color,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
           textAlign: 'center',
           lineHeight: 1.2,
+          whiteSpace: 'nowrap',
         }}
       >
         {label}
@@ -138,17 +136,17 @@ export default async function CheckInsPage({
           style={{
             fontSize: 18,
             fontWeight: 700,
-            color: '#B5F23D',
+            color: '#5B6472',
             textAlign: 'center',
             margin: 0,
-            padding: '28px 20px 20px',
+            padding: '12px 20px 30px',
           }}
         >
           {activePlan.name}
         </p>
 
         {/* Summary strip */}
-        <div style={{ display: 'flex', gap: 8, padding: '0 20px 16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 30, padding: '0 20px 16px' }}>
           <SummaryPill value={checkInCounts.registered} label="Registradas" color="#B5F23D" />
           <SummaryPill value={checkInCounts.pending}    label="Pendiente"   color="#F2C94A" />
           <SummaryPill value={checkInCounts.missed}     label="Sin registrar" color="#F25252" />

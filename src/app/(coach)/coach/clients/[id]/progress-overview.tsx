@@ -53,12 +53,12 @@ export default function ProgressOverview({
           }}
         >
           {points.map((point, index) => {
-            const barHeight = Math.max(8, Math.round((point.completed / max) * 80))
+            const barHeight = Math.max(12, Math.round((point.completed / max) * 104))
             return (
               <div key={point.label} style={{ width: 56, textAlign: 'center', flexShrink: 0 }}>
                 <div
                   style={{
-                    height: 88,
+                    height: 118,
                     display: 'flex',
                     alignItems: 'flex-end',
                     justifyContent: 'center',

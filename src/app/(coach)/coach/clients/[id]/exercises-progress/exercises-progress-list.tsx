@@ -117,7 +117,7 @@ function ExerciseCard({ ex, clientId }: { ex: ExerciseProgressData; clientId: st
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
           {trendConfig && (
-            <span style={{ fontSize: 12, fontWeight: 700, color: trendConfig.color, lineHeight: 1 }}>
+            <span style={{ fontSize: 20, fontWeight: 700, color: trendConfig.color, lineHeight: 1, paddingRight: 5 }}>
               {trendConfig.arrow}
             </span>
           )}

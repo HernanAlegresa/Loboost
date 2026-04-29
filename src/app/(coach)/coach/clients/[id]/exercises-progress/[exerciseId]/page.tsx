@@ -24,7 +24,6 @@ function PRStrip({ peakTopSetKg }: { peakTopSetKg: number }) {
           justifyContent: 'center',
           gap: 6,
           background: 'rgba(181,242,61,0.08)',
-          border: '1px solid rgba(181,242,61,0.2)',
           borderRadius: 12,
           padding: '12px 18px',
         }}

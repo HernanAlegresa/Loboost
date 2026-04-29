@@ -3,8 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { getClientProfileData } from './queries'
 import { getProgressKPIs, getNavTileStats } from './progress-queries'
-import type { NavTileStats } from './progress-queries'
-import { getClientSessionsForCoach } from './sessions/queries'
+import { getCoachSessionsTimeline } from './sessions/queries'
 import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import ClientProfileHeader from './client-profile-header'
 import ClientProfileTabsShell from './client-profile-tabs-shell'
@@ -30,12 +29,12 @@ export default async function ClientProfilePage({
   const profile = await getClientProfileData(id, user.id)
   if (!profile) notFound()
 
-  const [kpis, sessions, navTileStats] = await Promise.all([
+  const [kpis, timeline, navTileStats] = await Promise.all([
     getProgressKPIs(id, profile.weightKg, profile.activePlan),
-    getClientSessionsForCoach(id, user.id),
+    getCoachSessionsTimeline(id, user.id),
     getNavTileStats(id, profile.activePlan),
   ])
-  if (sessions === null) notFound()
+  if (timeline === null) notFound()
 
   return (
     <div
@@ -169,9 +168,8 @@ export default async function ClientProfilePage({
         }
         sessionsContent={
           <ClientSessionsList
-            sessions={sessions}
+            timeline={timeline}
             clientId={profile.id}
-            hasPlan={profile.activePlan !== null}
           />
         }
       />

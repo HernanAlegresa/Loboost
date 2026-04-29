@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
-import { getClientSessionsForCoach } from './queries'
+import { getCoachSessionsTimeline } from './queries'
 import ClientSessionsList from '../client-sessions-list'
 
 export default async function ClientSessionsPage({
@@ -20,8 +20,8 @@ export default async function ClientSessionsPage({
     .eq('id', clientId)
     .single()
 
-  const sessions = await getClientSessionsForCoach(clientId, user.id)
-  if (sessions === null) notFound()
+  const timeline = await getCoachSessionsTimeline(clientId, user.id)
+  if (timeline === null) notFound()
 
   return (
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -31,7 +31,7 @@ export default async function ClientSessionsPage({
         subtitle={clientProfile?.full_name ?? ''}
       />
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 20px 100px' }}>
-        <ClientSessionsList sessions={sessions} clientId={clientId} />
+        <ClientSessionsList timeline={timeline} clientId={clientId} />
       </div>
     </div>
   )
