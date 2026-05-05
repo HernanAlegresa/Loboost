@@ -2,14 +2,9 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getClientBasicForCoach, getWeeklyLoadEnrichedData } from '../progress-queries'
 import type { WeeklyLoadPoint } from '../progress-queries'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
-import Avatar from '@/components/ui/avatar'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 import WeeklyLoadChart from './weekly-load-chart'
-
-function ClientAvatarSlot({ fullName }: { fullName: string }) {
-  return <Avatar fullName={fullName} size="md" />
-}
 
 function WeeklyHeroKpis({
   weeks,
@@ -143,16 +138,14 @@ export default async function WeeklyLoadPage({
   const basic = await getClientBasicForCoach(id, user.id)
   if (!basic) notFound()
 
-  const { fullName, activePlan } = basic
+  const { activePlan } = basic
 
   if (!activePlan) {
     return (
-      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <CoachSubpageHeader
-          backHref={`/coach/clients/${id}?tab=progress`}
+      <>
+        <FlowHeaderConfig
           title="Carga semanal"
-          backColor="#B5F23D"
-          rightSlot={<ClientAvatarSlot fullName={fullName} />}
+          fallbackHref={`/coach/clients/${id}`}
         />
         <div
           style={{
@@ -167,19 +160,17 @@ export default async function WeeklyLoadPage({
             Sin plan activo. Asigna un plan para ver la carga semanal.
           </p>
         </div>
-      </div>
+      </>
     )
   }
 
   const enriched = await getWeeklyLoadEnrichedData(id, activePlan)
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader
-        backHref={`/coach/clients/${id}?tab=progress`}
+    <>
+      <FlowHeaderConfig
         title="Carga semanal"
-        backColor="#B5F23D"
-        rightSlot={<ClientAvatarSlot fullName={fullName} />}
+        fallbackHref={`/coach/clients/${id}`}
       />
 
       <div
@@ -207,6 +198,6 @@ export default async function WeeklyLoadPage({
           planStartDate={activePlan.startDate}
         />
       </div>
-    </div>
+    </>
   )
 }

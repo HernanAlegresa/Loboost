@@ -2,8 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getClientBasicForCoach, getExerciseWeeklyHistory } from '../../progress-queries'
 import { muscleGroupLabel } from '@/features/exercises/muscle-groups'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
-import Avatar from '@/components/ui/avatar'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 import ExerciseWeekGrid from './exercise-week-grid'
 import RefreshOnFocus from './refresh-on-focus'
@@ -77,12 +76,7 @@ export default async function ExerciseDetailPage({
   if (!activePlan) {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <CoachSubpageHeader
-          backHref={`/coach/clients/${id}/exercises-progress`}
-          title="Ejercicio"
-          backColor="#B5F23D"
-          rightSlot={<Avatar fullName={fullName} size="md" />}
-        />
+        <FlowHeaderConfig title="Ejercicio" fallbackHref={`/coach/clients/${id}/exercises-progress`} />
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <p style={{ fontSize: 14, color: '#4B5563', textAlign: 'center' }}>Sin plan activo.</p>
         </div>
@@ -98,13 +92,7 @@ export default async function ExerciseDetailPage({
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <RefreshOnFocus />
-      <CoachSubpageHeader
-        backHref={`/coach/clients/${id}/exercises-progress`}
-        title={exerciseName}
-        backColor="#B5F23D"
-        titleSize={18}
-        rightSlot={<Avatar fullName={fullName} size="md" />}
-      />
+      <FlowHeaderConfig title={exerciseName} fallbackHref={`/coach/clients/${id}/exercises-progress`} />
 
       <div
         style={{

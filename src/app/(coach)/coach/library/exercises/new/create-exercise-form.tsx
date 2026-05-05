@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createExerciseAction, type CreateExerciseState } from '@/features/exercises/actions/create-exercise'
 import { MUSCLE_GROUP_OPTIONS } from '@/features/exercises/muscle-groups'
 import CustomSelect from '@/components/ui/custom-select'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
 
 const inputStyle: CSSProperties = {
@@ -72,12 +72,7 @@ export default function CreateExerciseForm() {
           hint="Redirigiendo a biblioteca..."
         />
       ) : null}
-      <CoachSubpageHeader
-        backHref="/coach/library?tab=exercises"
-        title="Nuevo ejercicio"
-        backColor="#B5F23D"
-        titleSize={20}
-      />
+      <FlowHeaderConfig title="Nuevo ejercicio" fallbackHref="/coach/library?tab=exercises" />
 
       <form
         action={formAction}

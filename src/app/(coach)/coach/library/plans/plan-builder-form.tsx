@@ -16,7 +16,7 @@ import {
   type PlanBuilderSubmitState,
 } from '@/features/plans/actions/submit-plan-builder'
 import type { ExercisePick, PlanBuilderInitial } from './queries'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import CustomSelect from '@/components/ui/custom-select'
 import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
 
@@ -362,12 +362,7 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
           hint="Redirigiendo a biblioteca..."
         />
       ) : null}
-      <CoachSubpageHeader
-        backHref="/coach/library?tab=plans"
-        title={mode === 'edit' ? 'Editar plan' : 'Nuevo plan'}
-        backColor="#B5F23D"
-        titleSize={20}
-      />
+      <FlowHeaderConfig title={mode === 'edit' ? 'Editar plan' : 'Nuevo plan'} fallbackHref="/coach/library?tab=plans" />
 
       <div
         style={{

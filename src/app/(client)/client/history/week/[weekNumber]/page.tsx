@@ -1,8 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth/session'
 import { getWeekDetailData } from './queries'
 import WeekDetailClient from './week-detail-client'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 
 export default async function WeekDetailPage({
   params,
@@ -21,31 +21,10 @@ export default async function WeekDetailPage({
 
   return (
     <div>
-      <div
-        style={{
-          padding: '14px 20px',
-          borderBottom: '1px solid #1F2227',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-        }}
-      >
-        <Link
-          href="/client/history"
-          style={{
-            color: '#6B7280',
-            textDecoration: 'none',
-            fontSize: 18,
-            lineHeight: 1,
-          }}
-        >
-          ←
-        </Link>
-        <p style={{ fontSize: 17, fontWeight: 700, color: '#F0F0F0' }}>
-          Semana {data.weekNumber}
-        </p>
-      </div>
-
+      <FlowHeaderConfig
+        title={`Semana ${data.weekNumber}`}
+        fallbackHref="/client/history"
+      />
       <WeekDetailClient data={data} weekNumber={num} />
     </div>
   )

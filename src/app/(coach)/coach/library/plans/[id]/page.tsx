@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Pencil, UserPlus } from 'lucide-react'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { getPlanDetailFull } from '../queries'
 import WeekCollapsibleCard from './week-collapsible-card'
 
@@ -45,11 +45,10 @@ export default async function PlanDetailPage({ params }: Props) {
 
   return (
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader
-        backHref="/coach/library?tab=plans"
+      <FlowHeaderConfig
         title={plan.name}
-        titleColor="#B5F23D"
         subtitle={`${plan.weeks} ${plan.weeks === 1 ? 'semana' : 'semanas'}`}
+        fallbackHref="/coach/library?tab=plans"
       />
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain', padding: '16px 20px 120px' }}>

@@ -1,11 +1,12 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import { Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getClientProfileData } from './queries'
 import { getProgressKPIs, getNavTileStats } from './progress-queries'
 import { getCoachSessionsTimeline } from './sessions/queries'
 import { isPlanExpired } from '@/features/clients/utils/training-utils'
-import ClientProfileHeader from './client-profile-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import ClientProfileTabsShell from './client-profile-tabs-shell'
 import ClientProfileHeroCard from './client-profile-hero-card'
 import ClientPlanHeatmapCard from './client-plan-heatmap-card'
@@ -45,10 +46,31 @@ export default async function ClientProfilePage({
         overflow: 'hidden',
       }}
     >
-      <ClientProfileHeader
-        clientId={id}
-        fullName={profile.fullName}
-        goal={profile.goal}
+      <FlowHeaderConfig
+        title={profile.fullName}
+        subtitle={profile.goal ?? 'Sin objetivo definido'}
+        fallbackHref="/coach/clients"
+        rightSlot={
+          <Link
+            href={`/coach/clients/${id}/edit`}
+            aria-label="Editar datos del cliente"
+            title="Editar datos del cliente"
+            style={{
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#0F1014',
+              border: '1px solid #1F2227',
+              borderRadius: 9999,
+              color: '#9CA3AF',
+              textDecoration: 'none',
+            }}
+          >
+            <Pencil size={14} />
+          </Link>
+        }
       />
       <ClientProfileTabsShell
         profileContent={
