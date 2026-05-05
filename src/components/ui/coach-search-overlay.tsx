@@ -436,6 +436,8 @@ function OverlayContent({
           flex: 1,
           minHeight: 0,
           overflowY: 'auto',
+          overscrollBehaviorY: 'contain',
+          touchAction: 'pan-y',
           WebkitOverflowScrolling: 'touch',
           backgroundColor: '#0A0A0A',
           paddingBottom: 24,
