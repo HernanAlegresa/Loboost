@@ -1,0 +1,28 @@
+---
+description: MCP operational guardrails for stable Cursor sessions
+alwaysApply: true
+---
+
+# MCP Ops Baseline
+
+## Session start checks
+
+1. Confirm required MCP servers are available for this project context:
+   - `plugin-supabase-supabase` for DB/auth/debug tasks
+   - `plugin-vercel-vercel` for deploy/env/release tasks
+   - `plugin-figma-figma` only for design-system or Figma sync tasks
+   - `cursor-ide-browser` for browser validation and UI flows
+2. If a server has `mcp_auth`, authenticate before first real use.
+3. If authentication is skipped or blocked, stop and report the exact server and blocker.
+
+## Tool selection defaults
+
+- Prefer local repo files and shell for code changes.
+- Use Supabase MCP for project-level metadata, advisors, logs, and controlled remote actions.
+- Use Browser MCP for UI validation that cannot be proven by static code inspection.
+- Use Vercel MCP for deployment diagnostics rather than guessing from build symptoms.
+
+## Safety
+
+- Never execute destructive remote actions without explicit user approval.
+- For schema/auth boundary changes, follow escalation gates from `00-core.mdc`.

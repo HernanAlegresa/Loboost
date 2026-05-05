@@ -14,7 +14,7 @@ Pilot validation (`docs/ai/pilot-report.md`) showed good adherence in frontend a
 Update governance artifacts to require atomic lifecycle updates for multi-entity domain transitions:
 
 - Extend `.cursor/rules/20-supabase.mdc` with a multi-entity consistency section.
-- Extend `.cursor/skills/backend-server-actions/SKILL.md` checklist with atomicity/rollback requirement.
+- Extend `.cursor/skills/backend/SKILL.md` checklist with atomicity/rollback requirement.
 
 ## Consequences
 

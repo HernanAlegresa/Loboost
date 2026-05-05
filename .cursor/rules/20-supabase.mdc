@@ -1,6 +1,6 @@
 ---
 description: Supabase access, auth, and migration safety policy
-alwaysApply: true
+globs: ["src/**/*.ts", "src/**/*.tsx", "supabase/**"]
 ---
 
 # Supabase Policy

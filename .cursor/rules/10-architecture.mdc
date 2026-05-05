@@ -1,6 +1,6 @@
 ---
 description: Codebase architecture boundaries and placement rules
-alwaysApply: true
+globs: ["src/**/*.ts", "src/**/*.tsx"]
 ---
 
 # Architecture Boundaries

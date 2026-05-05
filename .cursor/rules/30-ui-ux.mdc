@@ -1,6 +1,6 @@
 ---
 description: LoBoost UI and UX consistency guardrails
-alwaysApply: true
+globs: ["src/**/*.tsx", "src/**/*.css"]
 ---
 
 # UI and UX Standards

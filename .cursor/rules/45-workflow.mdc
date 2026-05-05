@@ -6,21 +6,24 @@ alwaysApply: true
 # Workflow Protocol
 
 ## Session start
-
-- Check `docs/decisions/` if the task touches business logic or prior decisions.
-- If requirements are unclear, use `grill-me` before proposing anything.
+1. Read `docs/superpowers/handoffs/cursor-development-log.md` for last session state.
+2. If the task touches business logic or prior decisions, check `docs/decisions/`.
+3. If requirements are unclear, invoke `grill-me` before proposing anything.
 
 ## Vertical slices
-
-Work in minimal end-to-end slices (DB + logic + UI). Verify each slice before starting the next.
+Work in minimal end-to-end slices (DB + backend + UI). Verify each slice before starting the next.
 
 ## Skills
 
-| Task | Claude Code | Cursor |
-|---|---|---|
-| Alignment before feature | `grill-me` | `grill-me` |
-| Break into slices | `slice` | `slice` |
-| Business logic / backend | `backend` | `backend-server-actions` |
-| TDD | `superpowers:test-driven-development` | `testing-quality-gates` |
-| Debugging | `superpowers:systematic-debugging` | — |
-| Final verification | `done` | `done` |
+| Trigger | Skill file |
+|---|---|
+| Requirement unclear or scope undefined | `.cursor/skills/grill-me/SKILL.md` |
+| Multiple interdependent parts | `.cursor/skills/slice/SKILL.md` |
+| New query, server action, or DB type | `.cursor/skills/backend/SKILL.md` |
+| UI component, screen, or navigation design | `.cursor/skills/ui-design/SKILL.md` |
+| Critical business logic or bugfix with domain impact | `.cursor/skills/testing-quality-gates/SKILL.md` |
+| Before declaring any slice done | `.cursor/skills/done/SKILL.md` |
+
+## How to invoke a skill
+Reference the file directly in the chat:
+> "Seguí el skill: @.cursor/skills/grill-me/SKILL.md"

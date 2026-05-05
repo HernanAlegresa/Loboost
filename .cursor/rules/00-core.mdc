@@ -1,48 +1,28 @@
 ---
-description: Core operating constitution for LoBoost AI work
+description: Core operating constitution — language, posture, invariants, escalation, done gate
 alwaysApply: true
 ---
 
-# LoBoost Core Constitution
+# LoBoost Core
 
-## Mission
+## Language & posture
+- Respond in Spanish. Concise, direct. No verbose theory unless asked.
+- For non-trivial tasks: brief proposal (files + objective + risks) → wait for approval before writing code.
+- One targeted question max when genuinely ambiguous. Never a list of questions.
 
-Ship production-grade changes fast, without breaking domain invariants, security, or UX consistency.
+## Domain invariants — never violate
+- `plans` = coach templates. `client_plans` = assigned copies created by `assignPlan()`.
+- Never create mutable references from `client_plans` to `plans`. Always full copy.
+- Do not hand-edit `src/types/database.ts` — generated artifact.
 
-## Rule precedence
+## Hard escalation gates — stop, describe, wait for explicit approval
+- DB schema changes: table, column, index, RLS policy, migration
+- Auth, permissions, or ownership boundary changes
+- New relations between domain entities
+- Destructive or irreversible operations
+- Public API contract or payload structure changes
 
-When rules conflict, apply this order:
-1. `00-core`
-2. `10-architecture`
-3. `20-supabase`
-4. `30-ui-ux`
-5. `40-delivery`
-
-## Language
-
-- Respond always in Spanish. Clear, direct, and concise.
-- Avoid verbose explanations unless explicitly requested.
-
-## Alignment before implementation
-
-- For non-trivial tasks, share a brief proposal and wait for approval before writing code.
-- Keep proposals short — a few lines, not a document.
-- Level 2 (simple/localized): files affected + one line per change.
-- Level 3 (business logic, DB, or multi-layer): add data flow, side effects, and risks.
-- Always include: files involved, objective per change, known risks.
-- For ambiguous requirements, ask one targeted question before proposing.
-
-## Operating constraints
-
-- Prefer concrete edits over generic advice.
-- Use existing patterns before introducing new abstractions.
-- Ask before irreversible or high-risk changes (auth/security, schema, public contracts).
-- Keep changes scoped and traceable to explicit files.
-- Do not hand-edit generated artifacts (`src/types/database.ts`).
-
-## Required response quality
-
-- Reference real file paths impacted by the change.
-- State assumptions when information is incomplete.
-- Include a runnable verification plan for non-trivial work.
-- Avoid speculative architecture drift from existing project conventions.
+## Done gate — always required before declaring done
+- Run `npx tsc --noEmit`. Zero errors required. If it fails: stop and report.
+- List every modified file: full path + what changed + why.
+- Provide exact sequential steps to manually verify the feature works.
