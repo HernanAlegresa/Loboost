@@ -1,8 +1,8 @@
+import type { ReactNode } from 'react'
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getClientBasicForCoach, getCheckInsSummary } from '../progress-queries'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
-import Avatar from '@/components/ui/avatar'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 import { CheckCircle2, Clock, Lock } from 'lucide-react'
 import type { CheckInWeek } from '../progress-queries'
@@ -88,12 +88,7 @@ export default async function CheckInsPage({
   if (!activePlan) {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <CoachSubpageHeader
-          backHref={`/coach/clients/${id}?tab=progress`}
-          title="Check-ins"
-          backColor="#B5F23D"
-          rightSlot={<ClientAvatarSlot fullName={fullName} />}
-        />
+        <FlowHeaderConfig title="Check-ins" fallbackHref={`/coach/clients/${id}?tab=progress`} />
         <div
           style={{
             flex: 1,
@@ -116,18 +111,13 @@ export default async function CheckInsPage({
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader
-        backHref={`/coach/clients/${id}?tab=progress`}
-        title="Check-ins"
-        backColor="#B5F23D"
-        rightSlot={<ClientAvatarSlot fullName={fullName} />}
-      />
+      <FlowHeaderConfig title="Check-ins" fallbackHref={`/coach/clients/${id}?tab=progress`} />
 
       <div
         style={{
           flex: 1,
           overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'],
+          WebkitOverflowScrolling: 'touch',
           paddingBottom: COACH_LIST_SCROLL_END_ABOVE_NAV,
         }}
       >
@@ -198,7 +188,7 @@ function CheckInWeekRow({
   const isPast = week.weekNumber < currentWeek
   const hasEntry = week.entry !== null
 
-  let statusIcon: React.ReactNode
+  let statusIcon: ReactNode
   let statusColor: string
   let statusLabel: string
 
@@ -343,6 +333,3 @@ function CheckInWeekRow({
   )
 }
 
-function ClientAvatarSlot({ fullName }: { fullName: string }) {
-  return <Avatar fullName={fullName} size="md" />
-}

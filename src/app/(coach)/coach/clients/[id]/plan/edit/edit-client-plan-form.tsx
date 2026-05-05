@@ -9,7 +9,7 @@ import {
 } from '@/features/plans/actions/update-client-plan-full'
 import type { ClientPlanDayForEdit } from './page'
 import type { ExercisePick } from '@/app/(coach)/coach/library/plans/queries'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import CustomSelect from '@/components/ui/custom-select'
 import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
 
@@ -247,12 +247,10 @@ export default function EditClientPlanForm({
           hint="Volviendo al perfil del cliente..."
         />
       ) : null}
-      <CoachSubpageHeader
-        backHref={`/coach/clients/${clientId}`}
+      <FlowHeaderConfig
         title={readOnly ? 'Plan asignado' : 'Editar plan'}
         subtitle={planName}
-        backColor="#B5F23D"
-        titleSize={20}
+        fallbackHref={`/coach/clients/${clientId}`}
       />
 
       <div

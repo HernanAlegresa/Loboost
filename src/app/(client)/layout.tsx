@@ -3,8 +3,10 @@ import { getCurrentUser } from '@/lib/auth/session'
 import { getUserRole } from '@/lib/auth/roles'
 import ClientBottomNav from '@/components/ui/client-bottom-nav'
 import ClientNotificationBell from '@/components/ui/client-notification-bell'
+import DynamicHeader from '@/components/ui/dynamic-header'
+import { HeaderProvider } from '@/components/ui/header-context'
 import { getClientNotificationData } from './queries'
-import { SAFE_BOTTOM_NAV_HEIGHT, SAFE_HEADER_PADDING_TOP } from '@/lib/ui/safe-area'
+import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 
 export default async function ClientLayout({
   children,
@@ -20,66 +22,45 @@ export default async function ClientLayout({
   const notifData = await getClientNotificationData(user.id)
 
   return (
-    <div
-      style={{
-        height: '100dvh',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        backgroundColor: '#0A0A0A',
-        color: '#F0F0F0',
-        overscrollBehavior: 'none',
-      }}
-    >
-      <header
+    <HeaderProvider>
+      <div
         style={{
-          flexShrink: 0,
-          zIndex: 50,
-          backgroundColor: '#0A0A0A',
-          paddingLeft: 20,
-          paddingRight: 20,
-          paddingBottom: 16,
-          paddingTop: SAFE_HEADER_PADDING_TOP,
-          borderBottom: '1px solid #1F2227',
+          height: '100dvh',
+          minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          backgroundColor: '#0A0A0A',
+          color: '#F0F0F0',
+          overscrollBehavior: 'none',
         }}
       >
-        <span
+        <DynamicHeader
+          showBorder
+          rootRightSlot={
+            <ClientNotificationBell
+              inProgressSession={notifData.inProgressSession}
+              weekStrip={notifData.weekStrip}
+            />
+          }
+        />
+
+        {/* Scrollable content */}
+        <main
           style={{
-            fontSize: 22,
-            fontWeight: 800,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            overscrollBehaviorY: 'contain',
+            paddingBottom: SAFE_BOTTOM_NAV_HEIGHT,
           }}
         >
-          <span style={{ color: '#B5F23D' }}>Lobo</span>
-          <span style={{ color: '#F0F0F0' }}>ost</span>
-        </span>
+          {children}
+        </main>
 
-        <ClientNotificationBell
-          inProgressSession={notifData.inProgressSession}
-          weekStrip={notifData.weekStrip}
-        />
-      </header>
-
-      {/* Scrollable content */}
-      <main
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          overscrollBehaviorY: 'contain',
-          paddingBottom: SAFE_BOTTOM_NAV_HEIGHT,
-        }}
-      >
-        {children}
-      </main>
-
-      <ClientBottomNav />
-    </div>
+        <ClientBottomNav />
+      </div>
+    </HeaderProvider>
   )
 }

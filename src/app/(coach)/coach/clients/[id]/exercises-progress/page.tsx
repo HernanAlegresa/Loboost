@@ -1,13 +1,8 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getClientBasicForCoach, getExerciseProgressData } from '../progress-queries'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
-import Avatar from '@/components/ui/avatar'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import ExercisesProgressList from './exercises-progress-list'
-
-function ClientAvatarSlot({ fullName }: { fullName: string }) {
-  return <Avatar fullName={fullName} size="md" />
-}
 
 export default async function ExercisesProgressPage({
   params,
@@ -31,12 +26,7 @@ export default async function ExercisesProgressPage({
   if (!activePlan) {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <CoachSubpageHeader
-          backHref={`/coach/clients/${id}?tab=progress`}
-          title="Progreso de ejercicios"
-          backColor="#B5F23D"
-          rightSlot={<ClientAvatarSlot fullName={fullName} />}
-        />
+        <FlowHeaderConfig title="Progreso de ejercicios" fallbackHref={`/coach/clients/${id}?tab=progress`} />
         <div
           style={{
             flex: 1,
@@ -59,12 +49,7 @@ export default async function ExercisesProgressPage({
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader
-        backHref={`/coach/clients/${id}?tab=progress`}
-        title="Progreso de ejercicios"
-        backColor="#B5F23D"
-        rightSlot={<ClientAvatarSlot fullName={fullName} />}
-      />
+      <FlowHeaderConfig title="Progreso de ejercicios" fallbackHref={`/coach/clients/${id}?tab=progress`} />
 
       {/* List — toma el alto restante con su propio scroll horizontal */}
       <ExercisesProgressList exercises={exercisesWithData} clientId={id} />

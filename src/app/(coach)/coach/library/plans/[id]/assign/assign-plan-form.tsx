@@ -4,7 +4,7 @@ import { useActionState, useEffect, useMemo, useState, type CSSProperties, type 
 import { useRouter } from 'next/navigation'
 import { assignPlanAction, type AssignPlanState } from '@/features/plans/actions/assign-plan'
 import type { ClientPick } from '../../queries'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import CustomSelect from '@/components/ui/custom-select'
 
 const inputStyle: CSSProperties = {
@@ -79,12 +79,7 @@ export default function AssignPlanForm({ planId, planName, planWeeks, clients }:
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader
-        backHref={`/coach/library/plans/${planId}`}
-        title="Asignar plan"
-        subtitle={planName}
-        titleColor="#B5F23D"
-      />
+      <FlowHeaderConfig title="Asignar plan" subtitle={planName} fallbackHref={`/coach/library/plans/${planId}`} />
 
       <form
         action={formAction}

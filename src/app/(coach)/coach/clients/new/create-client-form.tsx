@@ -2,8 +2,8 @@
 
 import { useActionState, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronLeft, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { createClientAction } from '@/features/clients/actions/create-client'
 import { GOAL_OPTIONS } from '@/features/clients/schemas'
 import SuccessOverlay from './success-overlay'
@@ -138,34 +138,7 @@ export default function CreateClientForm() {
           overflow: 'hidden',
         }}
       >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '44px 1fr 44px',
-            alignItems: 'center',
-            padding: '16px 20px 24px',
-            flexShrink: 0,
-            backgroundColor: '#0A0A0A',
-          }}
-        >
-          <Link
-            href="/coach/clients"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              color: '#B5F23D',
-              textDecoration: 'none',
-              minHeight: 44,
-            }}
-          >
-            <ChevronLeft size={24} />
-          </Link>
-          <span style={{ fontSize: 20, fontWeight: 700, color: '#F0F0F0', textAlign: 'center' }}>
-            Nuevo cliente
-          </span>
-          <div aria-hidden />
-        </div>
+        <FlowHeaderConfig title="Nuevo cliente" fallbackHref="/coach/clients" />
 
         <div
           style={{

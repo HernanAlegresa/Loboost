@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { getSessionDetailForCoach } from './queries'
 import type { SessionExerciseDetail } from './queries'
 
@@ -106,11 +106,11 @@ export default async function SessionDetailPage({
   })
 
   return (
-    <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader
-        backHref={`/coach/clients/${clientId}/sessions`}
+    <>
+      <FlowHeaderConfig
         title={`Semana ${session.weekNumber} · ${DAY_NAMES[session.dayOfWeek]}`}
         subtitle={date}
+        fallbackHref={`/coach/clients/${clientId}/sessions`}
       />
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 20px 100px' }}>
         {(session.rpe != null ||
@@ -228,6 +228,6 @@ export default async function SessionDetailPage({
           <ExerciseCard key={ex.clientPlanDayExerciseId} ex={ex} />
         ))}
       </div>
-    </div>
+    </>
   )
 }

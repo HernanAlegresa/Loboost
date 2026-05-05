@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { updateExerciseAction, type UpdateExerciseState } from '@/features/exercises/actions/update-exercise'
 import { MUSCLE_GROUP_OPTIONS } from '@/features/exercises/muscle-groups'
 import type { ExerciseEditRow } from '../../queries'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import CustomSelect from '@/components/ui/custom-select'
 
 const inputStyle: CSSProperties = {
@@ -85,12 +85,7 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <CoachSubpageHeader
-        backHref="/coach/library?tab=exercises"
-        title="Editar ejercicio"
-        backColor="#B5F23D"
-        titleSize={20}
-      />
+      <FlowHeaderConfig title="Editar ejercicio" fallbackHref="/coach/library?tab=exercises" />
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', overscrollBehaviorY: 'contain' }}>
         <form

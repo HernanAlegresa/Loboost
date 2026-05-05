@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import CoachSubpageHeader from '@/components/ui/coach-subpage-header'
+import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { getClientProfileData } from '../queries'
 import EditClientForm from '../edit-client-form'
 
@@ -22,24 +22,11 @@ export default async function EditClientProfilePage({
   if (!profile) notFound()
 
   return (
-    <div
-      style={{
-        height: '100%',
-        minHeight: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        backgroundColor: '#0A0A0A',
-      }}
-    >
-      <CoachSubpageHeader
-        backHref={`/coach/clients/${clientId}?tab=profile`}
-        title="Editar cliente"
-        subtitle={profile.fullName}
-        backColor="#B5F23D"
-        titleSize={20}
+    <>
+      <FlowHeaderConfig
+        title={profile.fullName}
+        fallbackHref={`/coach/clients/${clientId}`}
       />
-
       <div
         style={{
           flex: 1,
@@ -65,6 +52,6 @@ export default async function EditClientProfilePage({
           }}
         />
       </div>
-    </div>
+    </>
   )
 }
