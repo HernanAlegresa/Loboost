@@ -43,6 +43,9 @@ body {
 html {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 html::-webkit-scrollbar {
   display: none;
@@ -50,6 +53,9 @@ html::-webkit-scrollbar {
 body {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 body::-webkit-scrollbar {
   display: none;
