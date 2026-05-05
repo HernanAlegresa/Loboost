@@ -22,7 +22,12 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ClientItem = { id: string; fullName: string }
-type ExerciseItem = { id: string; name: string; category: string; muscle_group: string }
+type ExerciseItem = {
+  id: string
+  name: string
+  category: string | null
+  muscle_group: string
+}
 type PlanItem = { id: string; name: string; weeks: number }
 
 type LoadedData = {
@@ -43,6 +48,7 @@ export type Props = {
 }
 
 const SEARCH_OVERLAY_Z = 45
+const COACH_HEADER_OVERLAY_EVENT = 'coach-header-overlay-open'
 
 /** Rojo suave para “Cancelar”, legible sin gritar. */
 const CANCEL_SOFT_RED = '#E57373'
@@ -90,7 +96,6 @@ function ResultRow({
           gap: 12,
           padding: '13px 20px',
           textDecoration: 'none',
-          borderBottom: '1px solid rgba(31, 34, 39, 0.5)',
           transition: 'background-color 100ms ease',
         }}
       >
@@ -162,6 +167,17 @@ function SectionHeader({ label, Icon }: { label: string; Icon: IconComponent }) 
   )
 }
 
+function SectionDivider() {
+  return (
+    <div
+      style={{
+        margin: '6px 20px 0',
+        borderBottom: '1px solid rgba(240, 240, 240, 0.32)',
+      }}
+    />
+  )
+}
+
 // ─── Empty / hint states ──────────────────────────────────────────────────────
 
 function SearchHint() {
@@ -176,24 +192,9 @@ function SearchHint() {
         alignItems: 'center',
         justifyContent: 'center',
         paddingTop: 72,
-        gap: 10,
       }}
     >
-      <div
-        style={{
-          width: 52,
-          height: 52,
-          borderRadius: 16,
-          backgroundColor: '#111317',
-          border: '1px solid #1F2227',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Search size={24} color="#2A2D34" />
-      </div>
-      <p style={{ fontSize: 14, color: '#3D3F45', margin: 0, textAlign: 'center' }}>
+      <p style={{ fontSize: 14, color: '#6B7280', margin: 0, textAlign: 'center' }}>
         Buscá clientes, ejercicios o planes
       </p>
     </motion.div>
@@ -229,6 +230,7 @@ function OverlayContent({
   onClose: () => void
 }) {
   const [rawQuery, setRawQuery] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
   const [loadedData, setLoadedData] = useState<LoadedData | null>(null)
   const [loadingData, setLoadingData] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -273,16 +275,16 @@ function OverlayContent({
       .slice(0, 6)
 
     const matchedExercises = (loadedData?.exercises ?? [])
-      .filter(
-        (e) =>
-          e.name.toLowerCase().includes(q) ||
-          e.category.toLowerCase().includes(q) ||
-          e.muscle_group.toLowerCase().includes(q)
-      )
+      .filter((e) => {
+        const name = (e.name ?? '').toLowerCase()
+        const category = (e.category ?? '').toLowerCase()
+        const muscle = (e.muscle_group ?? '').toLowerCase()
+        return name.includes(q) || category.includes(q) || muscle.includes(q)
+      })
       .slice(0, 6)
 
     const matchedPlans = (loadedData?.plans ?? [])
-      .filter((p) => p.name.toLowerCase().includes(q))
+      .filter((p) => (p.name ?? '').toLowerCase().includes(q))
       .slice(0, 6)
 
     return {
@@ -319,20 +321,35 @@ function OverlayContent({
             minWidth: 0,
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: '#111317',
-            border: '1px solid #FFFFFF',
-            borderRadius: 9999,
-            padding: '0 12px',
-            minHeight: 42,
+            position: 'relative',
+            backgroundColor: 'rgba(37, 42, 49, 0.42)',
+            border: 'none',
+            borderRadius: 14,
+            padding: '0 10px',
+            minHeight: 44,
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
           }}
         >
+          <Search
+            size={17}
+            color={isFocused ? '#F0F0F0' : '#6B7280'}
+            strokeWidth={2.2}
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+            }}
+          />
           <input
             ref={inputRef}
             type="text"
             value={rawQuery}
             onChange={(e) => setRawQuery(e.target.value)}
-            placeholder="Clientes, ejercicios, planes…"
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder="Buscar"
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
@@ -343,48 +360,54 @@ function OverlayContent({
               border: 'none',
               outline: 'none',
               fontSize: 16,
-              fontWeight: 400,
+              fontWeight: 200,
               color: '#F0F0F0',
               caretColor: '#B5F23D',
               fontFamily: 'inherit',
-              padding: '10px 0',
+              padding: '10px 34px 10px 34px',
             }}
           />
-        </div>
 
-        <AnimatePresence>
-          {rawQuery.length > 0 && (
-            <motion.button
-              key="clear"
-              type="button"
-              onClick={() => {
-                setRawQuery('')
-                inputRef.current?.focus()
-              }}
-              aria-label="Limpiar búsqueda"
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              transition={{ duration: 0.12 }}
-              whileTap={{ scale: 0.88 }}
-              style={{
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: 28,
-                height: 28,
-                borderRadius: 9999,
-                backgroundColor: '#252A31',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#9CA3AF',
-              }}
-            >
-              <X size={13} strokeWidth={2.5} />
-            </motion.button>
-          )}
-        </AnimatePresence>
+          <AnimatePresence>
+            {rawQuery.length > 0 && (
+              <motion.button
+                key="clear"
+                type="button"
+                onClick={() => {
+                  setRawQuery('')
+                  inputRef.current?.focus()
+                }}
+                aria-label="Limpiar búsqueda"
+                initial={{ opacity: 0, scale: 0.6 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.6 }}
+                transition={{ duration: 0.12 }}
+                whileTap={{ scale: 0.88 }}
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  top: 0,
+                  bottom: 0,
+                  marginTop: 'auto',
+                  marginBottom: 'auto',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 24,
+                  height: 24,
+                  borderRadius: 9999,
+                  backgroundColor: '#252A31',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#9CA3AF',
+                }}
+              >
+                <X size={12} strokeWidth={2.5} />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
 
         <motion.button
           type="button"
@@ -397,8 +420,8 @@ function OverlayContent({
             border: 'none',
             cursor: 'pointer',
             fontSize: 14,
-            fontWeight: 600,
-            color: CANCEL_SOFT_RED,
+            fontWeight: 400,
+            color: '#F0F0F0',
             padding: '8px 4px',
             fontFamily: 'inherit',
             letterSpacing: '0.01em',
@@ -449,6 +472,7 @@ function OverlayContent({
                       onNavigate={onClose}
                     />
                   ))}
+                  {(results.exercises.length > 0 || results.plans.length > 0) && <SectionDivider />}
                 </section>
               )}
 
@@ -470,6 +494,7 @@ function OverlayContent({
                       />
                     )
                   })}
+                  {results.plans.length > 0 && <SectionDivider />}
                 </section>
               )}
 
@@ -516,6 +541,24 @@ export default function CoachSearchOverlay({ coachId, clients }: Props) {
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
+  }, [open])
+
+  useEffect(() => {
+    function onOtherOverlayOpened(event: Event) {
+      const customEvent = event as CustomEvent<'search' | 'notifications'>
+      if (customEvent.detail !== 'search') setOpen(false)
+    }
+    window.addEventListener(COACH_HEADER_OVERLAY_EVENT, onOtherOverlayOpened as EventListener)
+    return () => window.removeEventListener(COACH_HEADER_OVERLAY_EVENT, onOtherOverlayOpened as EventListener)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    window.dispatchEvent(
+      new CustomEvent<'search' | 'notifications'>(COACH_HEADER_OVERLAY_EVENT, {
+        detail: 'search',
+      })
+    )
   }, [open])
 
   const handleClose = useCallback(() => setOpen(false), [])
@@ -598,7 +641,7 @@ export default function CoachSearchOverlay({ coachId, clients }: Props) {
           minHeight: 44,
         }}
       >
-        <Search size={24} color="#FFFFFF" strokeWidth={2.25} />
+        <Search size={24} color="#E5E7EB" strokeWidth={2.25} />
       </motion.button>
 
       {mounted && createPortal(overlay, document.body)}

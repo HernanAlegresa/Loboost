@@ -15,6 +15,7 @@ type Props = {
 const NOTIF_BACKDROP_SCRIM = 'rgba(4, 5, 7, 0.78)'
 
 const NOTIF_OVERLAY_Z = 175
+const COACH_HEADER_OVERLAY_EVENT = 'coach-header-overlay-open'
 
 /** Ancho de la columna del icono (misma lógica que el panel de estados: título centrado entre dos ranuras). */
 const NOTIF_HEADER_SIDE_SLOT_PX = 44
@@ -75,6 +76,24 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
+  }, [open])
+
+  useEffect(() => {
+    function onOtherOverlayOpened(event: Event) {
+      const customEvent = event as CustomEvent<'search' | 'notifications'>
+      if (customEvent.detail !== 'notifications') setOpen(false)
+    }
+    window.addEventListener(COACH_HEADER_OVERLAY_EVENT, onOtherOverlayOpened as EventListener)
+    return () => window.removeEventListener(COACH_HEADER_OVERLAY_EVENT, onOtherOverlayOpened as EventListener)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    window.dispatchEvent(
+      new CustomEvent<'search' | 'notifications'>(COACH_HEADER_OVERLAY_EVENT, {
+        detail: 'notifications',
+      })
+    )
   }, [open])
 
   const count = clientsNeedingAttention
@@ -138,7 +157,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
                   width: '100%',
                   maxWidth: 300,
                   pointerEvents: 'auto',
-                  backgroundColor: '#111317',
+                  backgroundColor: 'rgba(37, 42, 49, 0.52)',
                   border: '1px solid #2A2D34',
                   borderRadius: 16,
                   boxShadow: '0 16px 48px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4)',
@@ -254,9 +273,11 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
   return (
     <>
       <div style={{ position: 'relative' }}>
-        <button
+        <motion.button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            setOpen((prevOpen) => !prevOpen)
+          }}
           aria-expanded={open}
           aria-haspopup="dialog"
           aria-label={
@@ -264,9 +285,11 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
               ? `${count} ${count === 1 ? 'cliente requiere' : 'clientes requieren'} atención`
               : 'Notificaciones'
           }
+          whileTap={{ scale: 0.88, opacity: 0.7 }}
+          transition={{ duration: 0.1 }}
           style={{
             position: 'relative',
-            background: open ? 'rgba(255,255,255,0.06)' : 'none',
+            background: 'none',
             border: 'none',
             cursor: 'pointer',
             color: count > 0 ? '#F0F0F0' : '#E5E7EB',
@@ -279,7 +302,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
           }}
         >
           <BellWithCountBadge count={count} bellColor={bellColor} />
-        </button>
+        </motion.button>
       </div>
       {mounted ? createPortal(overlay, document.body) : null}
     </>
