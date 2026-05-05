@@ -18,6 +18,7 @@ const ACTIONS = [
 /** Sombra de profundidad (negra), sin halo lima. */
 const FAB_DEPTH_SHADOW =
   '0 10px 28px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)'
+const FAB_ACTION_BORDER_LIME = 'rgba(181, 242, 61, 0.62)'
 
 export type FabDock = 'fixed' | 'inline'
 
@@ -119,13 +120,14 @@ export default function Fab({ dock = 'fixed' }: FabProps) {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
+                        justifyContent: 'center',
                         gap: 16,
                         backgroundColor: '#111317',
-                        border: '1px solid #2A2D34',
+                        border: `1px solid ${FAB_ACTION_BORDER_LIME}`,
                         borderRadius: 18,
-                        padding: '18px 26px',
+                        padding: '16px 20px',
                         textDecoration: 'none',
-                        minWidth: 260,
+                        minWidth: 220,
                         boxShadow: '0 12px 32px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.4)',
                       }}
                     >
@@ -136,6 +138,7 @@ export default function Fab({ dock = 'fixed' }: FabProps) {
                           fontWeight: 600,
                           color: '#B5F23D',
                           letterSpacing: '0.01em',
+                          textAlign: 'center',
                         }}
                       >
                         {action.label}

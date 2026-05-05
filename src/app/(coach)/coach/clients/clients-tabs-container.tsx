@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Info, Plus } from 'lucide-react'
+import { Info, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import type { DashboardClientSummary } from '../dashboard/queries'
 import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
+import CoachExpandableFab from '@/components/ui/coach-expandable-fab'
 import ClientCard from './client-card'
 import type { ClientStatus } from '@/features/clients/types/client-status'
 
@@ -44,8 +45,8 @@ type ActivityItem = {
 }
 
 const TAB_LABELS: Record<ClientsTab, string> = {
-  clients: 'Clientes',
-  activity: 'Actividad',
+  clients: 'CLIENTES',
+  activity: 'ACTIVIDAD',
 }
 
 const LIST_BOTTOM_GAP_PX = 28
@@ -61,10 +62,11 @@ const CLIENT_CARD_COLUMN_MAX_WIDTH_PX = 320
 /** Espacio entre el texto Clientes/Actividad y la línea lima activa (más chico = más cerca del texto). */
 const TAB_INDICATOR_MARGIN_TOP_PX = 3
 
-/** Mismo inset vertical: entre la línea de tabs y los filtros, y entre filtros y la lista. */
-const FILTERS_VERTICAL_INSET_PX = 22
+/** Espaciado de filtros alineado con Biblioteca > Ejercicios. */
+const FILTERS_TOP_INSET_PX = 10
+const FILTERS_BOTTOM_INSET_PX = 14
 
-/** Celeste del ícono “i” (un poco transparente para que no compita con los tabs) */
+/** Celeste del ícono “i” de la leyenda de estados. */
 const CLIENTS_TAB_INFO_CELESTE = 'rgba(86, 197, 250, 0.72)'
 
 const STATE_SORT_RANK: Record<ClientHealthState, number> = {
@@ -309,7 +311,9 @@ export default function ClientsTabsContainer({ clients }: Props) {
       <div
         style={{
           flexShrink: 0,
-          padding: '10px 20px 0',
+          padding: '6px 20px 0',
+          position: 'relative',
+          zIndex: 19,
         }}
       >
         <div
@@ -318,39 +322,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
             alignItems: 'flex-start',
           }}
         >
-          {/* Misma franja vertical que la fila de “Clientes / Actividad” (no el indicador lima) */}
-          <div
-            style={{
-              flexShrink: 0,
-              width: 40,
-              minHeight: 46,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              marginLeft: -4,
-            }}
-          >
-            <motion.button
-              type="button"
-              aria-label="Información sobre estados de clientes"
-              onClick={() => setStatesInfoOpen(true)}
-              whileTap={{ scale: 0.85, opacity: 0.7 }}
-              transition={{ duration: 0.1 }}
-              style={{
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: 'transparent',
-                color: CLIENTS_TAB_INFO_CELESTE,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '6px 8px 6px 0',
-                lineHeight: 1.2,
-              }}
-            >
-              <Info size={20} strokeWidth={2.35} aria-hidden color={CLIENTS_TAB_INFO_CELESTE} />
-            </motion.button>
-          </div>
+          <div style={{ width: 40, flexShrink: 0, minHeight: 46 }} aria-hidden />
           <div
             ref={tabsTrackRef}
             style={{
@@ -368,7 +340,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: 64,
-                minHeight: 46,
+                minHeight: 42,
               }}
             >
               {tabs.map((tab) => {
@@ -384,8 +356,9 @@ export default function ClientsTabsContainer({ clients }: Props) {
                       backgroundColor: 'transparent',
                       color: isActive ? '#F0F0F0' : '#6B7280',
                       padding: '6px 0',
-                      fontSize: isActive ? 20 : 18,
-                      fontWeight: 700,
+                      fontSize: isActive ? 16 : 14,
+                      fontWeight: isActive ? 600 : 500,
+                      letterSpacing: '0.04em',
                       lineHeight: 1.2,
                       transition: 'color 140ms ease',
                     }}
@@ -472,31 +445,56 @@ export default function ClientsTabsContainer({ clients }: Props) {
               backgroundColor: '#0A0A0A',
             }}
           >
-            <motion.div whileTap={{ scale: 0.9 }} transition={{ duration: 0.1 }}>
-              <Link
-                href="/coach/clients/new"
-                aria-label="Crear cliente"
-                style={{
-                  width: 48,
-                  height: 48,
-                  backgroundColor: '#B5F23D',
-                  borderRadius: 9999,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  textDecoration: 'none',
-                  boxShadow: '0 10px 28px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)',
-                }}
-              >
-                <Plus size={24} color="#0A0A0A" strokeWidth={2.5} />
-              </Link>
-            </motion.div>
+            <div
+              style={{
+                width: '100%',
+                display: 'grid',
+                gridTemplateColumns: '1fr auto 1fr',
+                alignItems: 'center',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <motion.button
+                  type="button"
+                  aria-label="Información sobre estados de clientes"
+                  onClick={() => setStatesInfoOpen(true)}
+                  whileTap={{ scale: 0.85, opacity: 0.7 }}
+                  transition={{ duration: 0.1 }}
+                  style={{
+                    border: 'none',
+                    cursor: 'pointer',
+                    backgroundColor: 'transparent',
+                    color: CLIENTS_TAB_INFO_CELESTE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                    lineHeight: 1,
+                  }}
+                >
+                  <Info size={20} strokeWidth={2.35} aria-hidden color={CLIENTS_TAB_INFO_CELESTE} />
+                </motion.button>
+              </div>
+              <CoachExpandableFab
+                expandDirection="down"
+                menuOffsetPx={20}
+                fabAriaLabel="Abrir acciones de clientes"
+                actions={[
+                  {
+                    label: 'Nuevo cliente',
+                    href: '/coach/clients/new',
+                    icon: UserPlus,
+                  },
+                ]}
+              />
+              <div aria-hidden />
+            </div>
           </div>
 
           <div
             style={{
               flexShrink: 0,
-              padding: `${FILTERS_VERTICAL_INSET_PX}px 20px ${FILTERS_VERTICAL_INSET_PX}px`,
+              padding: `${FILTERS_TOP_INSET_PX}px 20px ${FILTERS_BOTTOM_INSET_PX}px`,
               backgroundColor: '#0A0A0A',
             }}
           >
@@ -518,7 +516,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
               scrollbarGutter: 'stable',
               paddingLeft: 20,
               paddingRight: 20,
-              paddingTop: 0,
+              paddingTop: 10,
               paddingBottom: SCROLL_END_PADDING_BOTTOM_PX,
             }}
           >
@@ -530,7 +528,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                 marginRight: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 12,
+                gap: 16,
               }}
             >
               <AnimatePresence mode="popLayout">
@@ -545,21 +543,6 @@ export default function ClientsTabsContainer({ clients }: Props) {
                       gap: 12,
                     }}
                   >
-                    <div
-                      style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(181, 242, 61, 0.08)',
-                        border: '1px solid rgba(181, 242, 61, 0.15)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 28,
-                      }}
-                    >
-                      👥
-                    </div>
                     <p style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
                       {activeFilter === 'todos' ? 'Todavía no tenés clientes' : 'Sin clientes en esta categoría'}
                     </p>
@@ -576,8 +559,6 @@ export default function ClientsTabsContainer({ clients }: Props) {
                       clientId={client.id}
                       fullName={client.fullName}
                       status={client.status}
-                      completedThisWeek={client.completedThisWeek}
-                      plannedDaysPerWeek={client.plannedDaysPerWeek}
                       planExpired={client.planExpired}
                       daysSinceLastSession={client.daysSinceLastSession}
                     />

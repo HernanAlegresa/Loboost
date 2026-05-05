@@ -24,8 +24,8 @@ const TODAY_RING = '#B5F23D'
 
 const DOT_SIZE = hmPx(24)
 const DOT_RADIUS = 9999
-/** Anillo lima “hoy”: 1px para que no compita con el borde de la celda. */
-const TODAY_RING_PX = 1
+/** Anillo lima “hoy”: más grueso y hacia adentro (inset). */
+const TODAY_RING_PX = 2
 
 type Props = {
   cell: WeeklyHeatmapCell
@@ -41,7 +41,8 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
     !!panelTodayLegend && cell.kind === 'upcoming' && cell.isToday
 
   if (cell.kind === 'rest') {
-    const restXColor = cell.isToday ? TODAY_RING : '#6B7280'
+    const restXColor = cell.isToday ? 'rgba(181, 242, 61, 0.72)' : 'rgba(107, 114, 128, 0.56)'
+    const restXOpacity = cell.isToday ? 0.72 : 0.56
     return (
       <div
         title={cell.isToday ? 'Descanso · hoy' : 'Descanso'}
@@ -63,7 +64,7 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
             backgroundColor: restXColor,
             borderRadius: 9999,
             transform: 'translate(-50%, -50%) rotate(45deg)',
-            opacity: 0.9,
+            opacity: restXOpacity,
           }}
         />
         <div
@@ -76,7 +77,7 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
             backgroundColor: restXColor,
             borderRadius: 9999,
             transform: 'translate(-50%, -50%) rotate(-45deg)',
-            opacity: 0.9,
+            opacity: restXOpacity,
           }}
         />
       </div>
@@ -97,7 +98,7 @@ export default function HeatmapCellDot({ cell, panelTodayLegend }: Props) {
         backgroundColor,
         border: cell.isToday ? `1px solid ${borderColor}` : 'none',
         boxSizing: 'border-box',
-        ...(cell.isToday ? { boxShadow: `0 0 0 ${TODAY_RING_PX}px ${TODAY_RING}` } : {}),
+        ...(cell.isToday ? { boxShadow: `inset 0 0 0 ${TODAY_RING_PX}px ${TODAY_RING}` } : {}),
       }}
     />
   )

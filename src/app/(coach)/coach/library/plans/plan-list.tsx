@@ -108,12 +108,11 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
             key={p.id}
             style={{
               backgroundColor: '#111317',
-              border: '1px solid #1F2227',
-              borderRadius: 16,
-              padding: '16px 14px',
+              borderRadius: 14,
+              padding: '10px 12px 10px 16px',
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
+              gap: 12,
               opacity: isPending && pendingId === p.id ? 0.55 : 1,
             }}
           >
@@ -124,7 +123,7 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
                 minWidth: 0,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 10,
+                gap: 12,
                 textDecoration: 'none',
                 color: 'inherit',
               }}
@@ -133,7 +132,7 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
                 <p
                   style={{
                     fontSize: 15,
-                    fontWeight: 700,
+                    fontWeight: 400,
                     color: '#B5F23D',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -143,30 +142,50 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
                 >
                   {p.name}
                 </p>
-                <p style={{ fontSize: 12, color: '#9CA3AF', margin: '6px 0 0', lineHeight: 1.4 }}>
+                <p style={{ fontSize: 12, color: '#9CA3AF', margin: '5px 0 0', lineHeight: 1.45 }}>
                   {p.weeks} {p.weeks === 1 ? 'semana' : 'semanas'} · {p.trainingDays}{' '}
                   {p.trainingDays === 1 ? 'día' : 'días'} / semana
                 </p>
               </div>
-              <ChevronRight size={24} strokeWidth={2.6} color="#F0F0F0" style={{ flexShrink: 0 }} aria-hidden />
             </Link>
-
-            <button
-              type="button"
-              disabled={isPending}
-              onClick={() => openDelete(p)}
-              aria-label={`Eliminar plan ${p.name}`}
-              style={{
-                flexShrink: 0,
-                background: 'none',
-                border: 'none',
-                padding: 8,
-                cursor: isPending ? 'default' : 'pointer',
-                color: '#F25252',
-              }}
-            >
-              <Trash2 size={20} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+              <Link
+                href={`/coach/library/plans/${p.id}`}
+                aria-label={`Ver plan ${p.name}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 44,
+                  minHeight: 44,
+                  color: '#F0F0F0',
+                  textDecoration: 'none',
+                  borderRadius: 8,
+                }}
+              >
+                <ChevronRight size={22} strokeWidth={2.6} aria-hidden />
+              </Link>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => openDelete(p)}
+                aria-label={`Eliminar plan ${p.name}`}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 44,
+                  minHeight: 44,
+                  cursor: isPending ? 'default' : 'pointer',
+                  color: '#F25252',
+                  borderRadius: 8,
+                }}
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
           </div>
         ))}
       </div>

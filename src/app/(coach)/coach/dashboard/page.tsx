@@ -56,6 +56,8 @@ export default async function DashboardPage() {
           justifyContent: 'space-between',
           gap: 16,
           flexShrink: 0,
+          position: 'relative',
+          zIndex: 19,
         }}
       >
         <div

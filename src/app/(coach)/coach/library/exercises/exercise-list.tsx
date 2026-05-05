@@ -9,6 +9,7 @@ import { Pencil, Trash2 } from 'lucide-react'
 import { deleteExerciseAction } from '@/features/exercises/actions/delete-exercise'
 import type { ExerciseRow } from './queries'
 import DeleteExerciseDialog from './delete-exercise-dialog'
+import FilterTabs, { type FilterTabItem } from '@/components/ui/filter-tabs'
 
 export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }) {
   const router = useRouter()
@@ -41,6 +42,24 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
       .map((value) => MUSCLE_GROUP_OPTIONS.find((option) => option.value === value))
       .filter((option): option is (typeof MUSCLE_GROUP_OPTIONS)[number] => option !== undefined)
   }, [])
+
+  const filterItems = useMemo<FilterTabItem[]>(
+    () => [
+      {
+        id: 'all',
+        label: 'Todos',
+        activeBackground: '#B5F23D',
+        activeColor: '#0A0A0A',
+      },
+      ...orderedMuscleGroups.map((group) => ({
+        id: group.value,
+        label: group.label,
+        activeBackground: '#B5F23D',
+        activeColor: '#0A0A0A',
+      })),
+    ],
+    [orderedMuscleGroups]
+  )
 
   const LIST_BOTTOM_PADDING_PX = 120
 
@@ -124,62 +143,17 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
         >
           <div
             style={{
-              display: 'flex',
-              flexWrap: 'nowrap',
-              gap: 8,
               marginBottom: 4,
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              paddingBottom: 2,
             }}
           >
-            <button
-              type="button"
-              onClick={() => setSelectedGroup('all')}
-              style={{
-                border: selectedGroup === 'all' ? '1px solid #B5F23D' : '1px solid #2A2D34',
-                backgroundColor: selectedGroup === 'all' ? 'rgba(181,242,61,0.12)' : '#111317',
-                color: selectedGroup === 'all' ? '#B5F23D' : '#9CA3AF',
-                borderRadius: 9999,
-                minHeight: 32,
-                padding: '0 12px',
-                fontSize: 12,
-                fontWeight: 700,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-              }}
-            >
-              Todos
-            </button>
-            {orderedMuscleGroups.map((group) => {
-              const isActive = selectedGroup === group.value
-              return (
-                <button
-                  key={group.value}
-                  type="button"
-                  onClick={() => setSelectedGroup(group.value)}
-                  style={{
-                    border: isActive ? '1px solid #B5F23D' : '1px solid #2A2D34',
-                    backgroundColor: isActive ? 'rgba(181,242,61,0.12)' : '#111317',
-                    color: isActive ? '#B5F23D' : '#9CA3AF',
-                    borderRadius: 9999,
-                    minHeight: 32,
-                    padding: '0 12px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                  }}
-                >
-                  {group.label}
-                </button>
-              )
-            })}
+            <FilterTabs
+              items={filterItems}
+              activeId={selectedGroup}
+              onChange={setSelectedGroup}
+              inactiveBackground="rgba(75, 85, 99, 0.34)"
+              inactiveColor="rgba(218, 224, 233, 0.72)"
+              inactiveBorder="transparent"
+            />
           </div>
         </div>
 
@@ -190,10 +164,11 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
             overflowY: 'auto',
             overflowX: 'hidden',
             overscrollBehaviorY: 'contain',
+            paddingTop: 10,
             paddingBottom: LIST_BOTTOM_PADDING_PX,
             display: 'flex',
             flexDirection: 'column',
-            gap: 12,
+            gap: 16,
           }}
         >
           {filteredExercises.length === 0 ? (
@@ -221,9 +196,8 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
               whileTap={{ scale: 0.985 }}
               style={{
                 backgroundColor: '#111317',
-                border: '1px solid #1F2227',
                 borderRadius: 14,
-                padding: '14px 12px 14px 16px',
+                padding: '10px 12px 10px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 12,
@@ -233,7 +207,7 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
                 <p
                   style={{
                     fontSize: 15,
-                    fontWeight: 700,
+                    fontWeight: 400,
                     color: '#B5F23D',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -264,7 +238,7 @@ export default function ExerciseList({ exercises }: { exercises: ExerciseRow[] }
                     justifyContent: 'center',
                     minWidth: 44,
                     minHeight: 44,
-                    color: '#9CA3AF',
+                    color: '#F0F0F0',
                     textDecoration: 'none',
                     borderRadius: 8,
                     transition: 'color 150ms ease',

@@ -10,8 +10,6 @@ type Props = {
   clientId: string
   fullName: string
   status: ClientStatus
-  completedThisWeek: number
-  plannedDaysPerWeek: number
   planExpired?: boolean
   daysSinceLastSession?: number | null
 }
@@ -20,8 +18,6 @@ export default function ClientCard({
   clientId,
   fullName,
   status,
-  completedThisWeek,
-  plannedDaysPerWeek,
   planExpired,
   daysSinceLastSession,
 }: Props) {
@@ -105,31 +101,6 @@ export default function ClientCard({
                   {daysSinceLastSession}D SIN ENTRENAR
                 </span>
               )}
-          </div>
-          <div
-            style={{
-              flexShrink: 0,
-              textAlign: 'right',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-end',
-              gap: 2,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: accent,
-                lineHeight: 1.15,
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {completedThisWeek}/{plannedDaysPerWeek}
-            </span>
-            <span style={{ fontSize: 11, fontWeight: 500, color: '#6B7280', lineHeight: 1.2 }}>
-              esta semana
-            </span>
           </div>
         </div>
       </Link>

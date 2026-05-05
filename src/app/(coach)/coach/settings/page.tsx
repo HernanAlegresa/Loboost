@@ -2,14 +2,17 @@ import type { CSSProperties } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/features/auth/actions/sign-out'
+import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 import CoachSettingsForm from './coach-settings-form'
 import ChangePasswordForm from '@/components/ui/change-password-form'
 
-const cardStyle: CSSProperties = {
-  backgroundColor: '#111317',
-  border: '1px solid #1F2227',
-  borderRadius: 14,
-  padding: '18px 16px',
+/** Mismo respiro que `LIST_BOTTOM_GAP_PX` / `LIBRARY_LIST_BOTTOM_GAP_PX` en Clientes y Biblioteca. */
+const SETTINGS_SCROLL_BOTTOM_GAP_PX = 28
+
+/** Sección sin caja (solo título + contenido). */
+const plainSectionStyle: CSSProperties = {
+  padding: 0,
+  margin: 0,
 }
 
 const sectionLabel: CSSProperties = {
@@ -24,11 +27,13 @@ const sectionLabel: CSSProperties = {
 /** Misma jerarquía que títulos de tabs (Clientes / Biblioteca). */
 const screenTitle: CSSProperties = {
   margin: 0,
-  fontSize: 20,
-  fontWeight: 700,
+  fontSize: 16,
+  fontWeight: 600,
   color: '#F0F0F0',
   lineHeight: 1.2,
   textAlign: 'center',
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
 }
 
 export default async function CoachSettingsPage() {
@@ -64,16 +69,35 @@ export default async function CoachSettingsPage() {
     >
       <div
         style={{
-          padding: '20px 20px 8px',
+          padding: '6px 20px 0',
           display: 'grid',
           gridTemplateColumns: '1fr auto 1fr',
           alignItems: 'center',
+          minHeight: 42,
           flexShrink: 0,
         }}
       >
         <div aria-hidden />
         <p style={screenTitle}>Ajustes</p>
         <div aria-hidden />
+      </div>
+      <div
+        style={{
+          flexShrink: 0,
+          padding: '3px 20px 0',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <div
+          aria-hidden
+          style={{
+            height: 2,
+            width: 92,
+            backgroundColor: '#B5F23D',
+            borderRadius: 9999,
+          }}
+        />
       </div>
 
       <div
@@ -83,28 +107,19 @@ export default async function CoachSettingsPage() {
           overflowY: 'auto',
           overflowX: 'hidden',
           overscrollBehaviorY: 'contain',
-          padding: '0 20px 120px',
+          paddingTop: 16,
+          paddingLeft: 20,
+          paddingRight: 20,
+          paddingBottom: `calc(${SAFE_BOTTOM_NAV_HEIGHT} + ${SETTINGS_SCROLL_BOTTOM_GAP_PX}px)`,
         }}
       >
-        <p
-          style={{
-            fontSize: 13,
-            color: '#6B7280',
-            marginBottom: 24,
-            marginTop: 0,
-            textAlign: 'center',
-          }}
-        >
-          Tu cuenta y preferencias básicas
-        </p>
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <section style={cardStyle}>
+          <section style={plainSectionStyle}>
             <p style={sectionLabel}>Perfil</p>
             <CoachSettingsForm initialFullName={fullName} />
           </section>
 
-          <section style={cardStyle}>
+          <section style={plainSectionStyle}>
             <p style={sectionLabel}>Correo</p>
             <p style={{ fontSize: 15, fontWeight: 600, color: '#F0F0F0', wordBreak: 'break-all' }}>
               {email || '—'}
@@ -115,12 +130,12 @@ export default async function CoachSettingsPage() {
             </p>
           </section>
 
-          <section style={cardStyle}>
+          <section style={plainSectionStyle}>
             <p style={sectionLabel}>Seguridad</p>
             <ChangePasswordForm />
           </section>
 
-          <section style={cardStyle}>
+          <section style={plainSectionStyle}>
             <p style={sectionLabel}>Sesión</p>
             <form action={signOut}>
               <div style={{ display: 'flex', justifyContent: 'center' }}>

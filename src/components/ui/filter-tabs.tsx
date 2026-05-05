@@ -1,10 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import type { ReactNode } from 'react'
 
 export type FilterTabItem = {
   id: string
-  label: string
+  label: ReactNode
   /** Background when this tab is selected */
   activeBackground: string
   /** Text color when selected */
@@ -15,9 +16,19 @@ type FilterTabsProps = {
   items: FilterTabItem[]
   activeId: string
   onChange: (id: string) => void
+  inactiveBackground?: string
+  inactiveColor?: string
+  inactiveBorder?: string
 }
 
-export default function FilterTabs({ items, activeId, onChange }: FilterTabsProps) {
+export default function FilterTabs({
+  items,
+  activeId,
+  onChange,
+  inactiveBackground = 'transparent',
+  inactiveColor = '#9CA3AF',
+  inactiveBorder = 'rgba(107, 114, 128, 0.28)',
+}: FilterTabsProps) {
   return (
     <div
       style={{
@@ -31,8 +42,6 @@ export default function FilterTabs({ items, activeId, onChange }: FilterTabsProp
     >
       {items.map((item) => {
         const isActive = item.id === activeId
-        const inactiveText = '#9CA3AF'
-        const inactiveBorder = 'rgba(107, 114, 128, 0.28)'
         return (
           <motion.button
             key={item.id}
@@ -46,8 +55,8 @@ export default function FilterTabs({ items, activeId, onChange }: FilterTabsProp
               borderRadius: 9999,
               fontSize: 13,
               fontWeight: isActive ? 600 : 400,
-              color: isActive ? item.activeColor : inactiveText,
-              backgroundColor: isActive ? item.activeBackground : 'transparent',
+              color: isActive ? item.activeColor : inactiveColor,
+              backgroundColor: isActive ? item.activeBackground : inactiveBackground,
               border: isActive ? '1px solid transparent' : `1px solid ${inactiveBorder}`,
               cursor: 'pointer',
               transition:

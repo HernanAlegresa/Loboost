@@ -63,6 +63,11 @@ const FILTER_ITEMS: FilterTabItem[] = [
   },
 ]
 
+function getFilterLabelText(item: FilterTabItem | undefined): string {
+  if (!item) return 'este filtro'
+  return typeof item.label === 'string' ? item.label : 'este filtro'
+}
+
 const STATUS_SORT_RANK: Record<ClientStatus, number> = {
   'riesgo':    0,
   'atencion':  1,
@@ -153,7 +158,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
   const emptyFilterLabel =
     activeFilter === 'todos'
       ? 'esta vista'
-      : (FILTER_ITEMS.find((t) => t.id === activeFilter)?.label ?? 'este filtro').toLowerCase()
+      : getFilterLabelText(FILTER_ITEMS.find((t) => t.id === activeFilter)).toLowerCase()
 
   return (
     <div

@@ -1,11 +1,10 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { Plus } from 'lucide-react'
+import { ClipboardList, Dumbbell } from 'lucide-react'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
+import CoachExpandableFab from '@/components/ui/coach-expandable-fab'
 import ExerciseList from './exercises/exercise-list'
 import PlanList from './plans/plan-list'
 import type { ExerciseRow } from './exercises/queries'
@@ -14,13 +13,8 @@ import type { PlanListRow } from './plans/queries'
 type LibraryTab = 'exercises' | 'plans'
 
 const TAB_LABELS: Record<LibraryTab, string> = {
-  exercises: 'Ejercicios',
-  plans: 'Planes',
-}
-
-const TAB_ADD_HREF: Record<LibraryTab, string> = {
-  exercises: '/coach/library/exercises/new',
-  plans: '/coach/library/plans/new',
+  exercises: 'EJERCICIOS',
+  plans: 'PLANES',
 }
 
 const PANEL_BOTTOM_PADDING_PX = 120
@@ -135,7 +129,9 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
       <div
         style={{
           flexShrink: 0,
-          padding: '10px 20px 0',
+          padding: '6px 20px 0',
+          position: 'relative',
+          zIndex: 19,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'flex-start' }}>
@@ -157,7 +153,7 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: 64,
-                minHeight: 46,
+                minHeight: 42,
               }}
             >
               {tabs.map((tab) => {
@@ -173,8 +169,9 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
                       backgroundColor: 'transparent',
                       color: isActive ? '#F0F0F0' : '#6B7280',
                       padding: '6px 0',
-                      fontSize: isActive ? 20 : 18,
-                      fontWeight: 700,
+                      fontSize: isActive ? 16 : 14,
+                      fontWeight: isActive ? 600 : 500,
+                      letterSpacing: '0.04em',
                       lineHeight: 1.2,
                       transition: 'color 140ms ease',
                     }}
@@ -227,25 +224,24 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
           backgroundColor: '#0A0A0A',
         }}
       >
-        <motion.div whileTap={{ scale: 0.9 }} transition={{ duration: 0.1 }}>
-          <Link
-            href={TAB_ADD_HREF[activeTab]}
-            aria-label={activeTab === 'exercises' ? 'Crear ejercicio' : 'Crear plan'}
-            style={{
-              width: 48,
-              height: 48,
-              backgroundColor: '#B5F23D',
-              borderRadius: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)',
-            }}
-          >
-            <Plus size={24} color="#0A0A0A" strokeWidth={2.5} />
-          </Link>
-        </motion.div>
+        <CoachExpandableFab
+          expandDirection="down"
+          menuOffsetPx={20}
+          actionsGapPx={22}
+          fabAriaLabel="Abrir acciones de biblioteca"
+          actions={[
+            {
+              label: 'Nuevo ejercicio',
+              href: '/coach/library/exercises/new',
+              icon: Dumbbell,
+            },
+            {
+              label: 'Nuevo plan',
+              href: '/coach/library/plans/new',
+              icon: ClipboardList,
+            },
+          ]}
+        />
       </div>
 
       <div
