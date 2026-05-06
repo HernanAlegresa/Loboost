@@ -20,35 +20,16 @@ type Props = {
 }
 
 type RuleBlock = {
-  title: string
-  accent: string
-  summary: string
+  label: string
+  color: string
+  description: string
 }
 
 const RULE_BLOCKS: RuleBlock[] = [
-  {
-    title: 'Sin plan',
-    accent: '#9CA3AF',
-    summary: 'No tiene plan activo ahora.',
-  },
-  {
-    title: 'Al día',
-    accent: '#22C55E',
-    summary:
-      'Plan activo y última sesión completada y registrada hace hasta 3 días (incluye hoy).',
-  },
-  {
-    title: 'Registro pendiente',
-    accent: '#F2994A',
-    summary:
-      'Plan activo; última sesión completada y registrada entre 4 y 7 días.',
-  },
-  {
-    title: 'En riesgo',
-    accent: '#F25252',
-    summary:
-      'Plan activo; nunca registró una sesión completada y registrada, o la última sesión completada y registrada fue hace más de 7 días.',
-  },
+  { label: 'Sin plan',   color: '#6B7280', description: 'Sin plan activo asignado.' },
+  { label: 'Al día',     color: '#22C55E', description: 'Todos los entrenamientos pasados completados.' },
+  { label: 'Pendiente',  color: '#F2C94A', description: 'Algún entrenamiento pasado en progreso.' },
+  { label: 'En riesgo',  color: '#F25252', description: 'Algún entrenamiento pasado sin registrar.' },
 ]
 
 /** Ancho máximo del panel (centrado). Subí/bajá este valor para más angosto o ancho. */
@@ -65,9 +46,6 @@ const PANEL_BORDER_CELESTE = '#56C5FA'
 
 /** Mismo tono que el botón “i” en la pestaña Clientes (`clients-tabs-container`) */
 const PANEL_HEADER_INFO_CELESTE = 'rgba(86, 197, 250, 0.72)'
-
-/** Mismo tono que arriba, con un poco de transparencia solo para el borde del panel */
-const PANEL_BORDER_CELESTE_TRANSPARENT = 'rgba(86, 197, 250, 0.48)'
 
 /** Velo detrás del panel: más oscuro = el panel se lee mejor y no compite con el fondo */
 const PANEL_BACKDROP_SCRIM = 'rgba(4, 5, 7, 0.78)'
@@ -162,7 +140,6 @@ export default function ClientsStatesInfoSheet({ open, onClose }: Props) {
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'linear-gradient(165deg, #14181E 0%, #101216 55%, #0C0E11 100%)',
-                border: `0.5px solid ${PANEL_BORDER_CELESTE_TRANSPARENT}`,
                 borderRadius: 18,
                 boxShadow:
                   '0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04) inset',
@@ -174,8 +151,8 @@ export default function ClientsStatesInfoSheet({ open, onClose }: Props) {
                   flexShrink: 0,
                   display: 'grid',
                   gridTemplateColumns: `${HEADER_SIDE_SLOT_PX}px 1fr ${HEADER_SIDE_SLOT_PX}px`,
-                  alignItems: 'flex-start',
-                  padding: '12px 0 8px 0',
+                  alignItems: 'center',
+                  padding: '12px 0',
                 }}
               >
                 <div
@@ -183,10 +160,9 @@ export default function ClientsStatesInfoSheet({ open, onClose }: Props) {
                   style={{
                     width: HEADER_SIDE_SLOT_PX,
                     display: 'flex',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     justifyContent: 'flex-start',
                     paddingLeft: HEADER_SIDE_INSET_PX,
-                    paddingTop: 2,
                     lineHeight: 0,
                     boxSizing: 'border-box',
                   }}
@@ -216,8 +192,7 @@ export default function ClientsStatesInfoSheet({ open, onClose }: Props) {
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-end',
-                    alignItems: 'flex-start',
-                    paddingTop: 2,
+                    alignItems: 'center',
                     paddingRight: HEADER_SIDE_INSET_PX,
                     boxSizing: 'border-box',
                   }}
@@ -262,8 +237,8 @@ export default function ClientsStatesInfoSheet({ open, onClose }: Props) {
                 }}
               >
                 {RULE_BLOCKS.map((block, index) => (
-                  <motion.article
-                    key={block.title}
+                  <motion.div
+                    key={block.label}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{
@@ -272,36 +247,29 @@ export default function ClientsStatesInfoSheet({ open, onClose }: Props) {
                       ease: [0.25, 0.46, 0.45, 0.94],
                     }}
                     style={{
-                      borderRadius: 14,
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderLeft: `3px solid ${block.accent}`,
-                      background: 'rgba(18, 21, 26, 0.92)',
-                      padding: '11px 13px 11px 12px',
-                      boxShadow: '0 1px 0 rgba(255,255,255,0.03) inset',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '10px 4px',
+                      borderBottom: index < RULE_BLOCKS.length - 1
+                        ? '1px solid rgba(255,255,255,0.05)'
+                        : 'none',
                     }}
                   >
-                    <h3
+                    <div
                       style={{
-                        margin: 0,
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: block.accent,
-                        letterSpacing: '-0.01em',
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        backgroundColor: block.color,
+                        flexShrink: 0,
                       }}
-                    >
-                      {block.title}
-                    </h3>
-                    <p
-                      style={{
-                        margin: '6px 0 0',
-                        fontSize: 12,
-                        color: '#A8AEB8',
-                        lineHeight: 1.45,
-                      }}
-                    >
-                      {block.summary}
+                    />
+                    <p style={{ margin: 0, fontSize: 13, color: '#D1D5DB', lineHeight: 1.4 }}>
+                      <span style={{ fontWeight: 600, color: block.color }}>{block.label}:</span>{' '}
+                      {block.description}
                     </p>
-                  </motion.article>
+                  </motion.div>
                 ))}
               </div>
             </motion.aside>

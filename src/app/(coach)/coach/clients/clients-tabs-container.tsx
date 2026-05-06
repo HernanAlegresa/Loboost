@@ -6,13 +6,12 @@ import { Info, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import type { DashboardClientSummary } from '../dashboard/queries'
-import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 import CoachExpandableFab from '@/components/ui/coach-expandable-fab'
 import ClientCard from './client-card'
 import type { ClientStatus } from '@/features/clients/types/client-status'
 
-type ClientHealthState = 'en_riesgo' | 'atrasado' | 'al_dia' | 'sin_plan'
+type ClientHealthState = 'riesgo' | 'naranja' | 'al_dia' | 'sin_plan'
 import ClientsFilters, { type ClientsFilterId } from './clients-filters'
 import ActivityFeedItem from './activity-feed-item'
 import ClientsStatesInfoSheet from './clients-states-info-sheet'
@@ -31,7 +30,7 @@ type ClientListItem = {
   completedThisWeek: number
   plannedDaysPerWeek: number
   daysSinceLastSession: number | null
-  planExpired: boolean
+  planName: string | null
 }
 
 type ActivityItem = {
@@ -72,17 +71,14 @@ const ACTIVITY_CONTENT_TOP_PADDING_PX = 40
 const CLIENTS_TAB_INFO_CELESTE = 'rgba(86, 197, 250, 0.72)'
 
 const STATE_SORT_RANK: Record<ClientHealthState, number> = {
-  en_riesgo: 0,
-  atrasado: 1,
-  al_dia: 2,
+  riesgo:   0,
+  naranja:  1,
+  al_dia:   2,
   sin_plan: 3,
 }
 
 function mapToHealthState(client: DashboardClientSummary): ClientHealthState {
-  if (!client.hasActivePlan) return 'sin_plan'
-  if (client.status === 'riesgo') return 'en_riesgo'
-  if (client.status === 'atencion') return 'atrasado'
-  return 'al_dia'
+  return client.status
 }
 
 function getTimeLabel(days: number | null): string {
@@ -96,7 +92,7 @@ function buildActivityItem(client: ClientListItem): ActivityItem {
   const ageDays = client.daysSinceLastSession ?? 999
   const timeLabel = getTimeLabel(client.daysSinceLastSession)
 
-  if (client.state === 'en_riesgo') {
+  if (client.state === 'riesgo') {
     return {
       id: `risk-${client.id}`,
       clientId: client.id,
@@ -111,7 +107,7 @@ function buildActivityItem(client: ClientListItem): ActivityItem {
     }
   }
 
-  if (client.state === 'atrasado') {
+  if (client.state === 'naranja') {
     return {
       id: `late-${client.id}`,
       clientId: client.id,
@@ -184,21 +180,21 @@ export default function ClientsTabsContainer({ clients }: Props) {
         completedThisWeek: client.completedThisWeek,
         plannedDaysPerWeek: client.daysPerWeek,
         daysSinceLastSession: client.daysSinceLastSession,
-        planExpired: isPlanExpired(client.activePlanEndDate),
+        planName: client.planName ?? null,
       })),
     [clients]
   )
 
   const counts = useMemo<Record<ClientsFilterId, number>>(() => {
     const base: Record<ClientsFilterId, number> = {
-      todos: normalizedClients.length,
-      en_riesgo: 0,
-      atrasado: 0,
-      al_dia: 0,
+      todos:    normalizedClients.length,
+      riesgo:   0,
+      naranja:  0,
+      al_dia:   0,
       sin_plan: 0,
     }
     for (const client of normalizedClients) {
-      base[client.state] += 1
+      base[client.state as ClientsFilterId] += 1
     }
     return base
   }, [normalizedClients])
@@ -212,7 +208,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
       if (rankDiff !== 0) return rankDiff
       const aAge = a.daysSinceLastSession ?? 999
       const bAge = b.daysSinceLastSession ?? 999
-      if (a.state === 'en_riesgo' || a.state === 'atrasado') return bAge - aAge
+      if (a.state === 'riesgo' || a.state === 'naranja') return bAge - aAge
       return a.fullName.localeCompare(b.fullName, 'es', { sensitivity: 'base' })
     })
   }, [normalizedClients, activeFilter])
@@ -564,8 +560,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                       clientId={client.id}
                       fullName={client.fullName}
                       status={client.status}
-                      planExpired={client.planExpired}
-                      daysSinceLastSession={client.daysSinceLastSession}
+                      planName={client.planName}
                     />
                   ))
                 )}

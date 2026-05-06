@@ -13,6 +13,10 @@ import ClientPlanHeatmapCard from './client-plan-heatmap-card'
 import ClientProgressContent from './client-progress-content'
 import ClientSessionsList from './client-sessions-list'
 
+const PROFILE_PLAN_SECTION_TOP_SPACING_PX = 10
+const PLAN_ACTIONS_TOP_PADDING_PX = 2
+const PLAN_ACTIONS_BOTTOM_PADDING_PX = 16
+
 export default async function ClientProfilePage({
   params,
 }: {
@@ -56,39 +60,57 @@ export default async function ClientProfilePage({
             aria-label="Editar datos del cliente"
             title="Editar datos del cliente"
             style={{
-              width: 32,
-              height: 32,
+              width: 'auto',
+              height: 'auto',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#0F1014',
-              border: '1px solid #1F2227',
-              borderRadius: 9999,
-              color: '#9CA3AF',
+              backgroundColor: 'transparent',
+              border: 'none',
+              borderRadius: 0,
+              color: '#FFFFFF',
               textDecoration: 'none',
+              padding: 0,
+              lineHeight: 0,
             }}
           >
-            <Pencil size={14} />
+            <Pencil size={16} />
           </Link>
         }
       />
       <ClientProfileTabsShell
         profileContent={
           <>
-            <ClientProfileHeroCard
-              clientId={id}
-              fullName={profile.fullName}
-              status={profile.status}
-              sex={profile.sex}
-              experienceLevel={profile.experienceLevel}
-              age={profile.age}
-              weightKg={profile.weightKg}
-              heightCm={profile.heightCm}
-              daysPerWeek={profile.daysPerWeek}
-              injuries={profile.injuries}
-              planExpired={isPlanExpired(profile.activePlan?.endDate ?? null)}
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+            <div
+              style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 8,
+                backgroundColor: '#0A0A0A',
+                paddingBottom: 8,
+              }}
+            >
+              <ClientProfileHeroCard
+                clientId={id}
+                fullName={profile.fullName}
+                sex={profile.sex}
+                experienceLevel={profile.experienceLevel}
+                age={profile.age}
+                weightKg={profile.weightKg}
+                heightCm={profile.heightCm}
+                daysPerWeek={profile.daysPerWeek}
+                injuries={profile.injuries}
+                planExpired={isPlanExpired(profile.activePlan?.endDate ?? null)}
+              />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                marginTop: PROFILE_PLAN_SECTION_TOP_SPACING_PX,
+              }}
+            >
               {profile.activePlan ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                   <p
@@ -99,6 +121,7 @@ export default async function ClientProfilePage({
                       color: '#B5F23D',
                       letterSpacing: '0.08em',
                       textTransform: 'uppercase',
+                      paddingBottom: 4,
                     }}
                   >
                     Plan activo
@@ -111,7 +134,7 @@ export default async function ClientProfilePage({
                       fontWeight: 700,
                       color: '#F0F0F0',
                       lineHeight: 1.2,
-                      paddingBottom: 10,
+                      paddingBottom: 4,
                     }}
                   >
                     {profile.activePlan.name}
@@ -124,21 +147,21 @@ export default async function ClientProfilePage({
                   justifyContent: 'center',
                   alignItems: 'center',
                   flexWrap: 'wrap',
-                  gap: 26,
-                  paddingBottom: 16,
+                  gap: 16,
+                  paddingTop: PLAN_ACTIONS_TOP_PADDING_PX,
+                  paddingBottom: PLAN_ACTIONS_BOTTOM_PADDING_PX,
                 }}
               >
                 <Link
                   href={`/coach/clients/${profile.id}/plan/edit?mode=view`}
                   style={{
-                    minHeight: 35,
-                    minWidth: 112,
+                    minHeight: 30,
+                    minWidth: 100,
                     borderRadius: 20,
-                    border: '1px solid #2A2D34',
+                    color: 'rgba(255,255,255,0.8)',
                     backgroundColor: '#111317',
-                    color: '#F0F0F0',
-                    fontSize: 13,
-                    fontWeight: 600,
+                    fontSize: 12,
+                    fontWeight: 400,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -151,8 +174,8 @@ export default async function ClientProfilePage({
                 <Link
                   href={`/coach/clients/${profile.id}/plan/edit`}
                   style={{
-                    minHeight: 35,
-                    minWidth: 112,
+                    minHeight: 30,
+                    minWidth: 100,
                     borderRadius: 20,
                     border: 'none',
                     backgroundColor: '#B5F23D',

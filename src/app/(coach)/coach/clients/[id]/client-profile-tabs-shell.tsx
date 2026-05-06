@@ -6,9 +6,9 @@ import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 type ClientProfileTab = 'profile' | 'progress' | 'sessions'
 
 const TAB_LABELS: Record<ClientProfileTab, string> = {
-  profile: 'Perfil',
-  progress: 'Progreso',
-  sessions: 'Sesiones',
+  profile: 'PERFIL',
+  progress: 'PROGRESO',
+  sessions: 'SESIONES',
 }
 
 const TABS: ClientProfileTab[] = ['profile', 'progress', 'sessions']
@@ -16,6 +16,7 @@ const LIST_BOTTOM_GAP_PX = 0
 const PANEL_BOTTOM_PADDING_PX = 120
 const PROFILE_SECTION_GAP_PX = 32
 const PROGRESS_SECTION_GAP_PX = 24
+const TAB_ACTIVE_INDICATOR_MARGIN_TOP_PX = 3
 
 type Props = {
   profileContent: React.ReactNode
@@ -87,11 +88,19 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
       <div
         style={{
           flexShrink: 0,
-          padding: '10px 28px 0',
+          padding: '6px 20px 0',
         }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'auto auto auto', justifyContent: 'center', alignItems: 'center', columnGap: 30 }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', minWidth: 74 }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 1fr',
+            alignItems: 'center',
+            minHeight: 46,
+            columnGap: 40,
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'flex-end', minWidth: 0 }}>
             {prevTab ? (
               <button
                 type="button"
@@ -102,15 +111,16 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
                   backgroundColor: 'transparent',
                   color: '#6B7280',
                   padding: '6px 0',
-                  fontSize: 15,
-                  fontWeight: 700,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
                   lineHeight: 1.2,
                 }}
               >
                 {TAB_LABELS[prevTab]}
               </button>
             ) : (
-              <div style={{ minHeight: 34 }} aria-hidden />
+              <div aria-hidden style={{ minHeight: 34 }} />
             )}
           </div>
 
@@ -122,9 +132,10 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
               cursor: 'default',
               backgroundColor: 'transparent',
               color: '#F0F0F0',
-              padding: '6px 0 8px',
-              fontSize: 20,
-              fontWeight: 700,
+              padding: `6px 0 ${TAB_ACTIVE_INDICATOR_MARGIN_TOP_PX}px`,
+              fontSize: 16,
+              fontWeight: 600,
+              letterSpacing: '0.04em',
               lineHeight: 1.2,
               borderBottom: '2px solid #B5F23D',
             }}
@@ -132,7 +143,7 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
             {TAB_LABELS[activeTab]}
           </button>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-start', minWidth: 74 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-start', minWidth: 0 }}>
             {nextTab ? (
               <button
                 type="button"
@@ -143,15 +154,16 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
                   backgroundColor: 'transparent',
                   color: '#6B7280',
                   padding: '6px 0',
-                  fontSize: 15,
-                  fontWeight: 700,
+                  fontSize: 14,
+                  fontWeight: 500,
+                  letterSpacing: '0.04em',
                   lineHeight: 1.2,
                 }}
               >
                 {TAB_LABELS[nextTab]}
               </button>
             ) : (
-              <div style={{ minHeight: 34 }} aria-hidden />
+              <div aria-hidden style={{ minHeight: 34 }} />
             )}
           </div>
         </div>

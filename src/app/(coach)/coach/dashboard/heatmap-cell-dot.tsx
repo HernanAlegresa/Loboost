@@ -6,7 +6,7 @@ import { hmPx } from './heatmap-layout'
 const CELL_BG: Record<WeeklyHeatmapCellKind, string> = {
   rest: 'transparent',
   completed: 'rgba(34, 197, 94, 0.38)',
-  in_progress: 'rgba(234, 179, 8, 0.32)',
+  in_progress: 'rgba(242, 201, 74, 0.32)',
   missed: 'rgba(242, 82, 82, 0.28)',
   /** Pendiente / futuro — plateado (más claro). */
   upcoming: 'rgba(229, 231, 235, 0.32)',
@@ -15,7 +15,7 @@ const CELL_BG: Record<WeeklyHeatmapCellKind, string> = {
 const CELL_BORDER: Record<WeeklyHeatmapCellKind, string> = {
   rest: 'transparent',
   completed: 'rgba(34, 197, 94, 0.85)',
-  in_progress: 'rgba(234, 179, 8, 0.9)',
+  in_progress: 'rgba(242, 201, 74, 0.9)',
   missed: 'rgba(242, 82, 82, 0.85)',
   upcoming: 'rgba(229, 231, 235, 0.78)',
 }

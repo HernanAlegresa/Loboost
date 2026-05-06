@@ -1,16 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
-import { calculateWeeklyCompliance } from '@/lib/analytics/compliance'
-import { getClientAlerts } from '@/lib/analytics/alerts'
 import {
   computeDayDate,
   computeDayStatus,
-  getCurrentWeek,
   getTodayISO,
 } from '@/features/clients/utils/training-utils'
 import { computeClientStatus } from '@/features/clients/utils/compute-client-status'
 import type { ClientStatus } from '@/features/clients/types/client-status'
 import type { DayStatus } from '@/features/clients/types'
-import type { AlertType } from '@/types/domain'
 import type {
   CoachWeeklyHeatmap,
   WeeklyHeatmapCell,
@@ -25,12 +21,10 @@ export type {
   WeeklyHeatmapRow,
 } from './weekly-heatmap-types'
 
-/** Estado de lista coach: color y filtro 1:1 */
-export type CoachClientListState = 'al_dia' | 'atencion' | 'critico' | 'en_pausa' | 'inactivo'
-
 export type DashboardClientSummary = {
   id: string
   fullName: string
+  planName: string | null
   goal: string | null
   daysPerWeek: number
   completedThisWeek: number
@@ -39,9 +33,6 @@ export type DashboardClientSummary = {
   status: ClientStatus
   lastSessionDate: Date | null
   daysSinceLastSession: number | null
-  weeklyCompliance: number
-  alerts: AlertType[]
-  activePlanEndDate: string | null
 }
 
 export type DashboardData = {
@@ -55,7 +46,7 @@ export type DashboardData = {
 
 /** Clientes con seguimiento activo que el coach debería revisar primero (riesgo + atención). */
 export function countCoachClientsNeedingAttention(clients: DashboardClientSummary[]): number {
-  return clients.filter((c) => c.status === 'riesgo' || c.status === 'atencion').length
+  return clients.filter((c) => c.status === 'riesgo' || c.status === 'naranja').length
 }
 
 function localISOFromDate(d: Date): string {
@@ -222,7 +213,7 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       .in('id', clientIds),
     supabase
       .from('client_plans')
-      .select('id, client_id, start_date, weeks, end_date')
+      .select('id, client_id, start_date, weeks, name')
       .in('client_id', clientIds)
       .eq('status', 'active'),
     supabase
@@ -248,9 +239,6 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
   const activePlanRows = activePlansResult.data ?? []
   const activePlanClientIds = new Set(activePlanRows.map((p) => p.client_id))
   const activePlanIds = activePlanRows.map((p) => p.id)
-  const activePlanEndDateMap = new Map<string, string | null>(
-    activePlanRows.map((p) => [p.client_id, p.end_date])
-  )
 
   let planDaysRows: {
     id: string
@@ -285,6 +273,28 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       latestPlanStatusMap.set(plan.client_id, plan.status as 'active' | 'paused' | 'completed')
     }
   }
+
+  const activePlanNameMap = new Map<string, string>(
+    activePlanRows.map((p) => [p.client_id, p.name])
+  )
+
+  const planDaysByPlanId = new Map<string, { id: string; week_number: number; day_of_week: number }[]>()
+  for (const row of planDaysRows) {
+    const list = planDaysByPlanId.get(row.client_plan_id) ?? []
+    list.push({ id: row.id, week_number: row.week_number, day_of_week: row.day_of_week })
+    planDaysByPlanId.set(row.client_plan_id, list)
+  }
+
+  const sessionByDayId = new Map<string, 'in_progress' | 'completed'>()
+  for (const s of heatmapSessions) {
+    const st = s.status as 'in_progress' | 'completed'
+    const prev = sessionByDayId.get(s.client_plan_day_id)
+    if (!prev || st === 'completed') {
+      sessionByDayId.set(s.client_plan_day_id, st)
+    }
+  }
+
+  const todayISO = localISOFromDate(todayDate)
 
   const now = Date.now()
   const sevenDaysMs = 7 * 24 * 60 * 60 * 1000
@@ -328,77 +338,50 @@ export async function getDashboardData(coachId: string): Promise<DashboardData> 
       ? currentWeekCount > 0 ? 100 : 0
       : Math.round(((currentWeekCount - prevWeekCount) / prevWeekCount) * 100)
 
-  const clients: DashboardClientSummary[] = await Promise.all(
-    profiles.map(async (profile) => {
-      const cp = clientProfilesMap.get(profile.id)
-      const hasActivePlan = activePlanClientIds.has(profile.id)
-      const latestPlanStatus = latestPlanStatusMap.get(profile.id)
-      const planStatus: 'active' | 'paused' | 'inactive' = hasActivePlan
-        ? 'active'
-        : latestPlanStatus === 'paused'
-        ? 'paused'
-        : 'inactive'
-      const daysPerWeek = cp?.days_per_week ?? 3
+  const clients: DashboardClientSummary[] = profiles.map((profile) => {
+    const cp = clientProfilesMap.get(profile.id)
+    const hasActivePlan = activePlanClientIds.has(profile.id)
+    const latestPlanStatus = latestPlanStatusMap.get(profile.id)
+    const planStatus: 'active' | 'paused' | 'inactive' = hasActivePlan
+      ? 'active'
+      : latestPlanStatus === 'paused'
+      ? 'paused'
+      : 'inactive'
+    const daysPerWeek = cp?.days_per_week ?? 3
 
-      const clientSessions = allSessions.filter((s) => s.client_id === profile.id)
-      const mostRecent = clientSessions[0]
-      const lastSessionDate =
-        mostRecent?.completed_at ? new Date(mostRecent.completed_at) : null
+    const clientSessions = allSessions.filter((s) => s.client_id === profile.id)
+    const mostRecent = clientSessions[0]
+    const lastSessionDate =
+      mostRecent?.completed_at ? new Date(mostRecent.completed_at) : null
 
-      const daysSinceLastSession =
-        lastSessionDate !== null
-          ? Math.floor((now - lastSessionDate.getTime()) / (1000 * 60 * 60 * 24))
-          : null
-
-      const completedInLastWeek = clientSessions.filter((s) => {
-        if (!s.completed_at) return false
-        return new Date(s.completed_at).getTime() >= sevenDaysAgo
-      }).length
-
-      const weeklyCompliance = calculateWeeklyCompliance({
-        expectedDays: daysPerWeek,
-        completedDays: completedInLastWeek,
-      })
-
-      const alerts = getClientAlerts({
-        lastSessionDate,
-        weeklyCompliance,
-        hasActivePlan,
-      })
-
-      const activePlanRow = activePlanRows.find((p) => p.client_id === profile.id) ?? null
-      const activePlan = activePlanRow
-        ? {
-            id: activePlanRow.id,
-            name: '',
-            weeks: activePlanRow.weeks,
-            currentWeek: getCurrentWeek(activePlanRow.start_date, activePlanRow.weeks),
-            startDate: activePlanRow.start_date,
-            endDate: activePlanRow.end_date,
-            status: 'active' as const,
-            daysPerWeek: daysPerWeek,
-          }
+    const daysSinceLastSession =
+      lastSessionDate !== null
+        ? Math.floor((now - lastSessionDate.getTime()) / (1000 * 60 * 60 * 24))
         : null
 
-      const status: ClientStatus = await computeClientStatus(profile.id, activePlan)
+    const completedInLastWeek = clientSessions.filter((s) => {
+      if (!s.completed_at) return false
+      return new Date(s.completed_at).getTime() >= sevenDaysAgo
+    }).length
 
-      return {
-        id: profile.id,
-        fullName: profile.full_name ?? 'Sin nombre',
-        goal: cp?.goal ?? null,
-        daysPerWeek,
-        completedThisWeek: completedInLastWeek,
-        hasActivePlan,
-        planStatus,
-        status,
-        lastSessionDate,
-        daysSinceLastSession,
-        weeklyCompliance,
-        alerts,
-        activePlanEndDate: activePlanEndDateMap.get(profile.id) ?? null,
-      }
-    })
-  )
+    const activePlanRow = activePlanRows.find((p) => p.client_id === profile.id) ?? null
+    const planDays = activePlanRow ? (planDaysByPlanId.get(activePlanRow.id) ?? []) : []
+    const status = computeClientStatus(activePlanRow, planDays, sessionByDayId, todayISO)
+
+    return {
+      id: profile.id,
+      fullName: profile.full_name ?? 'Sin nombre',
+      planName: activePlanNameMap.get(profile.id) ?? null,
+      goal: cp?.goal ?? null,
+      daysPerWeek,
+      completedThisWeek: completedInLastWeek,
+      hasActivePlan,
+      planStatus,
+      status,
+      lastSessionDate,
+      daysSinceLastSession,
+    }
+  })
 
   return {
     clients,

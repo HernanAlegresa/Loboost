@@ -10,17 +10,10 @@ type Props = {
   clientId: string
   fullName: string
   status: ClientStatus
-  planExpired?: boolean
-  daysSinceLastSession?: number | null
+  planName?: string | null
 }
 
-export default function ClientCard({
-  clientId,
-  fullName,
-  status,
-  planExpired,
-  daysSinceLastSession,
-}: Props) {
+export default function ClientCard({ clientId, fullName, status, planName }: Props) {
   const accent = CLIENT_STATUS_CONFIG[status].color
 
   return (
@@ -44,13 +37,13 @@ export default function ClientCard({
             display: 'flex',
             alignItems: 'center',
             gap: 10,
-            boxShadow: '0 6px 20px rgba(0,0,0,0.22)',
+            boxShadow: '2px 4px 8px rgba(0,0,0,0.14)',
           }}
         >
           <div style={{ marginLeft: 6 }}>
             <Avatar fullName={fullName} ringColor="#FFFFFF" size="md" />
           </div>
-          <div style={{ flex: 1, minWidth: 0,marginLeft: 10, }}>
+          <div style={{ flex: 1, minWidth: 0, marginLeft: 10, padding: '2px 0' }}>
             <p
               style={{
                 fontSize: 16,
@@ -65,38 +58,18 @@ export default function ClientCard({
             >
               {fullName}
             </p>
-            {planExpired && (
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: '#F25252',
-                  padding: 0,
-                  letterSpacing: '0.05em',
-                  display: 'inline-block',
-                  marginTop: 0,
-                }}
-              >
-                PLAN VENCIDO
-              </span>
-            )}
-            {!planExpired &&
-              daysSinceLastSession != null &&
-              daysSinceLastSession >= 7 && (
-                <span
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 700,
-                    color: '#F2994A',
-                    padding: 0,
-                    letterSpacing: '0.05em',
-                    display: 'inline-block',
-                    marginTop: 0,
-                  }}
-                >
-                  {daysSinceLastSession}D SIN ENTRENAR
-                </span>
-              )}
+            <p
+              style={{
+                fontSize: 12,
+                color: '#6B7280',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                margin: '6px 0 0',
+              }}
+            >
+              {planName ?? 'Sin plan asignado'}
+            </p>
           </div>
         </div>
       </Link>

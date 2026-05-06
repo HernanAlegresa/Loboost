@@ -32,7 +32,6 @@ const PANEL_WIDTH_PX = 300
 const PANEL_VERTICAL_INSET_PX = 28
 const PANEL_BORDER_CELESTE = '#56C5FA'
 const PANEL_HEADER_INFO_CELESTE = 'rgba(86, 197, 250, 0.72)'
-const PANEL_BORDER_CELESTE_TRANSPARENT = 'rgba(86, 197, 250, 0.48)'
 const PANEL_BACKDROP_SCRIM = 'rgba(4, 5, 7, 0.78)'
 const HEADER_SIDE_SLOT_PX = 44
 const HEADER_SIDE_INSET_PX = 20
@@ -120,7 +119,6 @@ export default function CoachWeeklyHeatmapInfoSheet({ open, onClose }: Props) {
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'linear-gradient(165deg, #14181E 0%, #101216 55%, #0C0E11 100%)',
-                border: `0.5px solid ${PANEL_BORDER_CELESTE_TRANSPARENT}`,
                 borderRadius: 18,
                 boxShadow:
                   '0 24px 48px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04) inset',
@@ -132,8 +130,8 @@ export default function CoachWeeklyHeatmapInfoSheet({ open, onClose }: Props) {
                   flexShrink: 0,
                   display: 'grid',
                   gridTemplateColumns: `${HEADER_SIDE_SLOT_PX}px 1fr ${HEADER_SIDE_SLOT_PX}px`,
-                  alignItems: 'flex-start',
-                  padding: '12px 0 8px 0',
+                  alignItems: 'center',
+                  padding: '12px 0',
                 }}
               >
                 <div
@@ -141,10 +139,9 @@ export default function CoachWeeklyHeatmapInfoSheet({ open, onClose }: Props) {
                   style={{
                     width: HEADER_SIDE_SLOT_PX,
                     display: 'flex',
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     justifyContent: 'flex-start',
                     paddingLeft: HEADER_SIDE_INSET_PX,
-                    paddingTop: 2,
                     lineHeight: 0,
                     boxSizing: 'border-box',
                   }}
@@ -174,8 +171,7 @@ export default function CoachWeeklyHeatmapInfoSheet({ open, onClose }: Props) {
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-end',
-                    alignItems: 'flex-start',
-                    paddingTop: 2,
+                    alignItems: 'center',
                     paddingRight: HEADER_SIDE_INSET_PX,
                     boxSizing: 'border-box',
                   }}

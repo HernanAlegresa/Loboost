@@ -9,7 +9,7 @@ const T = {
   border: '#1F2227',
   lime: '#B5F23D',
   text: '#F0F0F0',
-  muted: '#6B7280',
+  muted: 'rgba(255,255,255,0.75)',
   bg: '#0F1014',
 } as const
 

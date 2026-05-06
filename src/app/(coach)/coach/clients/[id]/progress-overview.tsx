@@ -1,25 +1,27 @@
 type ProgressPoint = {
   label: string
   completed: number
+  status: 'al_dia' | 'naranja' | 'riesgo' | 'sin_plan' | 'current' | 'future'
 }
 
 type Props = {
   points: ProgressPoint[]
-  currentWeekIndex?: number
   trendArrow?: string
   trendLabel?: string
   trendColor?: string
 }
 
-function barColor(index: number, currentWeekIndex: number): string {
-  if (index < currentWeekIndex) return '#4ADE80'           // past  → green
-  if (index === currentWeekIndex) return '#B5F23D'         // current → lima
-  return 'rgba(240,240,240,0.16)'                          // future → white dim
+function barColor(status: ProgressPoint['status']): string {
+  if (status === 'current') return '#B5F23D'
+  if (status === 'al_dia') return '#22C55E'
+  if (status === 'naranja') return '#F2C94A'
+  if (status === 'riesgo') return '#F25252'
+  if (status === 'sin_plan') return '#6B7280'
+  return 'rgba(229,231,235,0.32)'
 }
 
 export default function ProgressOverview({
   points,
-  currentWeekIndex = -1,
   trendArrow,
   trendLabel,
   trendColor,
@@ -69,7 +71,7 @@ export default function ProgressOverview({
                       width: 28,
                       height: barHeight,
                       borderRadius: 8,
-                      backgroundColor: barColor(index, currentWeekIndex),
+                      backgroundColor: barColor(point.status),
                       transition: 'height 220ms ease',
                     }}
                   />

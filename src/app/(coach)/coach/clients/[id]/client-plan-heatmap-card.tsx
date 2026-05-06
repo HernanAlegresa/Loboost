@@ -1,16 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { getPlanFollowupStatusSummary, getWeekTrainingData } from './actions'
-import type { PlanFollowupIssue, PlanFollowupStatusSummary } from './queries'
+import { getWeekTrainingData } from './actions'
 import type { ActivePlanSummary, TrainingWeekData, DayStatus } from '@/features/clients/types'
 import HeatmapCellDot from '../../dashboard/heatmap-cell-dot'
 import type { WeeklyHeatmapCell } from '../../dashboard/weekly-heatmap-types'
 
-const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-const DAY_NAMES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-const ALERT_LIST_LIMIT = 3
+const DAY_SHORT_NAMES = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
 function getTodayMondayIndex(): number {
   return (new Date().getDay() + 6) % 7
@@ -24,8 +21,10 @@ function mapStatusToHeatmap(dayStatus: DayStatus): WeeklyHeatmapCell['kind'] {
   return 'upcoming'
 }
 
-function formatIssue(issue: PlanFollowupIssue): string {
-  return `Semana ${issue.weekNumber} · ${DAY_NAMES[issue.dayOfWeek - 1]}`
+function buildDayHeaderLabel(dayOfWeek: number, dateISO: string): string {
+  const dayName = DAY_SHORT_NAMES[dayOfWeek - 1] ?? ''
+  const dayOfMonth = Number(dateISO.slice(8, 10))
+  return `${dayName} ${dayOfMonth}`
 }
 
 type Props = {
@@ -37,8 +36,6 @@ type Props = {
 export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, clientId }: Props) {
   const [weekData, setWeekData] = useState<TrainingWeekData | null>(initialWeekData)
   const [isPending, startTransition] = useTransition()
-  const [summary, setSummary] = useState<PlanFollowupStatusSummary | null>(null)
-  const [isSummaryPending, setIsSummaryPending] = useState(false)
 
   if (!activePlan || !weekData) {
     return (
@@ -65,41 +62,6 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
   const canGoNext = data.weekNumber < data.totalWeeks
   const isCurrentWeek = data.weekNumber === plan.currentWeek
   const todayIndex = isCurrentWeek ? getTodayMondayIndex() : -1
-  const hasMissed = (summary?.missed.length ?? 0) > 0
-  const hasInProgress = (summary?.inProgress.length ?? 0) > 0
-
-  const visibleMissed = useMemo(
-    () => summary?.missed.slice(0, ALERT_LIST_LIMIT) ?? [],
-    [summary?.missed]
-  )
-  const visibleInProgress = useMemo(
-    () => summary?.inProgress.slice(0, ALERT_LIST_LIMIT) ?? [],
-    [summary?.inProgress]
-  )
-
-  useEffect(() => {
-    let cancelled = false
-    setIsSummaryPending(true)
-
-    async function run() {
-      const statusSummary = await getPlanFollowupStatusSummary(
-        plan.id,
-        plan.startDate,
-        plan.weeks,
-        plan.currentWeek,
-        clientId
-      )
-      if (cancelled) return
-      setSummary(statusSummary)
-      setIsSummaryPending(false)
-    }
-
-    void run()
-
-    return () => {
-      cancelled = true
-    }
-  }, [plan.id, plan.startDate, plan.weeks, plan.currentWeek, clientId])
 
   function navigateWeek(delta: number) {
     const nextWeek = data.weekNumber + delta
@@ -127,6 +89,7 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
         <div
           style={{
             padding: '12px 14px',
+            marginBottom: 10,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -164,50 +127,54 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
               <ChevronLeft size={30} strokeWidth={3.8} />
             </button>
 
-            <div style={{ textAlign: 'center', minWidth: 0, flex: 1 }}>
-              <div
+            <div
+              style={{
+                textAlign: 'center',
+                minWidth: 0,
+                flex: 1,
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}
+            >
+              <p
                 style={{
-                  display: 'inline-flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  maxWidth: '100%',
+                  margin: 0,
+                  fontSize: 15,
+                  color: '#F0F0F0',
+                  fontWeight: 600,
+                  letterSpacing: '0.04em',
+                  lineHeight: 1.2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                <p
+                Semana {data.weekNumber} de {data.totalWeeks}
+              </p>
+              {data.weekNumber === plan.currentWeek ? (
+                <span
                   style={{
-                    margin: 0,
-                    fontSize: 15,
-                    color: '#F0F0F0',
-                    fontWeight: 600,
-                    letterSpacing: '0.04em',
-                    lineHeight: 1.2,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    position: 'absolute',
+                    marginTop: 6,
+                    left: '50%',
+                    top: 'calc(50% + 10px)',
+                    transform: 'translateX(-50%)',
+                    fontSize: 10,
+                    fontWeight: 500,
+                    color: '#B5F23D',
+                    borderBottom: '1px solid #B5F23D',
+                    borderRadius: 4,
+                    padding: '4px 6px',
+                    lineHeight: 1.1,
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Semana {data.weekNumber} de {data.totalWeeks}
-                </p>
-                {data.weekNumber === plan.currentWeek ? (
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: '#B5F23D',
-                      backgroundColor: 'rgba(181,242,61,0.12)',
-                      border: '1px solid rgba(181,242,61,0.35)',
-                      borderRadius: 9999,
-                      padding: '2px 8px',
-                      lineHeight: 1.1,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    Actual
-                  </span>
-                ) : null}
-              </div>
+                  Actual
+                </span>
+              ) : null}
             </div>
 
             <button
@@ -238,10 +205,10 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
             padding: '10px 14px 14px',
             opacity: isPending ? 0.45 : 1,
             transition: 'opacity 0.2s ease',
-            backgroundColor: '#111317',
-            borderRadius: 40,
-            border: '1px solid #252A31',
-            marginTop: -2,
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            marginTop: 0,
           }}
         >
           <div
@@ -252,19 +219,20 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
               marginBottom: 8,
             }}
           >
-            {DAY_LABELS.map((label, index) => (
+            {data.days.map((day, index) => (
               <span
-                key={label}
+                key={`label-${day.dayOfWeek}-${day.date}`}
                 style={{
                   textAlign: 'center',
                   fontSize: 10,
                   fontWeight: index === todayIndex ? 800 : 700,
-                  letterSpacing: '0.08em',
+                  letterSpacing: '0.04em',
                   color: index === todayIndex ? '#B5F23D' : '#6B7280',
-                  textTransform: 'uppercase',
+                  lineHeight: 1.15,
+                  whiteSpace: 'pre-line',
                 }}
               >
-                {label}
+                {buildDayHeaderLabel(day.dayOfWeek, day.date).replace(' ', '\n')}
               </span>
             ))}
           </div>
@@ -287,177 +255,6 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
               />
             ))}
           </div>
-        </div>
-
-        <div
-          style={{
-            padding: '12px 14px 14px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-          }}
-        >
-          {isSummaryPending ? (
-            <div
-              style={{
-                borderRadius: 12,
-                border: '1px solid #252A31',
-                backgroundColor: '#111317',
-                padding: '10px 12px',
-                fontSize: 12,
-                color: '#6B7280',
-              }}
-            >
-              Analizando alertas del plan...
-            </div>
-          ) : null}
-
-          {!isSummaryPending && (hasMissed || hasInProgress) ? (
-            hasMissed && hasInProgress ? (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  alignItems: 'stretch',
-                  gap: 20,
-                }}
-              >
-                <div style={{ paddingRight: 10 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F25252', textAlign: 'center' }}>
-                    Sesiones sin registrar
-                  </p>
-                  <div style={{ marginTop: 7, display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
-                    {visibleMissed.map((issue) => (
-                      <div
-                        key={`missed-${issue.weekNumber}-${issue.dayOfWeek}`}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                      >
-                        <span
-                          aria-hidden
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: 9999,
-                            backgroundColor: '#F25252',
-                            flexShrink: 0,
-                          }}
-                        />
-                        <p style={{ margin: 0, fontSize: 12, color: '#F0F0F0' }}>{formatIssue(issue)}</p>
-                      </div>
-                    ))}
-                    {(summary?.missed.length ?? 0) > ALERT_LIST_LIMIT ? (
-                      <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>
-                        +{(summary?.missed.length ?? 0) - ALERT_LIST_LIMIT} más
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div style={{ paddingLeft: 10 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F2B01E', textAlign: 'center' }}>
-                    Sesiones con datos faltantes
-                  </p>
-                  <div style={{ marginTop: 7, display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
-                    {visibleInProgress.map((issue) => (
-                      <div
-                        key={`in-progress-${issue.weekNumber}-${issue.dayOfWeek}`}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                      >
-                        <span
-                          aria-hidden
-                          style={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: 9999,
-                            backgroundColor: '#F2B01E',
-                            flexShrink: 0,
-                          }}
-                        />
-                        <p style={{ margin: 0, fontSize: 12, color: '#F0F0F0' }}>{formatIssue(issue)}</p>
-                      </div>
-                    ))}
-                    {(summary?.inProgress.length ?? 0) > ALERT_LIST_LIMIT ? (
-                      <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>
-                        +{(summary?.inProgress.length ?? 0) - ALERT_LIST_LIMIT} más
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ) : hasMissed ? (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{ maxWidth: 320 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F25252', textAlign: 'center' }}>
-                  Sesiones sin registrar
-                </p>
-                <div style={{ marginTop: 7, display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
-                  {visibleMissed.map((issue) => (
-                    <div
-                      key={`missed-${issue.weekNumber}-${issue.dayOfWeek}`}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <span
-                        aria-hidden
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: 9999,
-                          backgroundColor: '#F25252',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <p style={{ margin: 0, fontSize: 12, color: '#F0F0F0' }}>{formatIssue(issue)}</p>
-                    </div>
-                  ))}
-                  {(summary?.missed.length ?? 0) > ALERT_LIST_LIMIT ? (
-                    <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>
-                      +{(summary?.missed.length ?? 0) - ALERT_LIST_LIMIT} más
-                    </p>
-                  ) : null}
-                </div>
-                </div>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <div style={{ maxWidth: 320 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#F2B01E', textAlign: 'center' }}>
-                  Sesiones con datos faltantes
-                </p>
-                <div style={{ marginTop: 7, display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
-                  {visibleInProgress.map((issue) => (
-                    <div
-                      key={`in-progress-${issue.weekNumber}-${issue.dayOfWeek}`}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <span
-                        aria-hidden
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: 9999,
-                          backgroundColor: '#F2B01E',
-                          flexShrink: 0,
-                        }}
-                      />
-                      <p style={{ margin: 0, fontSize: 12, color: '#F0F0F0' }}>{formatIssue(issue)}</p>
-                    </div>
-                  ))}
-                  {(summary?.inProgress.length ?? 0) > ALERT_LIST_LIMIT ? (
-                    <p style={{ margin: 0, fontSize: 12, color: '#9CA3AF' }}>
-                      +{(summary?.inProgress.length ?? 0) - ALERT_LIST_LIMIT} más
-                    </p>
-                  ) : null}
-                </div>
-                </div>
-              </div>
-            )
-          ) : null}
-
-          {!isSummaryPending && !hasMissed && !hasInProgress ? (
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#22C55E', textAlign: 'center' }}>
-              Al día
-            </p>
-          ) : null}
         </div>
       </div>
     </div>

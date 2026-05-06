@@ -21,7 +21,11 @@ type Props = {
   progressKPIs: ProgressKPIs
   activePlan: ActivePlanSummary | null
   totalSessions: number
-  progressSeries: Array<{ label: string; completed: number }>
+  progressSeries: Array<{
+    label: string
+    completed: number
+    status: 'al_dia' | 'naranja' | 'riesgo' | 'sin_plan' | 'current' | 'future'
+  }>
   navTileStats: NavTileStats
   clientStatus: ClientStatus
 }
@@ -37,17 +41,17 @@ const SECTION_OVERLINE: React.CSSProperties = {
 }
 
 const STATUS_MESSAGES: Record<ClientStatus, string> = {
-  'al-dia':    'Todos los entrenamientos registrados al día.',
-  'atencion':  'Tiene días sin completar esta semana.',
-  'riesgo':    'Semanas anteriores con registros faltando.',
-  'sin-datos': 'Sin registros en ningún entrenamiento.',
+  al_dia:   'Todos los entrenamientos pasados completados.',
+  naranja:  'Algún entrenamiento pasado en progreso.',
+  riesgo:   'Algún entrenamiento pasado sin registrar.',
+  sin_plan: 'Sin plan activo asignado.',
 }
 
 const STATUS_ICONS: Record<ClientStatus, React.ReactNode> = {
-  'al-dia':    <CheckCircle2 size={16} strokeWidth={2.5} />,
-  'atencion':  <AlertTriangle size={16} strokeWidth={2.5} />,
-  'riesgo':    <AlertOctagon size={16} strokeWidth={2.5} />,
-  'sin-datos': <MinusCircle size={16} strokeWidth={2.5} />,
+  al_dia:   <CheckCircle2 size={16} strokeWidth={2.5} />,
+  naranja:  <AlertTriangle size={16} strokeWidth={2.5} />,
+  riesgo:   <AlertOctagon size={16} strokeWidth={2.5} />,
+  sin_plan: <MinusCircle size={16} strokeWidth={2.5} />,
 }
 
 function StatusBanner({ status }: { status: ClientStatus }) {
@@ -95,14 +99,12 @@ function KpiCard({
   return (
     <div
       style={{
-        backgroundColor: '#111317',
-        border: '1px solid #1F2227',
         borderRadius: 14,
         padding: '12px 6px',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 10,
+        gap: 8,
       }}
     >
       <p
@@ -155,7 +157,6 @@ function NavTile({
       <div
         style={{
           backgroundColor: '#111317',
-          border: '1px solid #1F2227',
           borderRadius: 16,
           padding: '14px 16px',
           display: 'flex',
@@ -226,29 +227,26 @@ export default function ClientProgressContent({
   const trend = computeTrend(progressSeries)
   const showTrend = progressSeries.length >= 4
 
-  // If plan has ended (today past endDate), currentWeek is capped at totalWeeks
-  // → set index beyond array length so all bars render as past (green)
-  const planEnded = activePlan
-    ? new Date() > new Date(activePlan.endDate + 'T23:59:59Z')
-    : false
-  const currentWeekIndex = activePlan
-    ? planEnded
-      ? activePlan.weeks        // all bars past
-      : activePlan.currentWeek - 1  // 0-indexed
-    : -1
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 30 }}>
 
       {/* Estado operativo */}
       <StatusBanner status={clientStatus} />
 
       {/* Resumen KPIs */}
       <div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 90px)', gap: 35, margin: '0 auto', width: 'fit-content' }}>
+        <div style={{ display: 'flex', alignItems: 'stretch', margin: '0 auto', width: 'fit-content' }}>
           <KpiCard
             label="Peso inicial"
             value={weightInitialKg !== null ? `${weightInitialKg} kg` : '—'}
+          />
+          <div
+            aria-hidden
+            style={{
+              width: 1,
+              backgroundColor: '#252A31',
+              margin: '6px 15px',
+            }}
           />
           <KpiCard
             label="Peso actual"
@@ -256,6 +254,14 @@ export default function ClientProgressContent({
             valueColor="#B5F23D"
             sub={deltaStr ?? undefined}
             subColor={deltaColor}
+          />
+          <div
+            aria-hidden
+            style={{
+              width: 1,
+              backgroundColor: '#252A31',
+              margin: '6px 15px',
+            }}
           />
           <KpiCard
             label="Check-ins"
@@ -270,7 +276,6 @@ export default function ClientProgressContent({
           <p style={SECTION_OVERLINE}>Actividad semanal / sesiones completadas</p>
           <ProgressOverview
             points={progressSeries}
-            currentWeekIndex={currentWeekIndex}
             trendArrow={showTrend ? trend.arrow : undefined}
             trendLabel={showTrend ? trend.label : undefined}
             trendColor={showTrend ? trend.color : undefined}
@@ -281,7 +286,7 @@ export default function ClientProgressContent({
       {/* Seguimiento */}
       <div>
         {activePlan ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 15, maxWidth: 320, margin: '0 auto', width: '100%', paddingTop: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 320, margin: '0 auto', width: '100%', paddingTop: 10 }}>
             <NavTile
               href={`/coach/clients/${clientId}/check-ins`}
               icon={<ClipboardList size={20} color="#0A0A0A" />}

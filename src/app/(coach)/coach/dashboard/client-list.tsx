@@ -38,26 +38,26 @@ const FILTER_ITEMS: FilterTabItem[] = [
     activeColor: '#0A0A0A',
   },
   {
-    id: 'al-dia',
+    id: 'al_dia',
     label: 'Al día',
-    activeBackground: CLIENT_STATUS_CONFIG['al-dia'].color,
+    activeBackground: CLIENT_STATUS_CONFIG['al_dia'].color,
     activeColor: '#0A0A0A',
   },
   {
-    id: 'atencion',
-    label: 'Atención',
-    activeBackground: CLIENT_STATUS_CONFIG['atencion'].color,
+    id: 'naranja',
+    label: 'Pendiente',
+    activeBackground: CLIENT_STATUS_CONFIG['naranja'].color,
     activeColor: '#0A0A0A',
   },
   {
     id: 'riesgo',
-    label: 'Riesgo',
+    label: 'En riesgo',
     activeBackground: CLIENT_STATUS_CONFIG['riesgo'].color,
     activeColor: '#F0F0F0',
   },
   {
-    id: 'sin-datos',
-    label: 'Sin datos',
+    id: 'sin_plan',
+    label: 'Sin plan',
     activeBackground: '#6B7280',
     activeColor: '#F0F0F0',
   },
@@ -69,10 +69,10 @@ function getFilterLabelText(item: FilterTabItem | undefined): string {
 }
 
 const STATUS_SORT_RANK: Record<ClientStatus, number> = {
-  'riesgo':    0,
-  'atencion':  1,
-  'al-dia':    2,
-  'sin-datos': 3,
+  riesgo:   0,
+  naranja:  1,
+  al_dia:   2,
+  sin_plan: 3,
 }
 
 function filterTabItemsWithCounts(
@@ -80,7 +80,7 @@ function filterTabItemsWithCounts(
   activeFilter: FilterId
 ): FilterTabItem[] {
   const statusCount: Record<ClientStatus, number> = {
-    'al-dia': 0, 'atencion': 0, 'riesgo': 0, 'sin-datos': 0,
+    al_dia: 0, naranja: 0, riesgo: 0, sin_plan: 0,
   }
   for (const c of clients) {
     statusCount[c.status]++
@@ -102,7 +102,7 @@ function compareForTodosView(a: DashboardClientSummary, b: DashboardClientSummar
   const rb = STATUS_SORT_RANK[b.status]
   if (ra !== rb) return ra - rb
 
-  const urgent = a.status === 'riesgo' || a.status === 'atencion'
+  const urgent = a.status === 'riesgo' || a.status === 'naranja'
   if (urgent) {
     const aDays = a.daysSinceLastSession ?? 10_000
     const bDays = b.daysSinceLastSession ?? 10_000
@@ -282,7 +282,7 @@ export default function ClientList({ clients, reserveFabSpace = true, bottomPadd
                       boxShadow: '0 6px 20px rgba(0,0,0,0.22)',
                     }}
                   >
-                    <Avatar fullName={client.fullName} ringColor={cfg.color} size="md" />
+                    <Avatar fullName={client.fullName} ringColor="#FFFFFF" size="md" />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p
                         style={{

@@ -17,10 +17,24 @@ import type {
   DayStatus,
 } from '@/features/clients/types'
 
+function localISOFromDate(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 function buildProgressSeries(
   completedAtValues: Array<string | null>,
-  activePlan: { weeks: number; startDate: string } | null
-): Array<{ label: string; completed: number }> {
+  activePlan: { weeks: number; startDate: string; currentWeek: number } | null,
+  planDays: { id: string; week_number: number; day_of_week: number }[],
+  sessionByDayId: Map<string, 'in_progress' | 'completed'>,
+  todayISO: string
+): Array<{
+  label: string
+  completed: number
+  status: 'al_dia' | 'naranja' | 'riesgo' | 'sin_plan' | 'current' | 'future'
+}> {
   if (!activePlan) return []
 
   const planStart = new Date(activePlan.startDate + 'T00:00:00Z')
@@ -29,7 +43,13 @@ function buildProgressSeries(
     start.setUTCDate(start.getUTCDate() + i * 7)
     const end = new Date(start)
     end.setUTCDate(end.getUTCDate() + 7)
-    return { label: `Sem ${i + 1}`, completed: 0, startTime: start.getTime(), endTime: end.getTime() }
+    return {
+      label: `Sem ${i + 1}`,
+      completed: 0,
+      startTime: start.getTime(),
+      endTime: end.getTime(),
+      weekNumber: i + 1,
+    }
   })
 
   for (const completedAt of completedAtValues) {
@@ -39,7 +59,30 @@ function buildProgressSeries(
     if (bucket) bucket.completed++
   }
 
-  return buckets.map(({ label, completed }) => ({ label, completed }))
+  return buckets.map(({ label, completed, weekNumber }) => {
+    if (weekNumber > activePlan.currentWeek) {
+      return { label, completed, status: 'future' as const }
+    }
+    if (weekNumber === activePlan.currentWeek) {
+      return { label, completed, status: 'current' as const }
+    }
+
+    const weekPlannedDays = planDays.filter((d) => d.week_number === weekNumber)
+    if (weekPlannedDays.length === 0) {
+      return { label, completed, status: 'sin_plan' as const }
+    }
+
+    let hasNaranja = false
+    for (const day of weekPlannedDays) {
+      const dateISO = computeDayDate(activePlan.startDate, day.week_number, day.day_of_week)
+      if (dateISO >= todayISO) continue
+      const st = sessionByDayId.get(day.id) ?? null
+      if (st === null) return { label, completed, status: 'riesgo' as const }
+      if (st === 'in_progress') hasNaranja = true
+    }
+
+    return { label, completed, status: hasNaranja ? ('naranja' as const) : ('al_dia' as const) }
+  })
 }
 
 export async function getClientProfileData(
@@ -118,7 +161,6 @@ export async function getClientProfileData(
     }
   }
 
-  const progressSeries = buildProgressSeries(recentSessions.map((s) => s.completed_at), activePlan)
   const totalSessions = totalSessionsResult.count ?? 0
   const coachNote = noteResult.data?.content ?? ''
   const now = Date.now()
@@ -149,7 +191,39 @@ export async function getClientProfileData(
     )
   }
 
-  const status: ClientStatus = await computeClientStatus(clientId, activePlan)
+  let statusPlanDays: { id: string; week_number: number; day_of_week: number }[] = []
+  const statusSessionByDayId = new Map<string, 'in_progress' | 'completed'>()
+  if (plan) {
+    const { data: pd } = await supabase
+      .from('client_plan_days')
+      .select('id, week_number, day_of_week')
+      .eq('client_plan_id', plan.id)
+    statusPlanDays = pd ?? []
+    if (statusPlanDays.length > 0) {
+      const { data: sess } = await supabase
+        .from('sessions')
+        .select('client_plan_day_id, status')
+        .in('client_plan_day_id', statusPlanDays.map((d) => d.id))
+        .in('status', ['in_progress', 'completed'])
+      for (const s of sess ?? []) {
+        if (!s.client_plan_day_id) continue
+        const st = s.status as 'in_progress' | 'completed'
+        const prev = statusSessionByDayId.get(s.client_plan_day_id)
+        if (!prev || st === 'completed') {
+          statusSessionByDayId.set(s.client_plan_day_id, st)
+        }
+      }
+    }
+  }
+  const statusTodayISO = localISOFromDate(new Date())
+  const progressSeries = buildProgressSeries(
+    recentSessions.map((s) => s.completed_at),
+    activePlan,
+    statusPlanDays,
+    statusSessionByDayId,
+    statusTodayISO
+  )
+  const status = computeClientStatus(plan, statusPlanDays, statusSessionByDayId, statusTodayISO)
 
   return {
     id: clientId,

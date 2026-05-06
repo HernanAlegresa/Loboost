@@ -83,5 +83,6 @@ export type ClientProfileData = {
   progressSeries: Array<{
     label: string
     completed: number
+    status: 'al_dia' | 'naranja' | 'riesgo' | 'sin_plan' | 'current' | 'future'
   }>
 }

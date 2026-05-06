@@ -6,7 +6,6 @@ import {
   useState,
   useEffect,
   useLayoutEffect,
-  useRef,
   type ReactNode,
 } from 'react'
 
@@ -55,17 +54,10 @@ export function FlowHeaderConfig({
 }: FlowHeaderConfigProps) {
   const { setFlowConfig } = useHeaderContext()
 
-  // rightSlot creates a new reference on every render (JSX object identity).
-  // Track it via ref so the effect always uses the latest value without
-  // treating it as a dependency that triggers re-runs.
-  const rightSlotRef = useRef(rightSlot)
-  rightSlotRef.current = rightSlot
-
   useIsomorphicLayoutEffect(() => {
-    setFlowConfig({ title, subtitle, fallbackHref, rightSlot: rightSlotRef.current })
+    setFlowConfig({ title, subtitle, fallbackHref, rightSlot })
     return () => setFlowConfig(null)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, subtitle, fallbackHref, setFlowConfig])
+  }, [title, subtitle, fallbackHref, rightSlot, setFlowConfig])
 
   return null
 }
