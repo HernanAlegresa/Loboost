@@ -1,47 +1,45 @@
 ---
 name: grill-me
-description: Alignment protocol before feature work. Use when requirements are unclear, scope is undefined, or the task touches business logic, DB, or UX. Interrogates the user iteratively to establish full shared context before any implementation. If there is any doubt about whether the scope is clear enough to implement, use this skill first.
+description: Alignment protocol before implementation in LoBoost. Use when requirements are ambiguous, scope is incomplete, or the task touches UX, business logic, DB, auth, or multi-file changes. Asks one focused question per round with a recommendation, then outputs a concrete agreed context block.
 ---
 
 # Grill Me — Alignment Protocol
 
-## When to use
+## Cuándo usar
 
-- The requirement is ambiguous or incomplete
-- The scope of the task is not well defined
-- The task touches business logic, DB, or UX
-- The user says "quiero hacer X" without a clear spec
-- It's unclear what "done" looks like
+- Requerimiento ambiguo o incompleto.
+- Impacto en UX, negocio, DB, auth o múltiples archivos.
+- No está claro qué significa "hecho".
 
-## Interrogation process
+## Proceso
 
-Ask **between 1 and 3 focused questions per round**. Choose fewer when one question unblocks the others; only ask more when multiple dimensions are genuinely unclear in parallel.
+1. **Una sola pregunta por ronda.** Nunca lista de preguntas.
+2. Cada pregunta debe incluir recomendación explícita:
 
-Ask one round at a time. Wait for the user's answers before continuing. Do not dump all questions upfront.
+> _Mi recomendación: [qué haría y por qué, en una oración]_
 
-Focus areas per round:
-- **Scope**: What changes exactly? What stays the same? What does "done" look like?
-- **Constraints**: Does this touch DB or auth? Are there existing patterns to follow? Are there past decisions in `docs/decisions/` that apply?
-- **Risks**: What could break? Are there dependencies on other in-progress features?
+3. Esperar respuesta antes de seguir.
+4. Si toca negocio/DB/auth, revisar decisiones vigentes en `docs/decisions/`.
+5. Repetir hasta que el alcance esté claro y ejecutable sin supuestos críticos.
 
-Keep iterating until there is enough shared context to proceed confidently. Do not force the user to write a formal spec — stay conversational and direct. If something is still unclear after several rounds, ask a more targeted question rather than escalating to documentation.
+## Ejes de validación por ronda
 
-## Output
+- **Scope:** qué cambia y qué no.
+- **Constraints:** qué no se puede romper (invariantes, patrones, límites técnicos).
+- **Riesgos:** regresiones probables y dependencias.
 
-Once the context is clear, produce this exact block in the chat:
+## Output obligatorio
+
+Cuando hay alineación suficiente, publicar este bloque exacto en chat:
 
 ---
 ## Contexto acordado
 
 **Qué hacemos:** [una oración]
-**Archivos involucrados:** [lista concreta de archivos o componentes]
-**Constraints:** [lo que no podemos romper — o "ninguno"]
-**Riesgos:** [lo que puede fallar — o "ninguno"]
+**Archivos involucrados:** [lista concreta]
+**Constraints:** [lista o "ninguno"]
+**Riesgos:** [lista o "ninguno"]
 **Próximo paso:** [slice | implementar directamente]
 ---
 
-The "Próximo paso" must be explicit:
-- **slice** — if the work has multiple independent parts that benefit from being broken down first
-- **implementar directamente** — if the scope is small and clear enough to proceed without decomposition
-
-Do not generate files. This output lives in the chat only.
+No crear archivos desde esta skill. Solo alineación.

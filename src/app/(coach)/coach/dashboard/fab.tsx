@@ -8,6 +8,9 @@ import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 
 const FAB_SIZE_PX = 56
 const FAB_GAP_PX = 22
+const ACTIONS_OFFSET_FROM_FAB_PX = 30
+const ACTIONS_VERTICAL_GAP_PX = 34
+const ACTION_BUTTON_PADDING = '20px 28px'
 
 const ACTIONS = [
   { label: 'Nuevo ejercicio', icon: Dumbbell, href: '/coach/library/exercises/new' },
@@ -60,11 +63,11 @@ export default function Fab({ dock = 'fixed' }: FabProps) {
     position: 'absolute',
     left: '50%',
     transform: 'translateX(-50%)',
-    bottom: FAB_SIZE_PX + FAB_GAP_PX,
+    bottom: FAB_SIZE_PX + FAB_GAP_PX + ACTIONS_OFFSET_FROM_FAB_PX,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 22,
+    gap: ACTIONS_VERTICAL_GAP_PX,
     zIndex: 21,
   }
 
@@ -125,7 +128,7 @@ export default function Fab({ dock = 'fixed' }: FabProps) {
                         backgroundColor: '#111317',
                         border: `1px solid ${FAB_ACTION_BORDER_LIME}`,
                         borderRadius: 18,
-                        padding: '16px 20px',
+                        padding: ACTION_BUTTON_PADDING,
                         textDecoration: 'none',
                         minWidth: 220,
                         boxShadow: '0 12px 32px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.4)',

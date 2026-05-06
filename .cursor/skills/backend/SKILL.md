@@ -1,6 +1,6 @@
 ---
 name: backend
-description: Implementation protocol for backend work in LoBoost — queries, types, and server actions. Use before writing any query function, server action, or data type that crosses the Supabase boundary. Must run within an approved slice context.
+description: Backend implementation protocol for LoBoost queries, server actions, and DB-bound types. Use before writing code that crosses the Supabase boundary. Enforces auth ownership checks, domain invariants, and safe delivery gates.
 ---
 
 # Backend — Implementation Protocol
@@ -32,6 +32,8 @@ Before writing any new code, search the domain and feature files for:
 
 Extend or reuse before creating. If a new function is truly necessary, note why it cannot be an extension of something that already exists.
 
+If the behavior touches business rules, review relevant files in `docs/decisions/` before coding.
+
 ## Step 3 — File placement
 
 Apply these principles — do not invent new locations:
@@ -47,6 +49,8 @@ Apply these principles — do not invent new locations:
 - Auth guard first: verify the caller has permission before any additional data fetches; return `null` on failure
 - Return `null` for auth failures, empty arrays or objects for missing data — never throw
 - Use `Promise.all()` when two or more independent fetches can run in parallel
+- Prefer explicit `select(...)` with only required columns
+- Never hand-edit `src/types/database.ts` (generated artifact)
 
 ## Step 5 — Server action patterns
 
@@ -54,6 +58,10 @@ Apply these principles — do not invent new locations:
 - Validate and sanitize all inputs before any DB write
 - Re-verify auth inside the action — do not trust params passed from the client
 - Return a typed result object, not raw Supabase responses
+- Preserve domain invariants:
+  - `plans` are coach templates
+  - `client_plans` are assigned copies
+  - assignment flows create copies, not mutable references
 
 ## Output
 
@@ -65,4 +73,5 @@ After implementing, produce this block before calling `done`:
 **Retorna:** [tipo | null]
 **Auth guard:** [sí — cuál | no]
 **Schema changes:** [ninguno | descripción]
+**Invariante de dominio:** [cómo se preserva | no aplica]
 ---
