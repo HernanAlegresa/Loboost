@@ -1,6 +1,6 @@
 ---
 name: done
-description: Final verification checklist before declaring a slice or feature complete. Use after implementing any slice, before reporting done to the user, and before any commit or PR. Enforces the Definition of Done with real evidence, not assertions.
+description: Final LoBoost delivery checklist. Use after each implemented slice and before claiming completion, commit, or PR. Requires real verification evidence (tsc, changed files, manual guide, residual risks, and UI quality gate when relevant).
 ---
 
 # Done — Delivery Verification
@@ -43,6 +43,18 @@ State any known edge cases not covered, limitations, or follow-up work. If there
 
 If the slice touched critical business logic or domain behavior: confirm tests exist and pass. If tests are missing and should exist, include that as a residual risk — do not silently skip it.
 
+### Step 6 — UI quality gate (conditional)
+
+If UI files were touched (`src/app/**`, `src/components/**`, TSX/CSS):
+
+- Confirm no overlap with safe areas / bottom nav.
+- Confirm touch targets for primary actions are usable on mobile (~44px+).
+- Confirm disabled/loading/error states are visible and understandable.
+- Confirm contrast and hierarchy are readable on dark theme.
+- Confirm motion is subtle and does not block usage (respect reduced-motion when applicable).
+
+If any point is unverified, list it explicitly in residual risks.
+
 ## Output
 
 ---
@@ -56,6 +68,8 @@ If the slice touched critical business logic or domain behavior: confirm tests e
 **Verificación manual:**
 1. [paso exacto]
 2. [paso exacto]
+
+**UI gate (si aplica):** [✅ validado | no aplica | pendiente + motivo]
 
 **Riesgos residuales:** [lista o "ninguno"]
 ---

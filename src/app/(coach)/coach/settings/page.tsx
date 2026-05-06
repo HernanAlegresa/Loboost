@@ -1,39 +1,30 @@
-import type { CSSProperties } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { signOut } from '@/features/auth/actions/sign-out'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 import CoachSettingsForm from './coach-settings-form'
 import ChangePasswordForm from '@/components/ui/change-password-form'
+import SignOutHeaderButton from './sign-out-header-button'
 
-/** Mismo respiro que `LIST_BOTTOM_GAP_PX` / `LIBRARY_LIST_BOTTOM_GAP_PX` en Clientes y Biblioteca. */
 const SETTINGS_SCROLL_BOTTOM_GAP_PX = 28
 
-/** Sección sin caja (solo título + contenido). */
-const plainSectionStyle: CSSProperties = {
-  padding: 0,
-  margin: 0,
-}
-
-const sectionLabel: CSSProperties = {
-  fontSize: 11,
-  fontWeight: 700,
-  color: '#B5F23D',
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  marginBottom: 14,
-}
-
-/** Misma jerarquía que títulos de tabs (Clientes / Biblioteca). */
-const screenTitle: CSSProperties = {
+const screenTitleStyle = {
   margin: 0,
   fontSize: 16,
   fontWeight: 600,
   color: '#F0F0F0',
   lineHeight: 1.2,
-  textAlign: 'center',
+  textAlign: 'center' as const,
   letterSpacing: '0.04em',
-  textTransform: 'uppercase',
+  textTransform: 'uppercase' as const,
+}
+
+const sectionLabelStyle = {
+  margin: 0,
+  fontSize: 11,
+  fontWeight: 700,
+  color: '#B5F23D',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase' as const,
 }
 
 export default async function CoachSettingsPage() {
@@ -65,6 +56,7 @@ export default async function CoachSettingsPage() {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        backgroundColor: '#0A0A0A',
       }}
     >
       <div
@@ -78,9 +70,12 @@ export default async function CoachSettingsPage() {
         }}
       >
         <div aria-hidden />
-        <p style={screenTitle}>Ajustes</p>
-        <div aria-hidden />
+        <p style={screenTitleStyle}>Ajustes</p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <SignOutHeaderButton />
+        </div>
       </div>
+
       <div
         style={{
           flexShrink: 0,
@@ -107,58 +102,42 @@ export default async function CoachSettingsPage() {
           overflowY: 'auto',
           overflowX: 'hidden',
           overscrollBehaviorY: 'contain',
-          paddingTop: 16,
+          paddingTop: 34,
           paddingLeft: 20,
           paddingRight: 20,
           paddingBottom: `calc(${SAFE_BOTTOM_NAV_HEIGHT} + ${SETTINGS_SCROLL_BOTTOM_GAP_PX}px)`,
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <section style={plainSectionStyle}>
-            <p style={sectionLabel}>Perfil</p>
-            <CoachSettingsForm initialFullName={fullName} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 42 }}>
+          <section>
+            <div>
+              <CoachSettingsForm initialFullName={fullName} />
+            </div>
           </section>
 
-          <section style={plainSectionStyle}>
-            <p style={sectionLabel}>Correo</p>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#F0F0F0', wordBreak: 'break-all' }}>
+          <section>
+            <p style={sectionLabelStyle}>Correo</p>
+            <p
+              style={{
+                margin: '10px 0 0',
+                fontSize: 15,
+                fontWeight: 600,
+                color: '#F0F0F0',
+                wordBreak: 'break-all',
+              }}
+            >
               {email || '—'}
             </p>
-            <p style={{ fontSize: 12, color: '#6B7280', marginTop: 10, lineHeight: 1.45 }}>
-              El correo lo gestiona el inicio de sesión. Para cambiarlo, contactá soporte o usá el flujo
-              de recuperación de tu proveedor cuando esté disponible en la app.
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: '#6B7280', lineHeight: 1.45 }}>
+              Gestionado por tu inicio de sesión.
             </p>
           </section>
 
-          <section style={plainSectionStyle}>
-            <p style={sectionLabel}>Seguridad</p>
-            <ChangePasswordForm />
-          </section>
-
-          <section style={plainSectionStyle}>
-            <p style={sectionLabel}>Sesión</p>
-            <form action={signOut}>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button
-                  type="submit"
-                  style={{
-                    width: 'fit-content',
-                    minWidth: 0,
-                    padding: '0 20px',
-                    height: 48,
-                    borderRadius: 10,
-                    border: 'none',
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: '#F25252',
-                    backgroundColor: 'rgba(242, 82, 82, 0.12)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Cerrar sesión
-                </button>
-              </div>
-            </form>
+          <section>
+            <p style={sectionLabelStyle}>Seguridad</p>
+            <div style={{ marginTop: 10 }}>
+              <ChangePasswordForm variant="embedded" />
+            </div>
           </section>
         </div>
       </div>

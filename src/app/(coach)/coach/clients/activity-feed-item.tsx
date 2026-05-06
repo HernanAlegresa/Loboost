@@ -23,13 +23,11 @@ export default function ActivityFeedItem({ clientId, fullName, eventText, timeLa
       <Link href={`/coach/clients/${clientId}`} style={{ display: 'block', textDecoration: 'none' }}>
         <article
           style={{
-            borderRadius: 14,
-            border: '1px solid #1F2227',
-            backgroundColor: '#111317',
-            padding: '12px 14px',
+            borderBottom: '1px solid #1F2227',
+            padding: '12px 2px 12px 0',
             display: 'flex',
             alignItems: 'flex-start',
-            gap: 10,
+            gap: 20,
             transition: 'border-color 140ms ease, transform 140ms ease',
           }}
         >
@@ -37,11 +35,12 @@ export default function ActivityFeedItem({ clientId, fullName, eventText, timeLa
             aria-hidden
             style={{
               marginTop: 6,
-              width: 7,
-              height: 7,
+              marginLeft: 6,
+              width: 9,
+              height: 9,
               borderRadius: 9999,
               backgroundColor: '#B5F23D',
-              boxShadow: '0 0 0 4px rgba(181,242,61,0.12)',
+              boxShadow: '0 0 0 4px rgba(181,242,61,0.09)',
               flexShrink: 0,
             }}
           />

@@ -37,24 +37,26 @@ export default function ClientCard({
         <div
           style={{
             background: 'linear-gradient(165deg, #12161C 0%, #0F1217 100%)',
-            border: '1px solid #252A31',
+            border: '1px solid transparent',
             borderLeft: `3px solid ${accent}`,
             borderRadius: 14,
-            padding: '14px 16px',
+            padding: '10px 14px',
             display: 'flex',
             alignItems: 'center',
-            gap: 12,
+            gap: 10,
             boxShadow: '0 6px 20px rgba(0,0,0,0.22)',
           }}
         >
-          <Avatar fullName={fullName} ringColor="#FFFFFF" size="md" />
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ marginLeft: 6 }}>
+            <Avatar fullName={fullName} ringColor="#FFFFFF" size="md" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0,marginLeft: 10, }}>
             <p
               style={{
-                fontSize: 17,
+                fontSize: 16,
                 fontWeight: 600,
                 color: '#F0F0F0',
-                lineHeight: 1.22,
+                lineHeight: 1.05,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -69,13 +71,10 @@ export default function ClientCard({
                   fontSize: 10,
                   fontWeight: 700,
                   color: '#F25252',
-                  backgroundColor: 'rgba(242,82,82,0.1)',
-                  border: '1px solid rgba(242,82,82,0.25)',
-                  padding: '2px 7px',
-                  borderRadius: 20,
+                  padding: 0,
                   letterSpacing: '0.05em',
                   display: 'inline-block',
-                  marginTop: 4,
+                  marginTop: 0,
                 }}
               >
                 PLAN VENCIDO
@@ -89,13 +88,10 @@ export default function ClientCard({
                     fontSize: 10,
                     fontWeight: 700,
                     color: '#F2994A',
-                    backgroundColor: 'rgba(242,153,74,0.1)',
-                    border: '1px solid rgba(242,153,74,0.25)',
-                    padding: '2px 7px',
-                    borderRadius: 20,
+                    padding: 0,
                     letterSpacing: '0.05em',
                     display: 'inline-block',
-                    marginTop: 4,
+                    marginTop: 0,
                   }}
                 >
                   {daysSinceLastSession}D SIN ENTRENAR

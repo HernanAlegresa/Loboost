@@ -1,6 +1,6 @@
 ---
 name: slice
-description: Decompose aligned feature context into ordered, independently verifiable vertical slices. Use after grill-me outputs "Próximo paso: slice", or when the task has multiple parts with dependencies and the execution order is not obvious.
+description: Decompose an aligned LoBoost task into ordered, independently verifiable vertical slices. Use after grill-me outputs "Próximo paso: slice", or when a request spans multiple concerns and execution order is not obvious.
 ---
 
 # Slice — Vertical Decomposition Protocol
@@ -13,7 +13,7 @@ description: Decompose aligned feature context into ordered, independently verif
 
 ## What a slice is NOT
 
-A slice is not a layer. Do not create one slice per layer (DB → backend → UI). That produces horizontal work that can't be tested end-to-end until everything is done.
+A slice is not a layer. Do not create one slice per layer (DB -> backend -> UI). That creates horizontal work that cannot be verified end-to-end.
 
 A valid slice crosses all the layers needed for the feature to work minimally but completely. After a slice is implemented, a user (or the developer) must be able to exercise the full flow — even if it's rough.
 
@@ -43,7 +43,7 @@ Identify which layers the feature touches overall:
 
 Think in terms of feature increments, not layer tasks. Ask: "what is the thinnest vertical cut that produces a working, testable flow?"
 
-- The first slice usually covers the happy path across all required layers
+- The first slice usually covers a complete happy path.
 - Subsequent slices extend, improve, or handle edge cases
 - Each slice must be independently verifiable — after it's done, the developer can test the behavior without waiting for the next slice
 
@@ -51,9 +51,16 @@ Order slices by dependency — a slice can only build on layers introduced by pr
 
 If the resulting list is long, surface that to the user as a signal that the scope may be too large. Do not cap it artificially.
 
+### UI-only work
+
+If the change is strictly visual/interaction (no DB/backend), slices still apply:
+- Slice 1: spacing/layout core flow
+- Slice 2: states + polish (loading/disabled/empty/error)
+- Slice 3: motion/accessibility fine-tuning (if needed)
+
 ## Output
 
-Produce this list in the chat and wait for user approval. Do not proceed to implementation.
+Produce this list in chat and wait for user approval. Do not proceed to implementation.
 
 ---
 ## Slices

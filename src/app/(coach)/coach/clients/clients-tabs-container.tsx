@@ -57,14 +57,16 @@ const LIST_BOTTOM_GAP_PX = 28
  * duplicaba ese espacio y dejaba la última carta demasiado arriba.
  */
 const SCROLL_END_PADDING_BOTTOM_PX = 32
-const CLIENT_CARD_COLUMN_MAX_WIDTH_PX = 320
+const CLIENT_CARD_COLUMN_MAX_WIDTH_PX = 292
 
 /** Espacio entre el texto Clientes/Actividad y la línea lima activa (más chico = más cerca del texto). */
 const TAB_INDICATOR_MARGIN_TOP_PX = 3
 
 /** Espaciado de filtros alineado con Biblioteca > Ejercicios. */
-const FILTERS_TOP_INSET_PX = 10
+const FILTERS_TOP_INSET_PX = 16
 const FILTERS_BOTTOM_INSET_PX = 14
+const FAB_SECTION_BOTTOM_PADDING_PX = 32
+const ACTIVITY_CONTENT_TOP_PADDING_PX = 40
 
 /** Celeste del ícono “i” de la leyenda de estados. */
 const CLIENTS_TAB_INFO_CELESTE = 'rgba(86, 197, 250, 0.72)'
@@ -441,10 +443,34 @@ export default function ClientsTabsContainer({ clients }: Props) {
               flexShrink: 0,
               display: 'flex',
               justifyContent: 'center',
-              padding: '24px 20px 12px',
+              position: 'relative',
+              padding: `24px 20px ${FAB_SECTION_BOTTOM_PADDING_PX}px`,
               backgroundColor: '#0A0A0A',
             }}
           >
+            <motion.button
+              type="button"
+              aria-label="Información sobre estados de clientes"
+              onClick={() => setStatesInfoOpen(true)}
+              whileTap={{ scale: 0.85, opacity: 0.7 }}
+              transition={{ duration: 0.1 }}
+              style={{
+                position: 'absolute',
+                left: 25,
+                top: 74,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: 'transparent',
+                color: CLIENTS_TAB_INFO_CELESTE,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0,
+                lineHeight: 1,
+              }}
+            >
+              <Info size={20} strokeWidth={2.35} aria-hidden color={CLIENTS_TAB_INFO_CELESTE} />
+            </motion.button>
             <div
               style={{
                 width: '100%',
@@ -453,28 +479,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
                 alignItems: 'center',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                <motion.button
-                  type="button"
-                  aria-label="Información sobre estados de clientes"
-                  onClick={() => setStatesInfoOpen(true)}
-                  whileTap={{ scale: 0.85, opacity: 0.7 }}
-                  transition={{ duration: 0.1 }}
-                  style={{
-                    border: 'none',
-                    cursor: 'pointer',
-                    backgroundColor: 'transparent',
-                    color: CLIENTS_TAB_INFO_CELESTE,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0,
-                    lineHeight: 1,
-                  }}
-                >
-                  <Info size={20} strokeWidth={2.35} aria-hidden color={CLIENTS_TAB_INFO_CELESTE} />
-                </motion.button>
-              </div>
+              <div aria-hidden />
               <CoachExpandableFab
                 expandDirection="down"
                 menuOffsetPx={20}
@@ -581,7 +586,7 @@ export default function ClientsTabsContainer({ clients }: Props) {
             overscrollBehaviorY: 'contain',
             WebkitOverflowScrolling: 'touch',
             backgroundColor: '#0A0A0A',
-            padding: `14px 20px ${SCROLL_END_PADDING_BOTTOM_PX}px`,
+            padding: `${ACTIVITY_CONTENT_TOP_PADDING_PX}px 20px ${SCROLL_END_PADDING_BOTTOM_PX}px`,
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
