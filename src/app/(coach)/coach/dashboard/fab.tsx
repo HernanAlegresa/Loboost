@@ -9,8 +9,8 @@ import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 const FAB_SIZE_PX = 56
 const FAB_GAP_PX = 22
 const ACTIONS_OFFSET_FROM_FAB_PX = 30
-const ACTIONS_VERTICAL_GAP_PX = 34
-const ACTION_BUTTON_PADDING = '20px 28px'
+const ACTIONS_VERTICAL_GAP_PX = 18
+const ACTION_BUTTON_PADDING = '16px 22px'
 
 const ACTIONS = [
   { label: 'Nuevo ejercicio', icon: Dumbbell, href: '/coach/library/exercises/new' },
@@ -124,24 +124,35 @@ export default function Fab({ dock = 'fixed' }: FabProps) {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        gap: 16,
+                        flexWrap: 'nowrap',
+                        gap: 14,
                         backgroundColor: '#111317',
                         border: `1px solid ${FAB_ACTION_BORDER_LIME}`,
                         borderRadius: 18,
                         padding: ACTION_BUTTON_PADDING,
                         textDecoration: 'none',
-                        minWidth: 220,
+                        minWidth: 236,
+                        maxWidth: 'min(280px, calc(100vw - 48px))',
+                        boxSizing: 'border-box',
                         boxShadow: '0 12px 32px rgba(0,0,0,0.55), 0 4px 12px rgba(0,0,0,0.4)',
                       }}
                     >
-                      <action.icon size={26} color="#B5F23D" strokeWidth={2} />
+                      <action.icon
+                        size={26}
+                        color="#B5F23D"
+                        strokeWidth={2}
+                        style={{ flexShrink: 0 }}
+                      />
                       <span
                         style={{
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: 600,
                           color: '#B5F23D',
                           letterSpacing: '0.01em',
                           textAlign: 'center',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0,
+                          lineHeight: 1.2,
                         }}
                       >
                         {action.label}

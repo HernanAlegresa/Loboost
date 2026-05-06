@@ -192,7 +192,7 @@ export default async function WeeklyLoadPage({
       <>
         <FlowHeaderConfig
           title="Carga semanal"
-          fallbackHref={`/coach/clients/${id}`}
+          fallbackHref={`/coach/clients/${id}?tab=progress`}
         />
         <div
           style={{
@@ -217,7 +217,7 @@ export default async function WeeklyLoadPage({
     <>
       <FlowHeaderConfig
         title="Carga semanal"
-        fallbackHref={`/coach/clients/${id}`}
+        fallbackHref={`/coach/clients/${id}?tab=progress`}
       />
 
       <div

@@ -55,7 +55,7 @@ export default async function SessionDetailPage({
       <FlowHeaderConfig
         title={`Semana ${session.weekNumber} · ${DAY_NAMES[session.dayOfWeek]}`}
         subtitle={date}
-        fallbackHref={`/coach/clients/${clientId}/sessions`}
+        fallbackHref={`/coach/clients/${clientId}?tab=sessions`}
       />
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 20px 100px' }}>
         {(session.rpe != null ||

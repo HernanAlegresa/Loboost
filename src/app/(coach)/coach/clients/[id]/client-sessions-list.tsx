@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { CoachSessionsTimeline, SessionTimelineDay } from './sessions/queries'
 
@@ -127,11 +127,8 @@ export default function ClientSessionsList({
     )
   }
 
-  const initialWeek = useMemo(() => {
-    const current = timeline.weeks.find((week) => week.phase === 'current')
-    return current?.weekNumber ?? timeline.weeks[0]?.weekNumber ?? 1
-  }, [timeline.weeks])
-  const [expandedWeek, setExpandedWeek] = useState<number>(initialWeek)
+  /** Al entrar a la lista, todas las semanas cerradas (el usuario abre lo que necesite). */
+  const [expandedWeek, setExpandedWeek] = useState<number>(() => -1)
 
   const totalCompleted = timeline.weeks.reduce((sum, week) => sum + week.completedSessions, 0)
   const totalPlanned = timeline.weeks.reduce((sum, week) => sum + week.totalSessions, 0)

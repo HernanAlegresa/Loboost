@@ -27,11 +27,9 @@ export default function AppHeader(props: AppHeaderProps) {
     const { title, subtitle, fallbackHref, rightSlot } = props
 
     function handleBack() {
-      if (window.history.length > 1) {
-        router.back()
-      } else {
-        router.push(fallbackHref)
-      }
+      // Siempre usar destino explícito: `router.back()` suele restaurar URLs sin `?tab=…`
+      // y los shells por tabs (perfil cliente, biblioteca) quedan en el tab por defecto.
+      router.push(fallbackHref)
     }
 
     return (

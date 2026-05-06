@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 
 type ClientProfileTab = 'profile' | 'progress' | 'sessions'
@@ -26,19 +27,17 @@ type Props = {
 
 export default function ClientProfileTabsShell({ profileContent, progressContent, sessionsContent }: Props) {
   const viewportRef = useRef<HTMLDivElement | null>(null)
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<ClientProfileTab>('profile')
 
-  // On mount: if ?tab=... is in the URL, jump to that panel instantly
+  // Sincronizar con `?tab=` (igual que Biblioteca): vuelta desde subpantallas con router.push
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    const params = new URLSearchParams(window.location.search)
-    const tabParam = params.get('tab')
+    const tabParam = searchParams.get('tab')
     if (tabParam !== 'progress' && tabParam !== 'sessions' && tabParam !== 'profile') return
     const targetTab = tabParam as ClientProfileTab
     const tabIndex = TABS.indexOf(targetTab)
     if (tabIndex < 0) return
     setActiveTab(targetTab)
-    // Double rAF so layout has settled before we set scrollLeft
     let r1: number
     let r2: number
     r1 = requestAnimationFrame(() => {
@@ -51,7 +50,7 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
       cancelAnimationFrame(r1)
       cancelAnimationFrame(r2)
     }
-  }, [])
+  }, [searchParams])
 
   const tabs = useMemo(() => TABS, [])
 

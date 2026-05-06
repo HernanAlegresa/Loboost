@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { SessionExerciseDetail } from './queries'
 
@@ -48,15 +48,7 @@ type Props = {
 }
 
 export default function SessionExercisesAccordion({ exercises }: Props) {
-  const initialOpenId = useMemo(() => {
-    const partial = exercises.find((ex) => {
-      const c = ex.sets.filter((s) => s.completed).length
-      return c > 0 && c < ex.plannedSets
-    })
-    return partial?.clientPlanDayExerciseId ?? exercises[0]?.clientPlanDayExerciseId ?? null
-  }, [exercises])
-
-  const [expandedId, setExpandedId] = useState<string | null>(initialOpenId)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
