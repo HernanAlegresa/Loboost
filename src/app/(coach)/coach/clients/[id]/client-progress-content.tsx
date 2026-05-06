@@ -3,18 +3,17 @@ import {
   ChevronRight,
   ClipboardList,
   Dumbbell,
-  BarChart2,
   CheckCircle2,
   AlertTriangle,
   AlertOctagon,
   MinusCircle,
 } from 'lucide-react'
 import type { ProgressKPIs } from './progress-queries'
-import type { NavTileStats } from './progress-queries'
 import type { ActivePlanSummary } from '@/features/clients/types'
 import type { ClientStatus } from '@/features/clients/types/client-status'
 import { CLIENT_STATUS_CONFIG } from '@/features/clients/types/client-status'
 import ProgressOverview from './progress-overview'
+import NavTileWeeklyLoadComingSoon from './nav-tile-weekly-load-coming-soon'
 
 type Props = {
   clientId: string
@@ -26,9 +25,11 @@ type Props = {
     completed: number
     status: 'al_dia' | 'naranja' | 'riesgo' | 'sin_plan' | 'current' | 'future'
   }>
-  navTileStats: NavTileStats
   clientStatus: ClientStatus
 }
+
+/** Altura mínima unificada de las filas Check-ins / Progreso / Carga semanal (icono 42px + padding + 2 líneas). */
+const SEGUIMIENTO_TILE_MIN_HEIGHT_PX = 76
 
 const SECTION_OVERLINE: React.CSSProperties = {
   margin: '0 0 10px',
@@ -163,7 +164,8 @@ function NavTile({
           alignItems: 'center',
           gap: 14,
           cursor: 'pointer',
-          minHeight: 44,
+          minHeight: SEGUIMIENTO_TILE_MIN_HEIGHT_PX,
+          boxSizing: 'border-box',
         }}
       >
         <div
@@ -299,12 +301,7 @@ export default function ClientProgressContent({
               title="Progreso de ejercicios"
               subtitle="Evolución de carga por ejercicio"
             />
-            <NavTile
-              href={`/coach/clients/${clientId}/weekly-load`}
-              icon={<BarChart2 size={20} color="#0A0A0A" />}
-              title="Carga semanal"
-              subtitle="Volumen, intensidad y tonelaje"
-            />
+            <NavTileWeeklyLoadComingSoon tileMinHeightPx={SEGUIMIENTO_TILE_MIN_HEIGHT_PX} />
           </div>
         ) : (
           <div
@@ -317,7 +314,7 @@ export default function ClientProgressContent({
             }}
           >
             <p style={{ fontSize: 14, color: '#9CA3AF', margin: 0, lineHeight: 1.5 }}>
-              Asigná un plan activo para abrir check-ins, progreso por ejercicio y carga semanal.
+              Asigná un plan activo para abrir check-ins y progreso por ejercicio.
             </p>
           </div>
         )}

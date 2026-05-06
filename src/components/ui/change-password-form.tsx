@@ -39,13 +39,15 @@ const labelStyle = {
 
 type Props = {
   variant?: 'card' | 'embedded'
+  alwaysVisible?: boolean
 }
 
-export default function ChangePasswordForm({ variant = 'card' }: Props) {
+export default function ChangePasswordForm({ variant = 'card', alwaysVisible = false }: Props) {
   const [state, formAction, pending] = useActionState(changePasswordAction, null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const isEmbedded = variant === 'embedded'
+  const hidePasswordToggle = alwaysVisible
 
   if (state?.success) {
     return (
@@ -89,33 +91,38 @@ export default function ChangePasswordForm({ variant = 'card' }: Props) {
             <input
               id="change-password-new"
               name="password"
-              type={showPassword ? 'text' : 'password'}
+              type={alwaysVisible ? 'text' : showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               placeholder="Mínimo 8 caracteres"
-              style={{ ...inputStyle, paddingRight: 44 }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               style={{
-                position: 'absolute',
-                right: 10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                border: 'none',
-                backgroundColor: 'transparent',
-                padding: 0,
-                margin: 0,
-                color: '#6B7280',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                ...inputStyle,
+                ...(hidePasswordToggle ? {} : { paddingRight: 44 }),
               }}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+            />
+            {!hidePasswordToggle ? (
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  padding: 0,
+                  margin: 0,
+                  color: '#6B7280',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            ) : null}
           </div>
         </div>
         <div>
@@ -126,33 +133,40 @@ export default function ChangePasswordForm({ variant = 'card' }: Props) {
             <input
               id="change-password-confirm"
               name="confirm"
-              type={showConfirm ? 'text' : 'password'}
+              type={alwaysVisible ? 'text' : showConfirm ? 'text' : 'password'}
               autoComplete="new-password"
               placeholder="Repetí la contraseña"
-              style={{ ...inputStyle, paddingRight: 44 }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirm((v) => !v)}
-              aria-label={showConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
               style={{
-                position: 'absolute',
-                right: 10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                border: 'none',
-                backgroundColor: 'transparent',
-                padding: 0,
-                margin: 0,
-                color: '#6B7280',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                ...inputStyle,
+                ...(hidePasswordToggle ? {} : { paddingRight: 44 }),
               }}
-            >
-              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+            />
+            {!hidePasswordToggle ? (
+              <button
+                type="button"
+                onClick={() => setShowConfirm((v) => !v)}
+                aria-label={
+                  showConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'
+                }
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  padding: 0,
+                  margin: 0,
+                  color: '#6B7280',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            ) : null}
           </div>
         </div>
 

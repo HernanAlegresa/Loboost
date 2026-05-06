@@ -37,33 +37,71 @@ function TabBar({
         {prevGroup ? (
           <button
             onClick={() => onSelect(prevGroup)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'right', opacity: 0.4 }}
+            type="button"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0', textAlign: 'right' }}
           >
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#9CA3AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+            <p
+              style={{
+                fontSize: 14,
+                fontWeight: 500,
+                color: '#6B7280',
+                margin: 0,
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+              }}
+            >
               {muscleGroupLabel(prevGroup)}
             </p>
           </button>
-        ) : <div />}
+        ) : (
+          <div />
+        )}
       </div>
 
       <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-        <span style={{ fontSize: 22, fontWeight: 700, color: '#B5F23D', textTransform: 'uppercase', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+        <span
+          style={{
+            fontSize: 16,
+            fontWeight: 600,
+            color: '#F0F0F0',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            lineHeight: 1.2,
+            whiteSpace: 'nowrap',
+          }}
+        >
           {muscleGroupLabel(activeGroup)}
         </span>
-        <div style={{ width: '100%', height: 3, borderRadius: 2, background: '#B5F23D', marginTop: 2 }} />
+        <div style={{ width: '100%', height: 2, borderRadius: 9999, background: '#B5F23D', marginTop: 2 }} />
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
         {nextGroup ? (
           <button
             onClick={() => onSelect(nextGroup)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', opacity: 0.4 }}
+            type="button"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0', textAlign: 'left' }}
           >
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#9CA3AF', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+            <p
+              style={{
+                fontSize: 14,
+                fontWeight: 500,
+                color: '#6B7280',
+                margin: 0,
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+              }}
+            >
               {muscleGroupLabel(nextGroup)}
             </p>
           </button>
-        ) : <div />}
+        ) : (
+          <div />
+        )}
       </div>
     </div>
   )
@@ -82,12 +120,11 @@ function ExerciseCard({ ex, clientId }: { ex: ExerciseProgressData; clientId: st
   return (
     <Link
       href={`/coach/clients/${clientId}/exercises-progress/${ex.exerciseId}`}
-      style={{ textDecoration: 'none', display: 'block', marginBottom: 8 }}
+      style={{ textDecoration: 'none', display: 'block' }}
     >
       <div
         style={{
           background: 'linear-gradient(160deg,#12161C 0%,#0F1217 100%)',
-          border: '1px solid #252A31',
           borderRadius: 14,
           padding: '14px 16px',
           display: 'flex',
@@ -267,6 +304,9 @@ export default function ExercisesProgressList({
                 overflowX: 'hidden',
                 overscrollBehaviorY: 'contain',
                 WebkitOverflowScrolling: 'touch',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 18,
                 padding: `12px 60px ${COACH_LIST_SCROLL_END_ABOVE_NAV}`,
               } as React.CSSProperties}
             >

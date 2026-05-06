@@ -6,6 +6,9 @@ import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { COACH_LIST_SCROLL_END_ABOVE_NAV } from '@/lib/ui/safe-area'
 import WeeklyLoadChart from './weekly-load-chart'
 
+/** Desactivar la pantalla completa hasta estabilizar la feature; el perfil muestra placeholder. */
+const WEEKLY_LOAD_COACH_UX_PAUSED = true
+
 function WeeklyHeroKpis({
   weeks,
   currentWeek,
@@ -137,6 +140,50 @@ export default async function WeeklyLoadPage({
 
   const basic = await getClientBasicForCoach(id, user.id)
   if (!basic) notFound()
+
+  if (WEEKLY_LOAD_COACH_UX_PAUSED) {
+    return (
+      <>
+        <FlowHeaderConfig
+          title="Carga semanal"
+          fallbackHref={`/coach/clients/${id}?tab=progress`}
+        />
+        <div
+          style={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch' as React.CSSProperties['WebkitOverflowScrolling'],
+            padding: '24px 20px',
+            paddingBottom: COACH_LIST_SCROLL_END_ABOVE_NAV,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#111317',
+              border: '1px dashed rgba(255,255,255,0.12)',
+              borderRadius: 14,
+              padding: '20px 18px',
+            }}
+          >
+            <p
+              style={{
+                margin: 0,
+                fontSize: 14,
+                color: '#9CA3AF',
+                lineHeight: 1.55,
+                textAlign: 'center',
+              }}
+            >
+              Esta vista está en desarrollo y todavía no está lista para uso diario. Volvé al tab{' '}
+              <strong style={{ color: '#F0F0F0', fontWeight: 600 }}>Progreso</strong> del cliente; pronto vas a poder
+              analizar la carga semanal acá.
+            </p>
+          </div>
+        </div>
+      </>
+    )
+  }
 
   const { activePlan } = basic
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { CheckCircle2, CircleDashed, Clock3, ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { CoachSessionsTimeline, SessionTimelineDay } from './sessions/queries'
 
 const T = {
@@ -23,11 +23,11 @@ function getWeekPhaseLabel(phase: 'past' | 'current' | 'future') {
 }
 
 function getDayStatusUi(day: SessionTimelineDay) {
-  if (day.status === 'completed') return { label: 'Completada', color: '#4ADE80', icon: <CheckCircle2 size={14} /> }
-  if (day.status === 'in_progress') return { label: 'En progreso', color: '#F2C94A', icon: <Clock3 size={14} /> }
-  if (day.status === 'past_missed') return { label: 'No completada', color: '#F87171', icon: <CircleDashed size={14} /> }
-  if (day.status === 'today') return { label: 'Hoy', color: '#B5F23D', icon: <Clock3 size={14} /> }
-  return { label: 'Pendiente', color: '#9CA3AF', icon: <CircleDashed size={14} /> }
+  if (day.status === 'completed') return { label: 'Completada', color: '#4ADE80' }
+  if (day.status === 'in_progress') return { label: 'Pendiente', color: '#F59E0B' }
+  if (day.status === 'today') return { label: 'Hoy', color: '#B5F23D' }
+  if (day.status === 'upcoming') return null
+  return { label: 'No completada', color: '#EF4444' }
 }
 
 function formatDate(iso: string): string {
@@ -50,11 +50,12 @@ function SessionDayRow({ day, clientId }: { day: SessionTimelineDay; clientId: s
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        backgroundColor: '#0F1319',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+        backgroundColor: day.status === 'upcoming' ? 'rgba(15,19,25,0.5)' : '#0F1319',
+        border: day.status === 'upcoming' ? '0.5px solid rgba(255,255,255,0.03)' : '0.5px solid rgba(255,255,255,0.06)',
         borderRadius: 10,
         padding: '10px 12px',
         minHeight: 44,
+        opacity: day.status === 'upcoming' ? 0.78 : 1,
       }}
     >
       <div>
@@ -70,22 +71,22 @@ function SessionDayRow({ day, clientId }: { day: SessionTimelineDay; clientId: s
         )}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            fontSize: 11,
-            fontWeight: 700,
-            color: ui.color,
-            padding: '4px 7px',
-            borderRadius: 999,
-            flexShrink: 0,
-          }}
-        >
-          {ui.icon}
-          {ui.label}
-        </div>
+        {ui ? (
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              fontSize: 11,
+              fontWeight: 700,
+              color: ui.color,
+              padding: '4px 7px',
+              borderRadius: 999,
+              flexShrink: 0,
+            }}
+          >
+            {ui.label}
+          </div>
+        ) : null}
         {day.status === 'completed' || day.status === 'in_progress' ? (
           <p style={{ margin: 0, fontSize: 11, color: '#7B8494' }}>{sessionSummary}</p>
         ) : null}
@@ -143,9 +144,15 @@ export default function ClientSessionsList({
           color: T.muted,
           margin: '0 0 4px',
           lineHeight: 1.5,
+          textAlign: 'center',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
         }}
       >
-        {totalCompleted}/{totalPlanned} sesiones completadas en el plan
+        <span style={{ fontWeight: 800, color: '#FFFFFF' }}>
+          {totalCompleted}/{totalPlanned}
+        </span>{' '}
+        sesiones completadas en el plan
       </p>
 
       {timeline.weeks.map((week) => {

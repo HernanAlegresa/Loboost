@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Pencil } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getClientProfileData } from './queries'
-import { getProgressKPIs, getNavTileStats } from './progress-queries'
+import { getProgressKPIs } from './progress-queries'
 import { getCoachSessionsTimeline } from './sessions/queries'
 import { isPlanExpired } from '@/features/clients/utils/training-utils'
 import { FlowHeaderConfig } from '@/components/ui/header-context'
@@ -34,10 +34,9 @@ export default async function ClientProfilePage({
   const profile = await getClientProfileData(id, user.id)
   if (!profile) notFound()
 
-  const [kpis, timeline, navTileStats] = await Promise.all([
+  const [kpis, timeline] = await Promise.all([
     getProgressKPIs(id, profile.weightKg, profile.activePlan),
     getCoachSessionsTimeline(id, user.id),
-    getNavTileStats(id, profile.activePlan),
   ])
   if (timeline === null) notFound()
 
@@ -207,7 +206,6 @@ export default async function ClientProfilePage({
             activePlan={profile.activePlan}
             totalSessions={profile.totalSessions}
             progressSeries={profile.progressSeries}
-            navTileStats={navTileStats}
             clientStatus={profile.status}
           />
         }

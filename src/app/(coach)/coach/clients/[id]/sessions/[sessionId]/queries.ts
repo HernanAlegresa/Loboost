@@ -53,7 +53,7 @@ export async function getSessionDetailForCoach(
       id, date, status, rpe, notes, energy_level, sleep_quality, soreness_level,
       client_plan_days ( day_of_week, week_number,
         client_plan_day_exercises (
-          id, sets, reps_min, reps_max, duration_seconds,
+          id, order, sets, reps_min, reps_max, duration_seconds,
           exercises ( name, type )
         )
       )
@@ -89,6 +89,7 @@ export async function getSessionDetailForCoach(
     week_number: number
     client_plan_day_exercises: Array<{
       id: string
+      order: number
       sets: number
       reps_min: number | null
       reps_max: number | null
@@ -99,7 +100,9 @@ export async function getSessionDetailForCoach(
 
   const day = session.client_plan_days as RawDay | null
 
-  const exercises: SessionExerciseDetail[] = (day?.client_plan_day_exercises ?? []).map((ex) => ({
+  const planExercisesSorted = [...(day?.client_plan_day_exercises ?? [])].sort((a, b) => a.order - b.order)
+
+  const exercises: SessionExerciseDetail[] = planExercisesSorted.map((ex) => ({
     clientPlanDayExerciseId: ex.id,
     name: ex.exercises?.name ?? 'Ejercicio',
     type: (ex.exercises?.type ?? 'strength') as 'strength' | 'cardio',

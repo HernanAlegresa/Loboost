@@ -136,7 +136,7 @@ export default async function CoachSettingsPage() {
           <section>
             <p style={sectionLabelStyle}>Seguridad</p>
             <div style={{ marginTop: 10 }}>
-              <ChangePasswordForm variant="embedded" />
+              <ChangePasswordForm variant="embedded" alwaysVisible />
             </div>
           </section>
         </div>

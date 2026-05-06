@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { FlowHeaderConfig } from '@/components/ui/header-context'
 import { getSessionDetailForCoach } from './queries'
-import type { SessionExerciseDetail } from './queries'
+import SessionExercisesAccordion from './session-exercises-accordion'
 
 const T = {
   bg: '#0A0A0A', card: '#111317', border: '#1F2227',
@@ -32,61 +32,6 @@ function SemanticDot({ level }: { level: number }) {
 const ENERGY_LABELS = ['', 'Agotado', 'Bajo', 'Normal', 'Bien', 'Excelente']
 const SLEEP_LABELS  = ['', 'Pésimo',  'Mal',  'Regular', 'Bien', 'Muy bien']
 const SORENESS_LABELS = ['', 'Mucho', 'Bastante', 'Algo', 'Poco', 'Sin dolor']
-
-function repsRange(min: number | null, max: number | null): string {
-  if (min == null) return '—'
-  if (max != null && max !== min) return `${min}–${max}`
-  return String(min)
-}
-
-function ExerciseCard({ ex }: { ex: SessionExerciseDetail }) {
-  return (
-    <div style={{ backgroundColor: T.card, border: `1px solid ${T.border}`, borderRadius: 14, overflow: 'hidden', marginBottom: 12 }}>
-      <div style={{ padding: '12px 16px', borderBottom: `1px solid ${T.border}` }}>
-        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: T.text }}>{ex.name}</p>
-        <p style={{ margin: '3px 0 0', fontSize: 12, color: T.muted }}>
-          {ex.plannedSets} series planificadas
-          {ex.type === 'strength'
-            ? ` · ${repsRange(ex.plannedRepsMin, ex.plannedRepsMax)} reps`
-            : ex.plannedDurationSeconds != null
-              ? ` · ${ex.plannedDurationSeconds}s`
-              : ''}
-        </p>
-      </div>
-      <div style={{ padding: '10px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {ex.sets.length === 0 ? (
-          <p style={{ fontSize: 12, color: T.muted, margin: 0 }}>Sin series registradas</p>
-        ) : (
-          ex.sets.map((set) => (
-            <div
-              key={set.setNumber}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '12px 10px',
-                backgroundColor: set.completed ? 'rgba(181,242,61,0.06)' : 'rgba(255,255,255,0.02)',
-                borderRadius: 8,
-              }}
-            >
-              <span style={{ fontSize: 11, color: T.muted, minWidth: 52 }}>Serie {set.setNumber}</span>
-              <span style={{ fontSize: 13, color: T.secondary, flex: 1 }}>
-                {ex.type === 'strength'
-                  ? set.weightKg != null
-                    ? `${set.weightKg} kg × ${set.repsPerformed ?? '—'} reps`
-                    : `— × ${set.repsPerformed ?? '—'} reps`
-                  : set.durationSeconds != null
-                    ? `${set.durationSeconds} seg`
-                    : '—'}
-              </span>
-              {set.completed && (
-                <span style={{ fontSize: 13, color: T.lime }}>✓</span>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-    </div>
-  )
-}
 
 export default async function SessionDetailPage({
   params,
@@ -124,7 +69,12 @@ export default async function SessionDetailPage({
               border: `1px solid ${T.border}`,
               borderRadius: 14,
               padding: '14px 16px',
-              marginBottom: 20,
+              marginBottom: 25,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              maxWidth: 320,
+              width: '100%',
+              boxSizing: 'border-box',
               display: 'flex',
               flexDirection: 'column',
               gap: 12,
@@ -197,7 +147,8 @@ export default async function SessionDetailPage({
           )
           if (totalPlanned === 0) return null
           const pct = Math.round((totalCompleted / totalPlanned) * 100)
-          const color = pct === 100 ? '#B5F23D' : '#F2C94A'
+          const seriesSummaryColor =
+            session.status === 'completed' ? '#4ADE80' : '#F59E0B'
           return (
             <div
               style={{
@@ -218,15 +169,13 @@ export default async function SessionDetailPage({
               >
                 EJERCICIOS
               </p>
-              <p style={{ fontSize: 13, fontWeight: 700, color, margin: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: seriesSummaryColor, margin: 0 }}>
                 {totalCompleted}/{totalPlanned} series · {pct}%
               </p>
             </div>
           )
         })()}
-        {session.exercises.map((ex) => (
-          <ExerciseCard key={ex.clientPlanDayExerciseId} ex={ex} />
-        ))}
+        {session.exercises.length > 0 ? <SessionExercisesAccordion exercises={session.exercises} /> : null}
       </div>
     </>
   )

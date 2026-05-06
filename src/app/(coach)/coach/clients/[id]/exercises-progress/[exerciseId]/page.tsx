@@ -105,7 +105,8 @@ export default async function ExerciseDetailPage({
         {/* Subtitle */}
         <div style={{ padding: '0 20px 30px' }}>
           <p style={{ fontSize: 12, color: '#6B7280', margin: 0, textAlign: 'center' }}>
-            {muscleGroupLabel(muscleGroup)}{isBodyweight && ' · Sin carga'} · {activePlan.name}
+            <span style={{ fontWeight: 700, color: '#F0F0F0' }}>{muscleGroupLabel(muscleGroup)}</span>
+            {isBodyweight && ' · Sin carga'} · {activePlan.name}
           </p>
         </div>
 
