@@ -142,6 +142,22 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
                 >
                   {p.name}
                 </p>
+                {p.isIncomplete && (
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      backgroundColor: '#F97316',
+                      color: '#FFFFFF',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      borderRadius: 6,
+                      padding: '2px 7px',
+                      marginTop: 4,
+                    }}
+                  >
+                    Incompleto
+                  </span>
+                )}
                 <p style={{ fontSize: 12, color: '#9CA3AF', margin: '5px 0 0', lineHeight: 1.45 }}>
                   {p.weeks} {p.weeks === 1 ? 'semana' : 'semanas'} · {p.trainingDays}{' '}
                   {p.trainingDays === 1 ? 'día' : 'días'} / semana
