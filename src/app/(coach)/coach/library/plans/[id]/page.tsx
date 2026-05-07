@@ -22,14 +22,14 @@ const T = {
 
 const btnPrimary: CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-  width: '100%', minHeight: 50, borderRadius: 12, border: 'none',
+  width: '100%', minHeight: 50, borderRadius: 25, border: 'none',
   fontSize: 15, fontWeight: 700, color: '#0A0A0A', backgroundColor: '#B5F23D',
   textDecoration: 'none', cursor: 'pointer',
 }
 
 const btnSecondary: CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-  width: '100%', minHeight: 50, borderRadius: 12, border: '1px solid #2A2D34',
+  width: '100%', minHeight: 50, borderRadius: 25, border: '1px solid #2A2D34',
   fontSize: 15, fontWeight: 600, color: '#F0F0F0', backgroundColor: '#111317',
   textDecoration: 'none', cursor: 'pointer',
 }

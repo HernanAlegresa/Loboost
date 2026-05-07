@@ -166,7 +166,7 @@ export default function ClientPlanHeatmapCard({ activePlan, initialWeekData, cli
                     fontWeight: 500,
                     color: '#B5F23D',
                     borderBottom: '1px solid #B5F23D',
-                    borderRadius: 4,
+                    borderRadius: 0,
                     padding: '4px 6px',
                     lineHeight: 1.1,
                     whiteSpace: 'nowrap',

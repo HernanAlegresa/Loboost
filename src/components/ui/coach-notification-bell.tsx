@@ -16,6 +16,7 @@ const NOTIF_BACKDROP_SCRIM = 'rgba(4, 5, 7, 0.78)'
 
 const NOTIF_OVERLAY_Z = 175
 const COACH_HEADER_OVERLAY_EVENT = 'coach-header-overlay-open'
+const NOTIF_PANEL_OPEN_DELAY_MS = 120
 
 /** Ancho de la columna del icono (misma lógica que el panel de estados: título centrado entre dos ranuras). */
 const NOTIF_HEADER_SIDE_SLOT_PX = 44
@@ -65,6 +66,7 @@ function BellWithCountBadge({ count, bellColor }: { count: number; bellColor: st
 
 export default function CoachNotificationBell({ clientsNeedingAttention }: Props) {
   const [open, setOpen] = useState(false)
+  const [panelVisible, setPanelVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
@@ -76,6 +78,17 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) {
+      setPanelVisible(false)
+      return
+    }
+    const timer = window.setTimeout(() => {
+      setPanelVisible(true)
+    }, NOTIF_PANEL_OPEN_DELAY_MS)
+    return () => window.clearTimeout(timer)
   }, [open])
 
   useEffect(() => {
@@ -131,39 +144,40 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
                 WebkitBackdropFilter: 'blur(12px)',
               }}
             />
-            <div
-              style={{
-                position: 'absolute',
-                top: `calc(${COACH_HEADER_TOTAL_HEIGHT} + 10px)`,
-                left: 0,
-                right: 0,
-                display: 'flex',
-                justifyContent: 'center',
-                paddingLeft: 16,
-                paddingRight: 16,
-                pointerEvents: 'none',
-              }}
-            >
-              <motion.div
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="coach-notif-heading"
-                onClick={(e) => e.stopPropagation()}
-                initial={{ opacity: 0, y: -10, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+            {panelVisible ? (
+              <div
                 style={{
-                  width: '100%',
-                  maxWidth: 300,
-                  pointerEvents: 'auto',
-                  backgroundColor: 'rgba(37, 42, 49, 0.52)',
-                  border: '1px solid #2A2D34',
-                  borderRadius: 16,
-                  boxShadow: '0 16px 48px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4)',
-                  overflow: 'hidden',
+                  position: 'absolute',
+                  top: `calc(${COACH_HEADER_TOTAL_HEIGHT} + 10px)`,
+                  left: 0,
+                  right: 0,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  paddingLeft: 16,
+                  paddingRight: 16,
+                  pointerEvents: 'none',
                 }}
               >
+                <motion.div
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="coach-notif-heading"
+                  onClick={(e) => e.stopPropagation()}
+                  initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                  transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  style={{
+                    width: '100%',
+                    maxWidth: 300,
+                    pointerEvents: 'auto',
+                    backgroundColor: 'rgba(37, 42, 49, 0.52)',
+                    border: '1px solid #2A2D34',
+                    borderRadius: 16,
+                    boxShadow: '0 16px 48px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4)',
+                    overflow: 'hidden',
+                  }}
+                >
               <div
                 style={{
                   padding: '16px 0 12px',
@@ -263,8 +277,9 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
                   </Link>
                 </div>
               )}
-              </motion.div>
-            </div>
+                </motion.div>
+              </div>
+            ) : null}
           </motion.div>
         ) : null}
       </AnimatePresence>
