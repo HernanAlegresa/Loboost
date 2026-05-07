@@ -194,10 +194,10 @@ export default function ClientProfileTabsShell({ profileContent, progressContent
             minWidth: 0,
             minHeight: 0,
             scrollSnapAlign: 'start',
-            overflowY: 'auto',
+            overflowY: 'hidden',
             overflowX: 'hidden',
-            overscrollBehaviorY: 'contain',
-            WebkitOverflowScrolling: 'touch',
+            overscrollBehaviorY: 'none',
+            WebkitOverflowScrolling: 'auto',
             padding: `24px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
             backgroundColor: '#0A0A0A',
           }}

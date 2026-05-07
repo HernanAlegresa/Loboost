@@ -53,12 +53,12 @@ export default function DeletePlanDialog({
             style={{
               width: 'min(100%, 520px)',
               backgroundColor: '#111317',
-              border: '1px solid #1F2227',
+              border: '1px solid #F25252',
               borderRadius: 16,
               padding: '20px 20px 24px',
             }}
           >
-            <p id="delete-plan-title" style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0' }}>
+            <p id="delete-plan-title" style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', textAlign: 'center' }}>
               ¿Eliminar este plan?
             </p>
             <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
@@ -68,7 +68,7 @@ export default function DeletePlanDialog({
             {error && (
               <p style={{ fontSize: 13, color: '#F25252', marginTop: 12, lineHeight: 1.45 }}>{error}</p>
             )}
-            <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 10, marginTop: 20, justifyContent: 'center' }}>
               <button
                 type="button"
                 onClick={onCancel}

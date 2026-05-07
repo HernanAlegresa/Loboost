@@ -953,7 +953,7 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
               minWidth: 0,
               padding: '0 24px',
               height: 48,
-              borderRadius: 12,
+              borderRadius: 25,
               border: 'none',
               fontSize: 15,
               fontWeight: 700,

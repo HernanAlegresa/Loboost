@@ -227,7 +227,7 @@ export default function EditClientForm({
           disabled={pending || !hasChanges}
           style={{
             flex: 1, padding: '11px 0', backgroundColor: pending || !hasChanges ? '#8BA82B' : T.lime,
-            border: 'none', borderRadius: 10,
+            border: 'none', borderRadius: 25,
             color: '#0A0A0A', fontSize: 13, fontWeight: 700, cursor: pending || !hasChanges ? 'not-allowed' : 'pointer',
             opacity: pending || !hasChanges ? 0.65 : 1,
           }}

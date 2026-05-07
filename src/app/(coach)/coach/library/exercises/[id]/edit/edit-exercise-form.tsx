@@ -171,7 +171,7 @@ export default function EditExerciseForm({ exercise }: { exercise: ExerciseEditR
               minWidth: 0,
               padding: '0 24px',
               height: 48,
-              borderRadius: 12,
+              borderRadius: 25,
               border: 'none',
               fontSize: 15,
               fontWeight: 700,
