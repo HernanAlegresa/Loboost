@@ -19,6 +19,7 @@ export type FlowHeaderConfig = {
   subtitle?: string
   fallbackHref: string
   rightSlot?: ReactNode
+  onBack?: () => void
 }
 
 type HeaderContextValue = {
@@ -51,13 +52,14 @@ export function FlowHeaderConfig({
   subtitle,
   fallbackHref,
   rightSlot,
+  onBack,
 }: FlowHeaderConfigProps) {
   const { setFlowConfig } = useHeaderContext()
 
   useIsomorphicLayoutEffect(() => {
-    setFlowConfig({ title, subtitle, fallbackHref, rightSlot })
+    setFlowConfig({ title, subtitle, fallbackHref, rightSlot, onBack })
     return () => setFlowConfig(null)
-  }, [title, subtitle, fallbackHref, rightSlot, setFlowConfig])
+  }, [title, subtitle, fallbackHref, rightSlot, onBack, setFlowConfig])
 
   return null
 }

@@ -20,6 +20,7 @@ export default function DynamicHeader({ rootRightSlot, showBorder }: DynamicHead
         subtitle={flowConfig.subtitle}
         fallbackHref={flowConfig.fallbackHref}
         rightSlot={flowConfig.rightSlot}
+        onBack={flowConfig.onBack}
       />
     )
   }

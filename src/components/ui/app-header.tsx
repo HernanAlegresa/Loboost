@@ -16,6 +16,7 @@ type AppHeaderFlowProps = {
   subtitle?: string
   fallbackHref: string
   rightSlot?: React.ReactNode
+  onBack?: () => void
 }
 
 export type AppHeaderProps = AppHeaderRootProps | AppHeaderFlowProps
@@ -24,9 +25,13 @@ export default function AppHeader(props: AppHeaderProps) {
   const router = useRouter()
 
   if (props.variant === 'flow') {
-    const { title, subtitle, fallbackHref, rightSlot } = props
+    const { title, subtitle, fallbackHref, rightSlot, onBack } = props
 
     function handleBack() {
+      if (onBack) {
+        onBack()
+        return
+      }
       // Siempre usar destino explícito: `router.back()` suele restaurar URLs sin `?tab=…`
       // y los shells por tabs (perfil cliente, biblioteca) quedan en el tab por defecto.
       router.push(fallbackHref)

@@ -4,6 +4,7 @@ import {
   useActionState,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -19,6 +20,8 @@ import type { ExercisePick, PlanBuilderInitial } from './queries'
 import { FlowHeaderConfig } from '@/components/ui/header-context'
 import CustomSelect from '@/components/ui/custom-select'
 import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
+
+const FORM_ID = 'plan-builder-form'
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -43,16 +46,6 @@ const labelStyle: CSSProperties = {
   marginBottom: 8,
 }
 
-const sectionTitleStyle: CSSProperties = {
-  fontSize: 11,
-  fontWeight: 600,
-  color: '#B5F23D',
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  marginBottom: 16,
-  textAlign: 'center',
-}
-
 const DAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] as const
 
 type ExerciseLine = {
@@ -71,7 +64,6 @@ type DayDraft = {
 }
 
 type WeekDraft = {
-  weekName: string
   weekType: 'normal' | 'deload' | 'peak' | 'test'
   days: Record<number, DayDraft>
 }
@@ -84,13 +76,13 @@ function emptyDays(): Record<number, DayDraft> {
   return init
 }
 
-function emptyWeekDraft(weekNumber: number): WeekDraft {
-  return { weekName: `Semana ${weekNumber}`, weekType: 'normal', days: emptyDays() }
+function emptyWeekDraft(): WeekDraft {
+  return { weekType: 'normal', days: emptyDays() }
 }
 
 function initialWeekDrafts(weeks: number, initial?: PlanBuilderInitial): WeekDraft[] {
   if (initial) return daysFromInitial(initial)
-  return Array.from({ length: weeks }, (_, i) => emptyWeekDraft(i + 1))
+  return Array.from({ length: weeks }, () => emptyWeekDraft())
 }
 
 function daysFromInitial(initial: PlanBuilderInitial): WeekDraft[] {
@@ -111,7 +103,6 @@ function daysFromInitial(initial: PlanBuilderInitial): WeekDraft[] {
       }
     }
     return {
-      weekName: week.weekName ?? `Semana ${week.weekNumber}`,
       weekType: (week.weekType as WeekDraft['weekType']) ?? 'normal',
       days,
     }
@@ -145,19 +136,21 @@ type Props = {
   initialPlan?: PlanBuilderInitial
 }
 
-type BuilderStep = 'meta' | 'training'
+type BuilderStage = 'stage1' | 'stage2'
 
 export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props) {
   const router = useRouter()
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   const [name, setName] = useState(() => initialPlan?.name ?? '')
   const [description, setDescription] = useState(() => initialPlan?.description?.trim() ?? '')
   const [weeks, setWeeks] = useState(() => initialPlan?.weeks ?? 4)
+  const [activeStage, setActiveStage] = useState<BuilderStage>('stage1')
 
   const [weekDrafts, setWeekDrafts] = useState<WeekDraft[]>(() =>
     initialWeekDrafts(initialPlan?.weeks ?? 4, initialPlan)
   )
   const [activeWeekIdx, setActiveWeekIdx] = useState(0)
-  const [activeStep, setActiveStep] = useState<BuilderStep>('meta')
 
   const activeDays = weekDrafts[activeWeekIdx]?.days ?? emptyDays()
 
@@ -198,7 +191,6 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
       weeks,
       planWeeks: weekDrafts.map((w, i) => ({
         weekNumber: i + 1,
-        weekName: w.weekName,
         weekType: w.weekType,
         days: Object.entries(w.days)
           .filter(([, d]) => d.enabled && d.exercises.length > 0)
@@ -240,10 +232,7 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     setWeeks(newWeeks)
     setWeekDrafts((prev) => {
       if (newWeeks > prev.length) {
-        const added = Array.from(
-          { length: newWeeks - prev.length },
-          (_, i) => emptyWeekDraft(prev.length + i + 1)
-        )
+        const added = Array.from({ length: newWeeks - prev.length }, () => emptyWeekDraft())
         return [...prev, ...added]
       }
       return prev.slice(0, newWeeks)
@@ -251,24 +240,13 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     if (activeWeekIdx >= newWeeks) setActiveWeekIdx(newWeeks - 1)
   }
 
-  function copyWeekFrom(targetIdx: number, sourceIdx: number) {
+  function toggleDay(weekIdx: number, dow: number) {
     setWeekDrafts((prev) => {
       const next = [...prev]
-      next[targetIdx] = {
-        ...next[targetIdx]!,
-        days: JSON.parse(JSON.stringify(next[sourceIdx]!.days)) as Record<number, DayDraft>,
-      }
-      return next
-    })
-  }
-
-  function toggleDay(dow: number) {
-    setWeekDrafts((prev) => {
-      const next = [...prev]
-      const w = next[activeWeekIdx]!
+      const w = next[weekIdx]!
       const cur = w.days[dow]!
       const nextEnabled = !cur.enabled
-      next[activeWeekIdx] = {
+      next[weekIdx] = {
         ...w,
         days: {
           ...w.days,
@@ -278,6 +256,14 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
           },
         },
       }
+      return next
+    })
+  }
+
+  function setWeekType(weekIdx: number, type: WeekDraft['weekType']) {
+    setWeekDrafts((prev) => {
+      const next = [...prev]
+      next[weekIdx] = { ...next[weekIdx]!, weekType: type }
       return next
     })
   }
@@ -343,8 +329,42 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     setActiveDow(next)
   }
 
+  function goToStage2() {
+    if (!name.trim()) return
+    setActiveStage('stage2')
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+  }
+
+  function goToStage1() {
+    setActiveStage('stage1')
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+  }
+
   const activeIdx = activeDow !== null ? enabledSorted.indexOf(activeDow) : -1
   const draft = activeDow !== null ? activeDays[activeDow] : null
+  const canSave = !isPending && exercises.length > 0
+
+  const saveButton = (
+    <button
+      type="submit"
+      form={FORM_ID}
+      disabled={!canSave}
+      style={{
+        height: 34,
+        padding: '0 16px',
+        borderRadius: 20,
+        border: 'none',
+        fontSize: 13,
+        fontWeight: 700,
+        color: '#0A0A0A',
+        backgroundColor: canSave ? '#B5F23D' : '#8BA82B',
+        cursor: canSave ? 'pointer' : 'not-allowed',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {isPending ? '...' : 'Guardar'}
+    </button>
+  )
 
   return (
     <div
@@ -362,9 +382,23 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
           hint="Redirigiendo a biblioteca..."
         />
       ) : null}
-      <FlowHeaderConfig title={mode === 'edit' ? 'Editar plan' : 'Nuevo plan'} fallbackHref="/coach/library?tab=plans" />
+
+      {activeStage === 'stage1' ? (
+        <FlowHeaderConfig
+          title={mode === 'edit' ? 'Editar plan' : 'Nuevo plan'}
+          fallbackHref="/coach/library?tab=plans"
+        />
+      ) : (
+        <FlowHeaderConfig
+          title={name.trim() || 'Nuevo plan'}
+          fallbackHref="/coach/library?tab=plans"
+          onBack={goToStage1}
+          rightSlot={saveButton}
+        />
+      )}
 
       <div
+        ref={scrollRef}
         style={{
           flex: 1,
           minHeight: 0,
@@ -374,8 +408,9 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
         }}
       >
         <form
+          id={FORM_ID}
           action={formAction}
-          style={{ padding: '16px 20px 120px', display: 'flex', flexDirection: 'column', gap: 24 }}
+          style={{ padding: '16px 20px 120px', display: 'flex', flexDirection: 'column', gap: 20 }}
         >
           <input type="hidden" name="planPayload" value={planPayload} readOnly />
           <input type="hidden" name="builderMode" value={mode} readOnly />
@@ -383,587 +418,578 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
             <input type="hidden" name="planId" value={initialPlan.planId} readOnly />
           ) : null}
 
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 8,
-              padding: 4,
-              borderRadius: 12,
-              border: '1px solid #1F2227',
-              backgroundColor: '#111317',
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setActiveStep('meta')}
-              style={{
-                height: 40,
-                borderRadius: 10,
-                border: 'none',
-                backgroundColor: activeStep === 'meta' ? 'rgba(181,242,61,0.14)' : 'transparent',
-                color: activeStep === 'meta' ? '#B5F23D' : '#9CA3AF',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Datos del plan
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveStep('training')}
-              style={{
-                height: 40,
-                borderRadius: 10,
-                border: 'none',
-                backgroundColor: activeStep === 'training' ? 'rgba(181,242,61,0.14)' : 'transparent',
-                color: activeStep === 'training' ? '#B5F23D' : '#9CA3AF',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Días de entrenamiento
-            </button>
-          </div>
+          {/* ── Stage 1 ── */}
+          {activeStage === 'stage1' ? (
+            <>
+              <Field label="Nombre">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  type="text"
+                  style={inputStyle}
+                  placeholder="Fuerza 4 semanas"
+                  autoComplete="off"
+                />
+              </Field>
 
-          {activeStep === 'meta' ? (
-            <div>
-              <p style={sectionTitleStyle}>Datos del plan</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <Field label="Nombre">
-                  <input
-                    name="nameDisplay"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    type="text"
-                    required
-                    style={inputStyle}
-                    placeholder="Fuerza 4 semanas"
-                    autoComplete="off"
-                  />
-                </Field>
+              <Field label="Descripción (opcional)">
+                <input
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  type="text"
+                  style={inputStyle}
+                  placeholder="Objetivo, enfoque, notas…"
+                  autoComplete="off"
+                />
+              </Field>
 
-                <Field label="Descripción (opcional)">
-                  <input
-                    name="descriptionDisplay"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    type="text"
-                    style={inputStyle}
-                    placeholder="Objetivo, enfoque, notas…"
-                    autoComplete="off"
-                  />
-                </Field>
-
-                <Field label="Semanas (1–12)">
-                  <input
-                    name="weeksDisplay"
-                    value={String(weeks)}
-                    onChange={(e) => {
-                      const v = Math.min(12, Math.max(1, Number(e.target.value) || 1))
-                      handleWeeksChange(v)
-                    }}
-                    type="number"
-                    min={1}
-                    max={12}
-                    required
-                    style={inputStyle}
-                  />
-                </Field>
-              </div>
-            </div>
-          ) : null}
-
-          {/* Days section */}
-          {activeStep === 'training' ? (
-            <div>
-            <p style={sectionTitleStyle}>Días de entrenamiento</p>
-            <p style={{ fontSize: 12, color: '#6B7280', marginTop: -8, marginBottom: 12, lineHeight: 1.5 }}>
-              Seleccioná la semana, activá los días y configurá los ejercicios.
-            </p>
-
-            {/* Week tabs */}
-            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8 }}>
-              {weekDrafts.map((w, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setActiveWeekIdx(i)}
-                  style={{
-                    flexShrink: 0,
-                    height: 36,
-                    paddingLeft: 14,
-                    paddingRight: 14,
-                    borderRadius: 20,
-                    border: activeWeekIdx === i ? '1.5px solid #B5F23D' : '1px solid #2A2D34',
-                    backgroundColor: activeWeekIdx === i ? 'rgba(181,242,61,0.1)' : '#111317',
-                    color: activeWeekIdx === i ? '#B5F23D' : '#9CA3AF',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
+              <Field label="Semanas (1–12)">
+                <input
+                  value={String(weeks)}
+                  onChange={(e) => {
+                    const v = Math.min(12, Math.max(1, Number(e.target.value) || 1))
+                    handleWeeksChange(v)
                   }}
-                >
-                  {w.weekType === 'deload' ? `S${i + 1} · Deload` : `Semana ${i + 1}`}
-                </button>
-              ))}
-            </div>
+                  type="number"
+                  min={1}
+                  max={12}
+                  style={inputStyle}
+                />
+              </Field>
 
-            {/* Week options */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
-              <input
-                type="text"
-                value={weekDrafts[activeWeekIdx]?.weekName ?? ''}
-                onChange={(e) =>
-                  setWeekDrafts((prev) => {
-                    const next = [...prev]
-                    next[activeWeekIdx] = { ...next[activeWeekIdx]!, weekName: e.target.value }
-                    return next
-                  })
-                }
-                placeholder="Nombre de la semana"
-                style={{ ...inputStyle, width: 180 }}
-              />
-              <select
-                value={weekDrafts[activeWeekIdx]?.weekType ?? 'normal'}
-                onChange={(e) =>
-                  setWeekDrafts((prev) => {
-                    const next = [...prev]
-                    next[activeWeekIdx] = {
-                      ...next[activeWeekIdx]!,
-                      weekType: e.target.value as WeekDraft['weekType'],
-                    }
-                    return next
-                  })
-                }
-                style={{ ...inputStyle, width: 130 }}
-              >
-                <option value="normal">Normal</option>
-                <option value="deload">Deload</option>
-                <option value="peak">Peak</option>
-                <option value="test">Test</option>
-              </select>
-              {activeWeekIdx > 0 && (
-                <button
-                  type="button"
-                  onClick={() => copyWeekFrom(activeWeekIdx, activeWeekIdx - 1)}
-                  style={{
-                    height: 36,
-                    paddingLeft: 14,
-                    paddingRight: 14,
-                    borderRadius: 10,
-                    border: '1px solid #2A2D34',
-                    backgroundColor: '#111317',
-                    color: '#9CA3AF',
-                    fontSize: 12,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Copiar semana anterior
-                </button>
-              )}
-            </div>
-
-            {/* Day pills */}
-            <div style={{ display: 'flex', gap: 6, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              {DAY_LABELS.map((lbl, idx) => {
-                const dow = idx + 1
-                const on = activeDays[dow]?.enabled
-                return (
-                  <button
-                    key={dow}
-                    type="button"
-                    onClick={() => toggleDay(dow)}
+              {/* Week cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {weekDrafts.map((w, weekIdx) => (
+                  <div
+                    key={weekIdx}
                     style={{
-                      flex: '1 0 12%',
-                      minWidth: 36,
-                      height: 36,
-                      borderRadius: 9999,
-                      border: `1.5px solid ${on ? '#B5F23D' : '#2A2D34'}`,
-                      backgroundColor: on ? '#B5F23D' : 'transparent',
-                      color: on ? '#0A0A0A' : '#6B7280',
-                      fontSize: 11,
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                    }}
-                    aria-pressed={on}
-                  >
-                    {lbl}
-                  </button>
-                )
-              })}
-            </div>
-
-            {enabledSorted.length > 0 && activeDow !== null && draft?.enabled ? (
-              <div
-                style={{
-                  marginTop: 16,
-                  backgroundColor: '#111317',
-                  border: '1px solid #1F2227',
-                  borderRadius: 14,
-                  padding: 12,
-                }}
-              >
-                {/* Day navigator */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 8,
-                    marginBottom: 12,
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => stepActive(-1)}
-                    aria-label="Día anterior"
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 10,
-                      border: '1px solid #2A2D34',
-                      background: '#0A0A0A',
-                      color: '#B5F23D',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      backgroundColor: '#111317',
+                      border: '1px solid #1F2227',
+                      borderRadius: 14,
+                      padding: '14px 16px',
                     }}
                   >
-                    <ChevronLeft size={22} />
-                  </button>
-                  <div style={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
-                      {DAY_LABELS[activeDow - 1]}
-                    </p>
-                    <p style={{ fontSize: 11, color: '#6B7280', margin: '4px 0 0' }}>
-                      {activeIdx + 1} de {enabledSorted.length} · Tocá los puntos o las flechas
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => stepActive(1)}
-                    aria-label="Día siguiente"
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 10,
-                      border: '1px solid #2A2D34',
-                      background: '#0A0A0A',
-                      color: '#B5F23D',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <ChevronRight size={22} />
-                  </button>
-                </div>
-
-                {/* Day dots */}
-                <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {enabledSorted.map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setActiveDow(d)}
+                    <div
                       style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 9999,
-                        border: 'none',
-                        padding: 0,
-                        backgroundColor: d === activeDow ? '#B5F23D' : '#2A2D34',
-                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: 12,
                       }}
-                      aria-label={`Ir a ${DAY_LABELS[d - 1]}`}
-                      aria-current={d === activeDow ? 'step' : undefined}
-                    />
-                  ))}
-                </div>
+                    >
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
+                        Semana {weekIdx + 1}
+                      </p>
+                      <select
+                        value={w.weekType}
+                        onChange={(e) => setWeekType(weekIdx, e.target.value as WeekDraft['weekType'])}
+                        style={{
+                          height: 32,
+                          paddingLeft: 10,
+                          paddingRight: 10,
+                          borderRadius: 8,
+                          border: '1px solid #2A2D34',
+                          backgroundColor: '#0A0A0A',
+                          color: w.weekType !== 'normal' ? '#B5F23D' : '#9CA3AF',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          outline: 'none',
+                        }}
+                      >
+                        <option value="normal">Normal</option>
+                        <option value="deload">Deload</option>
+                        <option value="peak">Peak</option>
+                        <option value="test">Test</option>
+                      </select>
+                    </div>
 
-                {/* Exercise list */}
-                <div style={{ marginTop: 16 }}>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: '#6B7280',
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                      margin: '0 0 12px',
-                    }}
-                  >
-                    Ejercicios del día
-                  </p>
-                  <p style={{ fontSize: 12, color: '#6B7280', margin: '-8px 0 14px', lineHeight: 1.45 }}>
-                    Orden de ejecución: el primero es el que va arriba en la lista.
-                  </p>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {draft.exercises.map((line, exerciseIndex) => {
-                      const exType = exerciseById.get(line.exerciseId)?.type
-                      const n = exerciseIndex + 1
-                      return (
-                        <div
-                          key={line.id}
-                          style={{
-                            backgroundColor: '#0D0F12',
-                            border: '1px solid #252830',
-                            borderRadius: 14,
-                            borderLeft: '3px solid #B5F23D',
-                            padding: '14px 14px 16px',
-                            boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
-                          }}
-                        >
-                          <div
+                    <div style={{ display: 'flex', gap: 5, justifyContent: 'space-between' }}>
+                      {DAY_LABELS.map((lbl, idx) => {
+                        const dow = idx + 1
+                        const on = w.days[dow]?.enabled
+                        return (
+                          <button
+                            key={dow}
+                            type="button"
+                            onClick={() => toggleDay(weekIdx, dow)}
+                            aria-pressed={on}
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              gap: 12,
-                              marginBottom: 14,
-                              paddingBottom: 12,
-                              borderBottom: '1px solid #1A1D22',
+                              flex: '1 0 0',
+                              height: 34,
+                              borderRadius: 9999,
+                              border: `1.5px solid ${on ? '#B5F23D' : '#2A2D34'}`,
+                              backgroundColor: on ? '#B5F23D' : 'transparent',
+                              color: on ? '#0A0A0A' : '#6B7280',
+                              fontSize: 10,
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              padding: 0,
                             }}
                           >
-                            <div>
-                              <p
-                                style={{
-                                  fontSize: 10,
-                                  fontWeight: 800,
-                                  color: '#B5F23D',
-                                  letterSpacing: '0.14em',
-                                  textTransform: 'uppercase',
-                                  margin: 0,
-                                }}
-                              >
-                                Ejercicio {n}
-                              </p>
-                              <p style={{ fontSize: 11, color: '#5C6370', margin: '4px 0 0' }}>
-                                {n === 1 ? 'Primero del día' : `Después del ejercicio ${n - 1}`}
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeExercise(activeDow, line.id)}
-                              aria-label={`Quitar ejercicio ${n}`}
-                              style={{
-                                flexShrink: 0,
-                                background: 'rgba(242, 82, 82, 0.1)',
-                                border: '1px solid rgba(242, 82, 82, 0.25)',
-                                borderRadius: 10,
-                                color: '#F25252',
-                                cursor: 'pointer',
-                                padding: '8px 10px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
+                            {lbl}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                            <div>
-                              <label style={{ ...labelStyle, marginBottom: 6 }}>Movimiento</label>
-                              <CustomSelect
-                                key={`${line.id}-${line.exerciseId}`}
-                                required
-                                value={line.exerciseId}
-                                onChange={(v) => updateLine(activeDow, line.id, { exerciseId: v })}
-                                placeholder="Seleccioná de tu biblioteca…"
-                                options={exercises.map((ex) => ({
-                                  value: ex.id,
-                                  label: `${ex.name} (${ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})`,
-                                }))}
-                              />
-                            </div>
+              {exercises.length === 0 && (
+                <div
+                  role="status"
+                  style={{
+                    backgroundColor: 'rgba(242, 153, 74, 0.08)',
+                    border: '1px solid rgba(242, 153, 74, 0.25)',
+                    borderRadius: 12,
+                    padding: '12px 14px',
+                  }}
+                >
+                  <p style={{ fontSize: 13, color: '#F2994A', lineHeight: 1.45, margin: 0 }}>
+                    Primero necesitás ejercicios en tu biblioteca. Creá al menos uno en{' '}
+                    <Link href="/coach/library/exercises/new" style={{ color: '#B5F23D' }}>
+                      Ejercicios
+                    </Link>
+                    .
+                  </p>
+                </div>
+              )}
 
+              <button
+                type="button"
+                onClick={goToStage2}
+                disabled={!name.trim()}
+                style={{
+                  alignSelf: 'stretch',
+                  height: 52,
+                  borderRadius: 14,
+                  border: 'none',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: name.trim() ? '#0A0A0A' : '#5C6370',
+                  backgroundColor: name.trim() ? '#B5F23D' : '#1C2010',
+                  cursor: name.trim() ? 'pointer' : 'not-allowed',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  transition: 'background-color 150ms ease',
+                }}
+              >
+                Continuar →
+              </button>
+            </>
+          ) : (
+            /* ── Stage 2 — ejercicios ── */
+            <div>
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: '#B5F23D',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  marginBottom: 12,
+                  textAlign: 'center',
+                }}
+              >
+                Días de entrenamiento
+              </p>
+
+              {/* Week tabs */}
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8 }}>
+                {weekDrafts.map((w, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setActiveWeekIdx(i)}
+                    style={{
+                      flexShrink: 0,
+                      height: 36,
+                      paddingLeft: 14,
+                      paddingRight: 14,
+                      borderRadius: 20,
+                      border: activeWeekIdx === i ? '1.5px solid #B5F23D' : '1px solid #2A2D34',
+                      backgroundColor: activeWeekIdx === i ? 'rgba(181,242,61,0.1)' : '#111317',
+                      color: activeWeekIdx === i ? '#B5F23D' : '#9CA3AF',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {w.weekType === 'deload' ? `S${i + 1} · Deload` : `Semana ${i + 1}`}
+                  </button>
+                ))}
+              </div>
+
+              {/* Day pills */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 6,
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  marginTop: 14,
+                }}
+              >
+                {DAY_LABELS.map((lbl, idx) => {
+                  const dow = idx + 1
+                  const on = activeDays[dow]?.enabled
+                  return (
+                    <button
+                      key={dow}
+                      type="button"
+                      onClick={() => toggleDay(activeWeekIdx, dow)}
+                      aria-pressed={on}
+                      style={{
+                        flex: '1 0 12%',
+                        minWidth: 36,
+                        height: 36,
+                        borderRadius: 9999,
+                        border: `1.5px solid ${on ? '#B5F23D' : '#2A2D34'}`,
+                        backgroundColor: on ? '#B5F23D' : 'transparent',
+                        color: on ? '#0A0A0A' : '#6B7280',
+                        fontSize: 11,
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {lbl}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {enabledSorted.length > 0 && activeDow !== null && draft?.enabled ? (
+                <div
+                  style={{
+                    marginTop: 16,
+                    backgroundColor: '#111317',
+                    border: '1px solid #1F2227',
+                    borderRadius: 14,
+                    padding: 12,
+                  }}
+                >
+                  {/* Day navigator */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 8,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => stepActive(-1)}
+                      aria-label="Día anterior"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        border: '1px solid #2A2D34',
+                        background: '#0A0A0A',
+                        color: '#B5F23D',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <ChevronLeft size={22} />
+                    </button>
+                    <div style={{ textAlign: 'center', flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
+                        {DAY_LABELS[activeDow - 1]}
+                      </p>
+                      <p style={{ fontSize: 11, color: '#6B7280', margin: '4px 0 0' }}>
+                        {activeIdx + 1} de {enabledSorted.length} · Tocá los puntos o las flechas
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => stepActive(1)}
+                      aria-label="Día siguiente"
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 10,
+                        border: '1px solid #2A2D34',
+                        background: '#0A0A0A',
+                        color: '#B5F23D',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <ChevronRight size={22} />
+                    </button>
+                  </div>
+
+                  {/* Day dots */}
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    {enabledSorted.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setActiveDow(d)}
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 9999,
+                          border: 'none',
+                          padding: 0,
+                          backgroundColor: d === activeDow ? '#B5F23D' : '#2A2D34',
+                          cursor: 'pointer',
+                        }}
+                        aria-label={`Ir a ${DAY_LABELS[d - 1]}`}
+                        aria-current={d === activeDow ? 'step' : undefined}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Exercise list */}
+                  <div style={{ marginTop: 16 }}>
+                    <p
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: '#6B7280',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        margin: '0 0 14px',
+                      }}
+                    >
+                      Ejercicios del día
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                      {draft.exercises.map((line, exerciseIndex) => {
+                        const exType = exerciseById.get(line.exerciseId)?.type
+                        const n = exerciseIndex + 1
+                        return (
+                          <div
+                            key={line.id}
+                            style={{
+                              backgroundColor: '#0D0F12',
+                              border: '1px solid #252830',
+                              borderRadius: 14,
+                              borderLeft: '3px solid #B5F23D',
+                              padding: '14px 14px 16px',
+                              boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                            }}
+                          >
                             <div
                               style={{
-                                display: 'grid',
-                                gridTemplateColumns: exType === 'cardio' ? '1fr 1fr' : '1fr 1fr 1fr',
-                                gap: 10,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 12,
+                                marginBottom: 14,
+                                paddingBottom: 12,
+                                borderBottom: '1px solid #1A1D22',
                               }}
                             >
                               <div>
-                                <label style={{ ...labelStyle, marginBottom: 6 }}>Series</label>
-                                <input
-                                  value={line.sets}
-                                  onChange={(e) =>
-                                    updateLine(activeDow, line.id, { sets: e.target.value })
-                                  }
-                                  inputMode="numeric"
-                                  style={inputStyle}
+                                <p
+                                  style={{
+                                    fontSize: 10,
+                                    fontWeight: 800,
+                                    color: '#B5F23D',
+                                    letterSpacing: '0.14em',
+                                    textTransform: 'uppercase',
+                                    margin: 0,
+                                  }}
+                                >
+                                  Ejercicio {n}
+                                </p>
+                                <p style={{ fontSize: 11, color: '#5C6370', margin: '4px 0 0' }}>
+                                  {n === 1 ? 'Primero del día' : `Después del ejercicio ${n - 1}`}
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeExercise(activeDow, line.id)}
+                                aria-label={`Quitar ejercicio ${n}`}
+                                style={{
+                                  flexShrink: 0,
+                                  background: 'rgba(242, 82, 82, 0.1)',
+                                  border: '1px solid rgba(242, 82, 82, 0.25)',
+                                  borderRadius: 10,
+                                  color: '#F25252',
+                                  cursor: 'pointer',
+                                  padding: '8px 10px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                              <div>
+                                <label style={{ ...labelStyle, marginBottom: 6 }}>Movimiento</label>
+                                <CustomSelect
+                                  key={`${line.id}-${line.exerciseId}`}
+                                  required
+                                  value={line.exerciseId}
+                                  onChange={(v) => updateLine(activeDow, line.id, { exerciseId: v })}
+                                  placeholder="Seleccioná de tu biblioteca…"
+                                  options={exercises.map((ex) => ({
+                                    value: ex.id,
+                                    label: `${ex.name} (${ex.type === 'cardio' ? 'Cardio' : 'Fuerza'})`,
+                                  }))}
                                 />
                               </div>
-                              {exType === 'cardio' ? (
+
+                              <div
+                                style={{
+                                  display: 'grid',
+                                  gridTemplateColumns:
+                                    exType === 'cardio' ? '1fr 1fr' : '1fr 1fr 1fr',
+                                  gap: 10,
+                                }}
+                              >
                                 <div>
-                                  <label style={{ ...labelStyle, marginBottom: 6 }}>Duración (seg)</label>
+                                  <label style={{ ...labelStyle, marginBottom: 6 }}>Series</label>
                                   <input
-                                    value={line.durationSeconds}
+                                    value={line.sets}
+                                    onChange={(e) =>
+                                      updateLine(activeDow, line.id, { sets: e.target.value })
+                                    }
+                                    inputMode="numeric"
+                                    style={inputStyle}
+                                  />
+                                </div>
+                                {exType === 'cardio' ? (
+                                  <div>
+                                    <label style={{ ...labelStyle, marginBottom: 6 }}>
+                                      Duración (seg)
+                                    </label>
+                                    <input
+                                      value={line.durationSeconds}
+                                      onChange={(e) =>
+                                        updateLine(activeDow, line.id, {
+                                          durationSeconds: e.target.value,
+                                        })
+                                      }
+                                      inputMode="numeric"
+                                      style={inputStyle}
+                                    />
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div>
+                                      <label style={{ ...labelStyle, marginBottom: 6 }}>
+                                        Reps min
+                                      </label>
+                                      <input
+                                        value={line.repsMin}
+                                        onChange={(e) =>
+                                          updateLine(activeDow, line.id, {
+                                            repsMin: e.target.value,
+                                          })
+                                        }
+                                        inputMode="numeric"
+                                        placeholder="8"
+                                        style={inputStyle}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label style={{ ...labelStyle, marginBottom: 6 }}>
+                                        Reps max
+                                      </label>
+                                      <input
+                                        value={line.repsMax}
+                                        onChange={(e) =>
+                                          updateLine(activeDow, line.id, {
+                                            repsMax: e.target.value,
+                                          })
+                                        }
+                                        inputMode="numeric"
+                                        placeholder="12"
+                                        style={inputStyle}
+                                      />
+                                    </div>
+                                  </>
+                                )}
+                                <div style={{ gridColumn: '1 / -1' }}>
+                                  <label style={{ ...labelStyle, marginBottom: 6 }}>
+                                    Descanso (seg, opcional)
+                                  </label>
+                                  <input
+                                    value={line.restSeconds}
                                     onChange={(e) =>
                                       updateLine(activeDow, line.id, {
-                                        durationSeconds: e.target.value,
+                                        restSeconds: e.target.value,
                                       })
                                     }
                                     inputMode="numeric"
                                     style={inputStyle}
                                   />
                                 </div>
-                              ) : (
-                                <>
-                                  <div>
-                                    <label style={{ ...labelStyle, marginBottom: 6 }}>Reps min</label>
-                                    <input
-                                      value={line.repsMin}
-                                      onChange={(e) =>
-                                        updateLine(activeDow, line.id, { repsMin: e.target.value })
-                                      }
-                                      inputMode="numeric"
-                                      placeholder="8"
-                                      style={inputStyle}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label style={{ ...labelStyle, marginBottom: 6 }}>Reps max</label>
-                                    <input
-                                      value={line.repsMax}
-                                      onChange={(e) =>
-                                        updateLine(activeDow, line.id, { repsMax: e.target.value })
-                                      }
-                                      inputMode="numeric"
-                                      placeholder="12"
-                                      style={inputStyle}
-                                    />
-                                  </div>
-                                </>
-                              )}
-                              <div style={{ gridColumn: exType === 'cardio' ? '1 / -1' : '1 / -1' }}>
-                                <label style={{ ...labelStyle, marginBottom: 6 }}>
-                                  Descanso (seg, opcional)
-                                </label>
-                                <input
-                                  value={line.restSeconds}
-                                  onChange={(e) =>
-                                    updateLine(activeDow, line.id, { restSeconds: e.target.value })
-                                  }
-                                  inputMode="numeric"
-                                  style={inputStyle}
-                                />
                               </div>
                             </div>
                           </div>
-                        </div>
-                      )
-                    })}
-                  </div>
+                        )
+                      })}
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={() => addExercise(activeDow)}
-                    style={{
-                      width: '100%',
-                      marginTop: 16,
-                      minHeight: 48,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      borderRadius: 12,
-                      border: '1px dashed #3D4A2E',
-                      backgroundColor: 'rgba(181, 242, 61, 0.06)',
-                      color: '#B5F23D',
-                      fontSize: 14,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Plus size={20} strokeWidth={2.5} />
-                    Agregar ejercicio
-                  </button>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: '#5C6370',
-                      textAlign: 'center',
-                      margin: '8px 0 0',
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    Siempre podés sumar otro bloque acá, sin volver arriba.
+                    <button
+                      type="button"
+                      onClick={() => addExercise(activeDow)}
+                      style={{
+                        width: '100%',
+                        marginTop: 16,
+                        minHeight: 48,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        borderRadius: 12,
+                        border: '1px dashed #3D4A2E',
+                        backgroundColor: 'rgba(181, 242, 61, 0.06)',
+                        color: '#B5F23D',
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Plus size={20} strokeWidth={2.5} />
+                      Agregar ejercicio
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: 13, color: '#6B7280', marginTop: 14, lineHeight: 1.45 }}>
+                  Activá al menos un día arriba para armar la rutina.
+                </p>
+              )}
+
+              {state && !state.success && 'error' in state && (
+                <div
+                  role="alert"
+                  style={{
+                    marginTop: 8,
+                    backgroundColor: 'rgba(242, 82, 82, 0.08)',
+                    border: '1px solid rgba(242, 82, 82, 0.25)',
+                    borderRadius: 12,
+                    padding: '12px 14px',
+                  }}
+                >
+                  <p style={{ fontSize: 13, color: '#F25252', lineHeight: 1.45, margin: 0 }}>
+                    {state.error}
                   </p>
                 </div>
-              </div>
-            ) : (
-              <p style={{ fontSize: 13, color: '#6B7280', marginTop: 14, lineHeight: 1.45 }}>
-                Activá al menos un día arriba para armar la rutina.
-              </p>
-            )}
-            </div>
-          ) : null}
-
-          {exercises.length === 0 && (
-            <div
-              role="status"
-              style={{
-                backgroundColor: 'rgba(242, 153, 74, 0.08)',
-                border: '1px solid rgba(242, 153, 74, 0.25)',
-                borderRadius: 12,
-                padding: '12px 14px',
-              }}
-            >
-              <p style={{ fontSize: 13, color: '#F2994A', lineHeight: 1.45 }}>
-                Primero necesitás ejercicios en tu biblioteca. Creá al menos uno en{' '}
-                <Link href="/coach/library/exercises/new" style={{ color: '#B5F23D' }}>
-                  Ejercicios
-                </Link>
-                .
-              </p>
+              )}
             </div>
           )}
-
-          {state && !state.success && 'error' in state && (
-            <div
-              role="alert"
-              style={{
-                backgroundColor: 'rgba(242, 82, 82, 0.08)',
-                border: '1px solid rgba(242, 82, 82, 0.25)',
-                borderRadius: 12,
-                padding: '12px 14px',
-              }}
-            >
-              <p style={{ fontSize: 13, color: '#F25252', lineHeight: 1.45 }}>{state.error}</p>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isPending || exercises.length === 0}
-            style={{
-              alignSelf: 'center',
-              width: 'fit-content',
-              minWidth: 0,
-              padding: '0 24px',
-              height: 48,
-              borderRadius: 25,
-              border: 'none',
-              fontSize: 15,
-              fontWeight: 700,
-              color: '#0A0A0A',
-              backgroundColor: isPending || exercises.length === 0 ? '#8BA82B' : '#B5F23D',
-              cursor: isPending || exercises.length === 0 ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {isPending ? 'Guardando...' : mode === 'edit' ? 'Guardar plan' : 'Crear plan'}
-          </button>
         </form>
       </div>
     </div>
