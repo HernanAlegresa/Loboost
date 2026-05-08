@@ -8,7 +8,8 @@ import Link from 'next/link'
 import { COACH_HEADER_TOTAL_HEIGHT, SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe-area'
 
 type Props = {
-  clientsNeedingAttention: number
+  riskCount: number
+  pendingCount: number
 }
 
 /** Mismo velo que `clients-states-info-sheet` (detrás del panel de información). */
@@ -30,6 +31,14 @@ const NOTIF_BADGE_RING = '#0A0A0A'
 /** Esquina superior derecha del icono (valores negativos = hacia afuera, no tapa la campana). */
 const NOTIF_BADGE_TOP_PX = -8
 const NOTIF_BADGE_RIGHT_PX = -6
+const NOTIF_SECONDARY_TEXT_COLOR = 'rgba(255, 255, 255, 0.6)'
+
+type CoachNotificationItem = {
+  id: 'risk' | 'pending'
+  mainText: string
+  secondaryText: string
+  color: string
+}
 
 function BellWithCountBadge({ count, bellColor }: { count: number; bellColor: string }) {
   return (
@@ -64,7 +73,7 @@ function BellWithCountBadge({ count, bellColor }: { count: number; bellColor: st
   )
 }
 
-export default function CoachNotificationBell({ clientsNeedingAttention }: Props) {
+export default function CoachNotificationBell({ riskCount, pendingCount }: Props) {
   const [open, setOpen] = useState(false)
   const [panelVisible, setPanelVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -109,8 +118,29 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
     )
   }, [open])
 
-  const count = clientsNeedingAttention
-  const bellColor = count > 0 ? '#F0F0F0' : '#E5E7EB'
+  const notifications: CoachNotificationItem[] = []
+
+  if (riskCount > 0) {
+    notifications.push({
+      id: 'risk',
+      mainText: riskCount === 1 ? '1 cliente en riesgo' : `${riskCount} clientes en riesgo`,
+      secondaryText: 'Revisá la lista en Clientes.',
+      color: '#F25252',
+    })
+  }
+
+  if (pendingCount > 0) {
+    notifications.push({
+      id: 'pending',
+      mainText:
+        pendingCount === 1 ? '1 cliente pendiente' : `${pendingCount} clientes pendientes`,
+      secondaryText: 'Revisá la lista en Clientes.',
+      color: '#F2C94A',
+    })
+  }
+
+  const totalClientsWithNotifications = riskCount + pendingCount
+  const bellColor = totalClientsWithNotifications > 0 ? '#F0F0F0' : '#E5E7EB'
 
   const overlay =
     mounted ? (
@@ -171,7 +201,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
                     width: '100%',
                     maxWidth: 300,
                     pointerEvents: 'auto',
-                    backgroundColor: 'rgba(37, 42, 49, 0.52)',
+                    backgroundColor: 'rgba(37, 42, 49, 0.9)',
                     border: '1px solid #2A2D34',
                     borderRadius: 16,
                     boxShadow: '0 16px 48px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4)',
@@ -181,7 +211,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
               <div
                 style={{
                   padding: '16px 0 12px',
-                  borderBottom: '1px solid #1F2227',
+                  borderBottom: '1px solid rgba(255, 255, 255, 0.14)',
                   display: 'grid',
                   gridTemplateColumns: `${NOTIF_HEADER_SIDE_SLOT_PX}px 1fr ${NOTIF_HEADER_SIDE_SLOT_PX}px`,
                   alignItems: 'center',
@@ -198,7 +228,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
                     lineHeight: 0,
                   }}
                 >
-                  <BellWithCountBadge count={count} bellColor={bellColor} />
+                  <BellWithCountBadge count={totalClientsWithNotifications} bellColor={bellColor} />
                 </div>
                 <p
                   id="coach-notif-heading"
@@ -217,7 +247,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
                 <div aria-hidden style={{ width: NOTIF_HEADER_SIDE_SLOT_PX }} />
               </div>
 
-              {count === 0 ? (
+              {notifications.length === 0 ? (
                 <div
                   style={{
                     padding: '20px 16px',
@@ -233,48 +263,63 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <Link
-                    href="/coach/clients"
-                    onClick={() => setOpen(false)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 12,
-                      padding: '13px 16px',
-                      textDecoration: 'none',
-                      backgroundColor: 'transparent',
-                      transition: 'background 0.1s',
-                    }}
-                  >
-                    <div
+                  {notifications.map((notification, index) => (
+                    <Link
+                      key={notification.id}
+                      href="/coach/clients"
+                      onClick={() => setOpen(false)}
                       style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        backgroundColor: '#F25252',
-                        flexShrink: 0,
-                        marginTop: 5,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 12,
+                        padding: '13px 16px',
+                        textDecoration: 'none',
+                        backgroundColor: 'transparent',
+                        transition: 'background 0.1s',
+                        borderBottom:
+                          index < notifications.length - 1 ? '1px solid #1A1D22' : 'none',
                       }}
-                    />
-                    <div>
-                      <p
+                    >
+                      <div
                         style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: '#F25252',
-                          lineHeight: 1.35,
-                          margin: 0,
+                          width: 9,
+                          height: 9,
+                          borderRadius: '50%',
+                          backgroundColor: notification.color,
+                          boxShadow:
+                            notification.id === 'risk'
+                              ? '0 0 0 4px rgba(242,82,82,0.09)'
+                              : '0 0 0 4px rgba(242,201,74,0.09)',
+                          flexShrink: 0,
+                          marginTop: 6,
+                          marginLeft: 6,
                         }}
-                      >
-                        {count === 1
-                          ? '1 cliente requiere atención'
-                          : `${count} clientes requieren atención`}
-                      </p>
-                      <p style={{ fontSize: 12, color: '#6B7280', marginTop: 3, lineHeight: 1.4 }}>
-                        Revisá la lista en Clientes.
-                      </p>
-                    </div>
-                  </Link>
+                      />
+                      <div>
+                        <p
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: notification.color,
+                            lineHeight: 1.35,
+                            margin: 0,
+                          }}
+                        >
+                          {notification.mainText}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: 12,
+                            color: NOTIF_SECONDARY_TEXT_COLOR,
+                            marginTop: 3,
+                            lineHeight: 1.4,
+                          }}
+                        >
+                          {notification.secondaryText}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               )}
                 </motion.div>
@@ -296,8 +341,10 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
           aria-expanded={open}
           aria-haspopup="dialog"
           aria-label={
-            count > 0
-              ? `${count} ${count === 1 ? 'cliente requiere' : 'clientes requieren'} atención`
+            totalClientsWithNotifications > 0
+              ? `${totalClientsWithNotifications} ${
+                  totalClientsWithNotifications === 1 ? 'cliente requiere' : 'clientes requieren'
+                } atención`
               : 'Notificaciones'
           }
           whileTap={{ scale: 0.88, opacity: 0.7 }}
@@ -307,7 +354,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            color: count > 0 ? '#F0F0F0' : '#E5E7EB',
+            color: totalClientsWithNotifications > 0 ? '#F0F0F0' : '#E5E7EB',
             padding: 8,
             borderRadius: 10,
             display: 'flex',
@@ -316,7 +363,7 @@ export default function CoachNotificationBell({ clientsNeedingAttention }: Props
             transition: 'background 0.15s',
           }}
         >
-          <BellWithCountBadge count={count} bellColor={bellColor} />
+          <BellWithCountBadge count={totalClientsWithNotifications} bellColor={bellColor} />
         </motion.button>
       </div>
       {mounted ? createPortal(overlay, document.body) : null}

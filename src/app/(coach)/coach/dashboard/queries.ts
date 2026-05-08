@@ -49,6 +49,20 @@ export function countCoachClientsNeedingAttention(clients: DashboardClientSummar
   return clients.filter((c) => c.status === 'riesgo' || c.status === 'naranja').length
 }
 
+export type CoachNotificationCounts = {
+  riskCount: number
+  pendingCount: number
+}
+
+export function getCoachNotificationCounts(
+  clients: DashboardClientSummary[]
+): CoachNotificationCounts {
+  return {
+    riskCount: clients.filter((c) => c.status === 'riesgo').length,
+    pendingCount: clients.filter((c) => c.status === 'naranja').length,
+  }
+}
+
 function localISOFromDate(d: Date): string {
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')

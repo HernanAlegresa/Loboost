@@ -301,13 +301,20 @@ function SortableExerciseCard({
           {...attributes}
           {...listeners}
           style={{
-            fontSize: 17,
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 20,
             color: '#8A95A3',
             cursor: isDragging ? 'grabbing' : 'grab',
             lineHeight: 1,
             userSelect: 'none',
             flexShrink: 0,
             touchAction: 'none',
+            backgroundColor: 'rgba(255,255,255,0.03)',
           }}
         >
           ≡
@@ -325,46 +332,14 @@ function SortableExerciseCard({
         >
           {n}
         </span>
-        <div style={{ flex: 1, minWidth: 0, marginLeft: 6, overflow: 'hidden' }}>
-          <p
-            style={{
-              display: 'block',
-              fontSize: 13,
-              fontWeight: 700,
-              color: '#F0F0F0',
-              textTransform: 'uppercase',
-              margin: 0,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {exerciseName ?? `Ejercicio ${n}`}
-          </p>
-          {!isExpanded && (
-            <p
-              style={{
-                display: 'block',
-                fontSize: 11,
-                color: '#6B7280',
-                margin: '2px 0 0',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {buildCollapsedSummary(line, isCardio)}
-            </p>
-          )}
-        </div>
         <button
           type="button"
           onClick={onToggleExpand}
           aria-label={isExpanded ? `Colapsar ejercicio ${n}` : `Expandir ejercicio ${n}`}
           style={{
-            flexShrink: 0,
-            width: 30,
-            height: 30,
+            flex: 1,
+            minWidth: 0,
+            marginLeft: 6,
             background: 'none',
             border: 'none',
             padding: 0,
@@ -372,16 +347,61 @@ function SortableExerciseCard({
             color: '#F0F0F0',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            gap: 8,
+            textAlign: 'left',
           }}
         >
-          <ChevronDown
-            size={18}
+          <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+            <p
+              style={{
+                display: 'block',
+                fontSize: 13,
+                fontWeight: 700,
+                color: '#F0F0F0',
+                textTransform: 'uppercase',
+                margin: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {exerciseName ?? `Ejercicio ${n}`}
+            </p>
+            {!isExpanded && (
+              <p
+                style={{
+                  display: 'block',
+                  fontSize: 11,
+                  color: '#6B7280',
+                  margin: '2px 0 0',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {buildCollapsedSummary(line, isCardio)}
+              </p>
+            )}
+          </div>
+          <span
+            aria-hidden
             style={{
-              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 200ms ease',
+              flexShrink: 0,
+              width: 30,
+              height: 30,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-          />
+          >
+            <ChevronDown
+              size={18}
+              style={{
+                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 200ms ease',
+              }}
+            />
+          </span>
         </button>
       </div>
 

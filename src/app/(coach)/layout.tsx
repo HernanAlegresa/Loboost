@@ -5,7 +5,7 @@ import CoachNotificationBell from '@/components/ui/coach-notification-bell'
 import CoachSearchOverlay from '@/components/ui/coach-search-overlay'
 import DynamicHeader from '@/components/ui/dynamic-header'
 import { HeaderProvider } from '@/components/ui/header-context'
-import { getDashboardData, countCoachClientsNeedingAttention } from './coach/dashboard/queries'
+import { getDashboardData, getCoachNotificationCounts } from './coach/dashboard/queries'
 
 export default async function CoachLayout({
   children,
@@ -17,7 +17,7 @@ export default async function CoachLayout({
   if (error || !user) redirect('/login')
 
   const { clients } = await getDashboardData(user.id)
-  const clientsNeedingAttention = countCoachClientsNeedingAttention(clients)
+  const { riskCount, pendingCount } = getCoachNotificationCounts(clients)
 
   const clientItems = clients.map((c) => ({ id: c.id, fullName: c.fullName }))
 
@@ -39,7 +39,7 @@ export default async function CoachLayout({
           rootRightSlot={
             <>
               <CoachSearchOverlay coachId={user.id} clients={clientItems} />
-              <CoachNotificationBell clientsNeedingAttention={clientsNeedingAttention} />
+              <CoachNotificationBell riskCount={riskCount} pendingCount={pendingCount} />
             </>
           }
         />
