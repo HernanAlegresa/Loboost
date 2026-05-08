@@ -10,6 +10,7 @@ type CustomSelectPropsBase = {
   options: SelectOption[]
   placeholder?: string
   required?: boolean
+  maxMenuHeight?: number
 }
 
 /** FormData: valor solo interno + input hidden con `name`. */
@@ -32,7 +33,7 @@ function isControlled(props: CustomSelectProps): props is CustomSelectControlled
 }
 
 export default function CustomSelect(props: CustomSelectProps) {
-  const { options, placeholder = 'Seleccioná...', required } = props
+  const { options, placeholder = 'Seleccioná...', required, maxMenuHeight } = props
   const controlled = isControlled(props)
 
   const [open, setOpen] = useState(false)
@@ -124,7 +125,7 @@ export default function CustomSelect(props: CustomSelectProps) {
               top: '100%',
               left: 0,
               right: 0,
-              maxHeight: 'min(50vh, 280px)',
+              maxHeight: maxMenuHeight ?? 280,
               overflowY: 'auto',
               backgroundColor: '#111317',
               border: '1px solid #B5F23D',

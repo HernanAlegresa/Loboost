@@ -37,9 +37,7 @@ export default function CoachSuccessOverlay({ title, subtitle, hint = 'Redirigie
           alignItems: 'center',
           gap: 16,
           padding: '40px 32px',
-          backgroundColor: '#111317',
-          border: '1px solid #1F2227',
-          borderRadius: 24,
+          backgroundColor: 'transparent',
           minWidth: 260,
           textAlign: 'center',
         }}

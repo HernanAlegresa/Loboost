@@ -53,15 +53,18 @@ export default function DeletePlanDialog({
             style={{
               width: 'min(100%, 520px)',
               backgroundColor: '#111317',
-              border: '1px solid #F25252',
+              border: '1px solid #F0F0F0',
               borderRadius: 16,
               padding: '20px 20px 24px',
             }}
           >
-            <p id="delete-plan-title" style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', textAlign: 'center' }}>
+            <p
+              id="delete-plan-title"
+              style={{ fontSize: 16, fontWeight: 700, color: '#F0F0F0', textAlign: 'center', margin: 0 }}
+            >
               ¿Eliminar este plan?
             </p>
-            <p style={{ fontSize: 13, color: '#6B7280', marginTop: 8, lineHeight: 1.5 }}>
+            <p style={{ fontSize: 13, color: '#6B7280', marginTop: 16, lineHeight: 1.5 }}>
               Se eliminará <span style={{ color: '#F0F0F0', fontWeight: 600 }}>{planName}</span> de tu biblioteca
               (días y ejercicios del plan base). No se borran copias ya asignadas a clientes.
             </p>
@@ -95,7 +98,7 @@ export default function DeletePlanDialog({
                   color: '#F0F0F0',
                   backgroundColor: isPending ? '#7A2C2C' : '#F25252',
                   border: 'none',
-                  borderRadius: 10,
+                  borderRadius: 20,
                   cursor: isPending ? 'not-allowed' : 'pointer',
                   padding: '10px 16px',
                 }}

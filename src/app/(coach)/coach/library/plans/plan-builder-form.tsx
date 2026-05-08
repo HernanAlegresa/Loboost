@@ -11,7 +11,7 @@ import {
 } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Loader2, Plus, Trash2 } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -36,8 +36,20 @@ import type { ExercisePick, PlanBuilderInitial } from './queries'
 import { FlowHeaderConfig } from '@/components/ui/header-context'
 import CustomSelect from '@/components/ui/custom-select'
 import CoachSuccessOverlay from '@/components/ui/coach-success-overlay'
+import FilterTabs, { type FilterTabItem } from '@/components/ui/filter-tabs'
 
 const FORM_ID = 'plan-builder-form'
+
+/**
+ * Etapa 1 · campo Semanas: desplaza el número horizontalmente respecto al centro del contenedor (px).
+ * Valor positivo = más a la izquierda. Negativo = más a la derecha. 0 = centrado.
+ */
+const STAGE1_SEMANAS_NUMBER_OFFSET_X_PX: number = 10
+
+/**
+ * Etapa 2 · mapa de días: ancho máximo de las tarjetas (centradas). Cambiá el valor en px.
+ */
+const STAGE2_DAY_MAP_CARD_MAX_WIDTH_PX = 250
 
 const inputStyle: CSSProperties = {
   width: '100%',
@@ -49,6 +61,31 @@ const inputStyle: CSSProperties = {
   color: '#F0F0F0',
   fontSize: 15,
   outline: 'none',
+  boxSizing: 'border-box',
+}
+
+const stage1TextFieldContainerStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  position: 'relative',
+  backgroundColor: 'rgba(37, 42, 49, 0.42)',
+  border: 'none',
+  borderRadius: 14,
+  minHeight: 44,
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+}
+
+const stage1TextInputStyle: CSSProperties = {
+  width: '100%',
+  height: 44,
+  background: 'none',
+  border: 'none',
+  outline: 'none',
+  color: '#F0F0F0',
+  fontSize: 15,
+  fontFamily: 'inherit',
+  caretColor: '#B5F23D',
+  padding: '0 14px',
   boxSizing: 'border-box',
 }
 
@@ -88,6 +125,19 @@ type WeekDraft = {
 type PendingAction =
   | { type: 'toggleDay'; weekIdx: number; dow: number; message: string }
   | { type: 'reduceWeeks'; newWeeks: number; message: string }
+
+const WEEK_TYPE_OPTIONS = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'deload', label: 'Deload' },
+  { value: 'peak', label: 'Peak' },
+  { value: 'test', label: 'Test' },
+] as const
+
+/** En etapa 2 no mostrar alert roja: ya se comunica con el botón Guardar/listo deshabilitado. */
+const PLAN_BUILDER_STAGE2_SILENT_ERRORS = new Set([
+  'Cada día debe tener al menos un ejercicio',
+  'El plan debe tener al menos un ejercicio',
+])
 
 function emptyDays(): Record<number, DayDraft> {
   const init: Record<number, DayDraft> = {}
@@ -159,10 +209,32 @@ function buildCollapsedSummary(line: ExerciseLine, isCardio: boolean): string {
   return parts.join(' · ')
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+function Field({
+  label,
+  children,
+  alignCenter,
+}: {
+  label: ReactNode
+  children: ReactNode
+  /** Centra label e hijos en el eje horizontal del formulario */
+  alignCenter?: boolean
+}) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <label style={labelStyle}>{label}</label>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: alignCenter ? 'center' : 'stretch',
+      }}
+    >
+      <label
+        style={{
+          ...labelStyle,
+          ...(alignCenter ? { alignSelf: 'stretch', textAlign: 'center' as const } : {}),
+        }}
+      >
+        {label}
+      </label>
       {children}
     </div>
   )
@@ -207,9 +279,11 @@ function SortableExerciseCard({
         position: 'relative',
         zIndex: isDragging ? 10 : undefined,
         backgroundColor: '#0D0F12',
-        border: `1px solid ${isExpanded ? '#2A3020' : '#252830'}`,
-        borderRadius: 14,
+        borderTop: '1px solid #252830',
+        borderRight: '1px solid #252830',
+        borderBottom: '1px solid #252830',
         borderLeft: '3px solid #B5F23D',
+        borderRadius: 14,
         overflow: 'hidden',
         boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.5)' : '0 2px 12px rgba(0,0,0,0.2)',
       }}
@@ -219,7 +293,8 @@ function SortableExerciseCard({
           display: 'flex',
           alignItems: 'center',
           gap: 10,
-          padding: isExpanded ? '12px 14px 0' : '12px 14px',
+          padding: '12px 14px',
+          minWidth: 0,
         }}
       >
         <span
@@ -227,7 +302,7 @@ function SortableExerciseCard({
           {...listeners}
           style={{
             fontSize: 17,
-            color: '#3D4A50',
+            color: '#8A95A3',
             cursor: isDragging ? 'grabbing' : 'grab',
             lineHeight: 1,
             userSelect: 'none',
@@ -239,23 +314,25 @@ function SortableExerciseCard({
         </span>
         <span
           style={{
-            fontSize: 11,
+            fontSize: 14,
             fontWeight: 800,
             color: '#B5F23D',
             letterSpacing: '0.1em',
             flexShrink: 0,
-            minWidth: 14,
+            minWidth: 18,
             textAlign: 'center',
           }}
         >
           {n}
         </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, marginLeft: 6, overflow: 'hidden' }}>
           <p
             style={{
+              display: 'block',
               fontSize: 13,
               fontWeight: 700,
               color: '#F0F0F0',
+              textTransform: 'uppercase',
               margin: 0,
               whiteSpace: 'nowrap',
               overflow: 'hidden',
@@ -267,6 +344,7 @@ function SortableExerciseCard({
           {!isExpanded && (
             <p
               style={{
+                display: 'block',
                 fontSize: 11,
                 color: '#6B7280',
                 margin: '2px 0 0',
@@ -285,13 +363,16 @@ function SortableExerciseCard({
           aria-label={isExpanded ? `Colapsar ejercicio ${n}` : `Expandir ejercicio ${n}`}
           style={{
             flexShrink: 0,
+            width: 30,
+            height: 30,
             background: 'none',
             border: 'none',
-            padding: '4px 6px',
+            padding: 0,
             cursor: 'pointer',
-            color: '#6B7280',
+            color: '#F0F0F0',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           <ChevronDown
@@ -307,38 +388,16 @@ function SortableExerciseCard({
       {isExpanded && (
         <div style={{ padding: '0 14px 16px' }}>
           <div style={{ height: 1, backgroundColor: '#1A1D22', margin: '12px 0' }} />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-            <button
-              type="button"
-              onClick={onRemove}
-              aria-label={`Quitar ejercicio ${n}`}
-              style={{
-                background: 'rgba(242, 82, 82, 0.1)',
-                border: '1px solid rgba(242, 82, 82, 0.25)',
-                borderRadius: 10,
-                color: '#F25252',
-                cursor: 'pointer',
-                padding: '6px 12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              <Trash2 size={14} />
-              Eliminar
-            </button>
-          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
-              <label style={{ ...labelStyle, marginBottom: 6 }}>Movimiento</label>
+              <label style={{ ...labelStyle, marginBottom: 6 }}>Ejercicio</label>
               <CustomSelect
                 key={`${line.id}-${line.exerciseId}`}
                 required
                 value={line.exerciseId}
                 onChange={(v) => onUpdateLine({ exerciseId: v })}
+                maxMenuHeight={150}
                 placeholder="Seleccioná de tu biblioteca…"
                 options={exercises.map((ex) => ({
                   value: ex.id,
@@ -350,17 +409,19 @@ function SortableExerciseCard({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: isCardio ? '1fr 1fr' : '1fr 1fr 1fr',
-                gap: 10,
+                gridTemplateColumns: isCardio ? 'repeat(2, 80px)' : 'repeat(3, 80px)',
+                columnGap: 24,
+                rowGap: 18,
+                justifyContent: 'center',
               }}
             >
               <div>
-                <label style={{ ...labelStyle, marginBottom: 6 }}>Series</label>
+                <label style={{ ...labelStyle, marginBottom: 6, textAlign: 'center' }}>Series</label>
                 <input
                   value={line.sets}
                   onChange={(e) => onUpdateLine({ sets: e.target.value })}
                   inputMode="numeric"
-                  style={inputStyle}
+                  style={{ ...inputStyle, textAlign: 'center', borderRadius: 24 }}
                 />
               </div>
               {isCardio ? (
@@ -376,37 +437,88 @@ function SortableExerciseCard({
               ) : (
                 <>
                   <div>
-                    <label style={{ ...labelStyle, marginBottom: 6 }}>Reps min</label>
+                    <label style={{ ...labelStyle, marginBottom: 6, textAlign: 'center' }}>
+                      Reps min
+                    </label>
                     <input
                       value={line.repsMin}
                       onChange={(e) => onUpdateLine({ repsMin: e.target.value })}
                       inputMode="numeric"
                       placeholder="8"
-                      style={inputStyle}
+                      style={{ ...inputStyle, textAlign: 'center', borderRadius: 24 }}
                     />
                   </div>
                   <div>
-                    <label style={{ ...labelStyle, marginBottom: 6 }}>Reps max</label>
+                    <label style={{ ...labelStyle, marginBottom: 6, textAlign: 'center' }}>
+                      Reps max
+                    </label>
                     <input
                       value={line.repsMax}
                       onChange={(e) => onUpdateLine({ repsMax: e.target.value })}
                       inputMode="numeric"
                       placeholder="12"
-                      style={inputStyle}
+                      style={{ ...inputStyle, textAlign: 'center', borderRadius: 24 }}
                     />
                   </div>
                 </>
               )}
-              <div style={{ gridColumn: '1 / -1' }}>
-                <label style={{ ...labelStyle, marginBottom: 6 }}>
-                  Descanso (seg, opcional)
-                </label>
-                <input
-                  value={line.restSeconds}
-                  onChange={(e) => onUpdateLine({ restSeconds: e.target.value })}
-                  inputMode="numeric"
-                  style={inputStyle}
-                />
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto',
+                  gap: 10,
+                  alignItems: 'end',
+                }}
+              >
+                <div>
+                  <label style={{ ...labelStyle, marginBottom: 6 }}>
+                    Descanso (opcional)
+                  </label>
+                  <div style={{ position: 'relative', width: 100 }}>
+                    <input
+                      value={line.restSeconds}
+                      onChange={(e) => onUpdateLine({ restSeconds: e.target.value })}
+                      inputMode="numeric"
+                      style={{ ...inputStyle, width: '100%', paddingRight: 34 }}
+                    />
+                    <span
+                      style={{
+                        position: 'absolute',
+                        right: 10,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: '#6B7280',
+                        pointerEvents: 'none',
+                      }}
+                    >
+                      seg
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onRemove}
+                  aria-label={`Quitar ejercicio ${n}`}
+                  style={{
+                    width: 44,
+                    height: 44,
+                    marginBottom: 0,
+                    background: 'none',
+                    border: 'none',
+                    borderRadius: 0,
+                    color: '#F25252',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Trash2 size={20} />
+                </button>
               </div>
             </div>
           </div>
@@ -427,6 +539,7 @@ type BuilderStage = 'stage1' | 'stage2'
 export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props) {
   const router = useRouter()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const weekPickerRef = useRef<HTMLDivElement>(null)
 
   const [name, setName] = useState(() => initialPlan?.name ?? '')
   const [description, setDescription] = useState(() => initialPlan?.description?.trim() ?? '')
@@ -450,6 +563,8 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
 
   const [expandedLineId, setExpandedLineId] = useState<string | null>(null)
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null)
+  const [weekPickerOpen, setWeekPickerOpen] = useState(false)
+  const [weekTypePickerOpenIdx, setWeekTypePickerOpenIdx] = useState<number | null>(null)
 
   const exerciseById = useMemo(() => new Map(exercises.map((e) => [e.id, e])), [exercises])
 
@@ -532,6 +647,37 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     })
   }, [weekDrafts, name, description, exerciseById])
 
+  /** Al menos un día activo en todo el plan (evita guardar vacío sin días configurados). */
+  const hasAnyActiveDayAcrossPlan = useMemo(
+    () =>
+      weekDrafts.some((w) => Object.values(w.days).some((d) => d.enabled)),
+    [weekDrafts]
+  )
+
+  /** Cada día activo debe tener ≥1 línea con ejercicio elegido en la biblioteca. */
+  const everyActiveDayHasChosenExercise = useMemo(() => {
+    for (const w of weekDrafts) {
+      for (let dow = 1; dow <= 7; dow++) {
+        const day = w.days[dow]
+        if (!day?.enabled) continue
+        if (!day.exercises.some((e) => e.exerciseId.trim() !== '')) return false
+      }
+    }
+    return true
+  }, [weekDrafts])
+
+  /** Filtros de semana (Etapa 2): mismo patrón que biblioteca / ejercicios. */
+  const weekStage2FilterItems = useMemo<FilterTabItem[]>(
+    () =>
+      weekDrafts.map((_, i) => ({
+        id: String(i),
+        label: `S${i + 1}`,
+        activeBackground: '#B5F23D',
+        activeColor: '#0A0A0A',
+      })),
+    [weekDrafts]
+  )
+
   useEffect(() => {
     if (!state?.success) return
     const timer = setTimeout(() => {
@@ -543,6 +689,29 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     }, 2200)
     return () => clearTimeout(timer)
   }, [state, router, mode, initialPlan])
+
+  useEffect(() => {
+    if (!weekPickerOpen) return
+    function handleOutsideClick(event: MouseEvent) {
+      if (!weekPickerRef.current?.contains(event.target as Node)) {
+        setWeekPickerOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [weekPickerOpen])
+
+  useEffect(() => {
+    if (weekTypePickerOpenIdx === null) return
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as HTMLElement
+      if (!target.closest('[data-week-type-picker="true"]')) {
+        setWeekTypePickerOpenIdx(null)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [weekTypePickerOpenIdx])
 
   function applyWeeksChange(newWeeks: number) {
     setWeekDrafts((prev) => {
@@ -719,27 +888,56 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
     if (scrollRef.current) scrollRef.current.scrollTop = 0
   }
 
-  const canSave = !isPending && exercises.length > 0
+  const canSave =
+    !isPending &&
+    exercises.length > 0 &&
+    hasAnyActiveDayAcrossPlan &&
+    everyActiveDayHasChosenExercise
+
+  const saveButtonAriaLabel = isPending
+    ? 'Guardando plan…'
+    : exercises.length === 0
+      ? 'Agregá al menos un ejercicio en tu biblioteca para guardar'
+      : !hasAnyActiveDayAcrossPlan
+        ? 'Activá al menos un día en el plan para guardar'
+        : !everyActiveDayHasChosenExercise
+          ? 'Completá cada día activo con al menos un ejercicio antes de guardar'
+          : 'Guardar plan'
 
   const saveButton = (
     <button
       type="submit"
       form={FORM_ID}
       disabled={!canSave}
+      aria-label={saveButtonAriaLabel}
+      aria-busy={isPending}
       style={{
-        height: 34,
-        padding: '0 16px',
-        borderRadius: 20,
+        flexShrink: 0,
+        width: 38,
+        height: 38,
+        padding: 0,
+        borderRadius: '50%',
         border: 'none',
-        fontSize: 13,
-        fontWeight: 700,
-        color: '#0A0A0A',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: canSave ? '#B5F23D' : '#8BA82B',
         cursor: canSave ? 'pointer' : 'not-allowed',
-        whiteSpace: 'nowrap',
       }}
     >
-      {isPending ? '...' : 'Guardar'}
+      {isPending ? (
+        <Loader2
+          className="plan-builder-header-save-spinner"
+          size={19}
+          color="#0A0A0A"
+          aria-hidden
+          style={{
+            animation: 'planBuilderSpin 0.75s linear infinite',
+          }}
+        />
+      ) : (
+        <Check size={21} strokeWidth={2.5} color="#0A0A0A" aria-hidden />
+      )}
     </button>
   )
 
@@ -753,6 +951,29 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
         overflow: 'hidden',
       }}
     >
+      <style>{`
+        @keyframes planBuilderContinuarArrow {
+          0%, 100% {
+            transform: translateX(0);
+          }
+          50% {
+            transform: translateX(6px);
+          }
+        }
+        @keyframes planBuilderSpin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-plan-continuar-arrow='true'] {
+            animation: none !important;
+          }
+          .plan-builder-header-save-spinner {
+            animation: none !important;
+          }
+        }
+      `}</style>
       {state?.success ? (
         <CoachSuccessOverlay
           title={mode === 'edit' ? '¡Plan actualizado!' : '¡Plan creado!'}
@@ -767,7 +988,7 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
         />
       ) : stage2View === 'dayEditor' && activeDow !== null ? (
         <FlowHeaderConfig
-          title={`Semana ${activeWeekIdx + 1} · ${DAY_FULL_LABELS[activeDow - 1]}`}
+          title={`Sem ${activeWeekIdx + 1} · ${DAY_FULL_LABELS[activeDow - 1]}`}
           fallbackHref="/coach/library?tab=plans"
           onBack={goToDayMap}
           rightSlot={saveButton}
@@ -786,41 +1007,21 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
           style={{
             flexShrink: 0,
             backgroundColor: '#0A0A0A',
-            borderBottom: '1px solid #1F2227',
-            padding: '10px 20px 12px',
+            paddingTop: 10,
+            paddingLeft: 20,
+            paddingRight: 20,
+            paddingBottom: 14,
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              gap: 8,
-              overflowX: 'auto',
-              scrollbarWidth: 'none',
-            }}
-          >
-            {weekDrafts.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setActiveWeekIdx(i)}
-                style={{
-                  flexShrink: 0,
-                  height: 34,
-                  paddingLeft: 14,
-                  paddingRight: 14,
-                  borderRadius: 20,
-                  border: activeWeekIdx === i ? '1.5px solid #B5F23D' : '1px solid #2A2D34',
-                  backgroundColor: activeWeekIdx === i ? 'rgba(181,242,61,0.1)' : '#111317',
-                  color: activeWeekIdx === i ? '#B5F23D' : '#9CA3AF',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                S{i + 1}
-              </button>
-            ))}
+          <div style={{ marginBottom: 4 }}>
+            <FilterTabs
+              items={weekStage2FilterItems}
+              activeId={String(activeWeekIdx)}
+              onChange={(id) => setActiveWeekIdx(Number(id))}
+              inactiveBackground="rgba(75, 85, 99, 0.34)"
+              inactiveColor="rgba(218, 224, 233, 0.72)"
+              inactiveBorder="transparent"
+            />
           </div>
         </div>
       )}
@@ -849,89 +1050,264 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
           {activeStage === 'stage1' ? (
             <>
               <Field label="Nombre">
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  type="text"
-                  style={inputStyle}
-                  placeholder="Fuerza 4 semanas"
-                  autoComplete="off"
-                />
+                <div style={stage1TextFieldContainerStyle}>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    type="text"
+                    style={stage1TextInputStyle}
+                    placeholder="Fuerza 4 semanas"
+                    autoComplete="off"
+                  />
+                </div>
               </Field>
 
-              <Field label="Descripción (opcional)">
-                <input
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  type="text"
-                  style={inputStyle}
-                  placeholder="Objetivo, enfoque, notas…"
-                  autoComplete="off"
-                />
+              <Field
+                label={
+                  <>
+                    Descripción{' '}
+                    <span style={{ color: '#CBD5E1', fontWeight: 500 }}>(opcional)</span>
+                  </>
+                }
+              >
+                <div style={stage1TextFieldContainerStyle}>
+                  <input
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    type="text"
+                    style={stage1TextInputStyle}
+                    placeholder="Objetivo, enfoque, notas…"
+                    autoComplete="off"
+                  />
+                </div>
               </Field>
 
-              <Field label="Semanas (1–12)">
-                <input
-                  value={String(weekDrafts.length)}
-                  onChange={(e) => {
-                    const v = Math.min(12, Math.max(1, Number(e.target.value) || 1))
-                    handleWeeksChange(v)
+              <Field label="Semanas" alignCenter>
+                <div
+                  ref={weekPickerRef}
+                  style={{
+                    ...stage1TextFieldContainerStyle,
+                    position: 'relative',
+                    width: 'min(80px, 100%)',
                   }}
-                  type="number"
-                  min={1}
-                  max={12}
-                  style={inputStyle}
-                />
+                >
+                  <button
+                    type="button"
+                    onClick={() => setWeekPickerOpen((prev) => !prev)}
+                    style={{
+                      position: 'relative',
+                      width: '100%',
+                      minHeight: 44,
+                      background: 'none',
+                      border: 'none',
+                      outline: 'none',
+                      color: '#F0F0F0',
+                      fontSize: 15,
+                      fontFamily: 'inherit',
+                      padding: '0 24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <span
+                      style={{
+                        transform:
+                          STAGE1_SEMANAS_NUMBER_OFFSET_X_PX !== 0
+                            ? `translateX(${-STAGE1_SEMANAS_NUMBER_OFFSET_X_PX}px)`
+                            : undefined,
+                      }}
+                    >
+                      {weekDrafts.length}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      color="#B5F23D"
+                      aria-hidden="true"
+                      style={{
+                        position: 'absolute',
+                        right: 12,
+                        top: '50%',
+                        transform: weekPickerOpen
+                          ? 'translateY(-50%) rotate(180deg)'
+                          : 'translateY(-50%) rotate(0deg)',
+                        transition: 'transform 150ms ease',
+                        flexShrink: 0,
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </button>
+
+                  {weekPickerOpen && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 'calc(100% + 6px)',
+                        left: 0,
+                        right: 0,
+                        maxHeight: 220,
+                        overflowY: 'auto',
+                        backgroundColor: '#111317',
+                        border: '1px solid #2A2D34',
+                        borderRadius: 10,
+                        boxShadow: '0 10px 24px rgba(0,0,0,0.45)',
+                        zIndex: 60,
+                      }}
+                    >
+                      {Array.from({ length: 60 }, (_, index) => {
+                        const value = index + 1
+                        const isSelected = weekDrafts.length === value
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => {
+                              handleWeeksChange(value)
+                              setWeekPickerOpen(false)
+                            }}
+                            style={{
+                              width: '100%',
+                              height: 34,
+                              padding: '0 12px',
+                              border: 'none',
+                              borderBottom: value < 60 ? '1px solid #1A1D22' : 'none',
+                              backgroundColor: isSelected ? 'rgba(181,242,61,0.12)' : 'transparent',
+                              color: isSelected ? '#B5F23D' : '#F0F0F0',
+                              fontSize: 14,
+                              fontWeight: isSelected ? 700 : 500,
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {value}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               </Field>
 
               {/* Week cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {weekDrafts.map((w, weekIdx) => (
-                  <div
-                    key={weekIdx}
-                    style={{
-                      backgroundColor: '#111317',
-                      border: '1px solid #1F2227',
-                      borderRadius: 14,
-                      padding: '14px 16px',
-                    }}
-                  >
+                  <div key={weekIdx}>
+                    <div
+                      style={{
+                        backgroundColor: 'transparent',
+                        padding: '14px 0',
+                      }}
+                    >
                     <div
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        marginBottom: 12,
+                        marginBottom: 15,
+                        paddingBottom: 2,
                       }}
                     >
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#F0F0F0', margin: 0 }}>
+                      <p style={{ fontSize: 15, fontWeight: 500, color: '#B5F23D', margin: 0 }}>
                         Semana {weekIdx + 1}
                       </p>
-                      <select
-                        value={w.weekType}
-                        onChange={(e) => setWeekType(weekIdx, e.target.value as WeekDraft['weekType'])}
-                        style={{
-                          height: 32,
-                          paddingLeft: 10,
-                          paddingRight: 10,
-                          borderRadius: 8,
-                          border: '1px solid #2A2D34',
-                          backgroundColor: '#0A0A0A',
-                          color: w.weekType !== 'normal' ? '#B5F23D' : '#9CA3AF',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          outline: 'none',
-                        }}
+                      <div
+                        data-week-type-picker="true"
+                        style={{ position: 'relative', minWidth: 108 }}
                       >
-                        <option value="normal">Normal</option>
-                        <option value="deload">Deload</option>
-                        <option value="peak">Peak</option>
-                        <option value="test">Test</option>
-                      </select>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setWeekTypePickerOpenIdx((prev) => (prev === weekIdx ? null : weekIdx))
+                          }
+                          style={{
+                            ...inputStyle,
+                            height: 30,
+                            minWidth: 100,
+                            paddingLeft: 14,
+                            paddingRight: 14,
+                            borderRadius: 10,
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                            color: '#F0F0F0',
+                            fontSize: 12,
+                            fontWeight: 500,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            textTransform: 'capitalize',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <span>{WEEK_TYPE_OPTIONS.find((opt) => opt.value === w.weekType)?.label}</span>
+                          <ChevronDown
+                            size={16}
+                            color="#B5F23D"
+                            aria-hidden="true"
+                            style={{
+                              transform: weekTypePickerOpenIdx === weekIdx ? 'rotate(180deg)' : 'rotate(0deg)',
+                              transition: 'transform 150ms ease',
+                              flexShrink: 0,
+                            }}
+                          />
+                        </button>
+
+                        {weekTypePickerOpenIdx === weekIdx && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 'calc(100% + 6px)',
+                              left: 0,
+                              right: 0,
+                              maxHeight: 220,
+                              overflowY: 'auto',
+                              backgroundColor: '#111317',
+                              border: 'none',
+                              borderRadius: 10,
+                              boxShadow: '0 10px 24px rgba(0,0,0,0.45)',
+                              zIndex: 60,
+                            }}
+                          >
+                            {WEEK_TYPE_OPTIONS.map((option, optionIdx) => {
+                              const isSelected = option.value === w.weekType
+                              return (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() => {
+                                    setWeekType(weekIdx, option.value)
+                                    setWeekTypePickerOpenIdx(null)
+                                  }}
+                                  style={{
+                                    width: '100%',
+                                    height: 34,
+                                    padding: '0 12px',
+                                    border: 'none',
+                                    borderBottom:
+                                      optionIdx < WEEK_TYPE_OPTIONS.length - 1
+                                        ? '1px solid #1A1D22'
+                                        : 'none',
+                                    backgroundColor: isSelected
+                                      ? 'rgba(181,242,61,0.12)'
+                                      : 'transparent',
+                                    color: isSelected ? '#B5F23D' : '#F0F0F0',
+                                    fontSize: 14,
+                                    fontWeight: isSelected ? 700 : 500,
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  {option.label}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 5, justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', gap: 5, justifyContent: 'space-between', paddingTop: 1 }}>
                       {DAY_LABELS.map((lbl, idx) => {
                         const dow = idx + 1
                         const on = w.days[dow]?.enabled
@@ -960,6 +1336,19 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                       })}
                     </div>
                   </div>
+                  {weekIdx < weekDrafts.length - 1 ? (
+                    <div
+                      role="presentation"
+                      style={{
+                        paddingTop: 16,
+                        paddingBottom: 16,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <div style={{ height: 1, width: '100%', backgroundColor: 'rgba(255,255,255,0.5)' }} />
+                    </div>
+                  ) : null}
+                </div>
                 ))}
               </div>
 
@@ -988,11 +1377,13 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                 onClick={goToStage2}
                 disabled={!name.trim()}
                 style={{
-                  alignSelf: 'stretch',
-                  height: 52,
-                  borderRadius: 14,
+                  alignSelf: 'center',
+                  width: 'fit-content',
+                  height: 42,
+                  borderRadius: 20,
                   border: 'none',
-                  fontSize: 15,
+                  padding: '0 24px',
+                  fontSize: 16,
                   fontWeight: 700,
                   color: name.trim() ? '#0A0A0A' : '#5C6370',
                   backgroundColor: name.trim() ? '#B5F23D' : '#1C2010',
@@ -1000,17 +1391,41 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 8,
+                  gap: 14,
                   transition: 'background-color 150ms ease',
                 }}
               >
-                Continuar →
+                <span>Continuar</span>
+                <span
+                  aria-hidden
+                  data-plan-continuar-arrow="true"
+                  style={
+                    name.trim()
+                      ? {
+                          display: 'inline-block',
+                          animation: 'planBuilderContinuarArrow 1s ease-in-out infinite',
+                        }
+                      : undefined
+                  }
+                >
+                  →
+                </span>
               </button>
             </>
           ) : (
             <div>
               {stage2View === 'dayMap' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: STAGE2_DAY_MAP_CARD_MAX_WIDTH_PX,
+                    marginLeft: 'auto',
+                    marginRight: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 16,
+                  }}
+                >
                   {enabledSorted.length === 0 ? (
                     <div
                       style={{
@@ -1046,23 +1461,25 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                           onClick={() => enterDayEditor(dow)}
                           style={{
                             width: '100%',
+                            backgroundColor: '#111317',
+                            borderRadius: 14,
+                            padding: '10px 12px 10px 16px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'space-between',
-                            backgroundColor: '#111317',
-                            border: '1px solid #1F2227',
-                            borderRadius: 14,
-                            padding: '16px 18px',
+                            gap: 12,
+                            border: 'none',
                             cursor: 'pointer',
-                            textAlign: 'left',
                           }}
                         >
-                          <div>
+                          <span style={{ flex: 1, minWidth: 0, textAlign: 'left', display: 'block' }}>
                             <p
                               style={{
                                 fontSize: 15,
-                                fontWeight: 700,
-                                color: '#F0F0F0',
+                                fontWeight: 400,
+                                color: '#B5F23D',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
                                 margin: 0,
                               }}
                             >
@@ -1071,16 +1488,29 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                             <p
                               style={{
                                 fontSize: 12,
-                                color: exerciseCount > 0 ? '#B5F23D' : '#6B7280',
-                                margin: '4px 0 0',
+                                color: '#9CA3AF',
+                                margin: '5px 0 0',
+                                lineHeight: 1.45,
                               }}
                             >
                               {exerciseCount > 0
                                 ? `${exerciseCount} ${exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}`
                                 : 'Sin ejercicios'}
                             </p>
+                          </span>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              minWidth: 44,
+                              minHeight: 44,
+                              flexShrink: 0,
+                              color: '#F0F0F0',
+                            }}
+                          >
+                            <ChevronRight size={22} strokeWidth={2.6} aria-hidden />
                           </div>
-                          <ChevronRight size={20} color="#6B7280" />
                         </button>
                       )
                     })
@@ -1149,12 +1579,12 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 8,
-                      borderRadius: 12,
-                      border: '1px dashed #3D4A2E',
-                      backgroundColor: 'rgba(181, 242, 61, 0.06)',
+                      borderRadius: 0,
+                      border: 'none',
+                      background: 'none',
                       color: '#B5F23D',
-                      fontSize: 14,
-                      fontWeight: 700,
+                      fontSize: 16,
+                      fontWeight: 500,
                       cursor: 'pointer',
                     }}
                   >
@@ -1164,7 +1594,13 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                 </div>
               ) : null}
 
-              {state && !state.success && 'error' in state && (
+              {state &&
+                !state.success &&
+                'error' in state &&
+                !(
+                  activeStage === 'stage2' &&
+                  PLAN_BUILDER_STAGE2_SILENT_ERRORS.has(state.error)
+                ) && (
                 <div
                   role="alert"
                   style={{

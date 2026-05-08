@@ -18,7 +18,7 @@ const TAB_LABELS: Record<LibraryTab, string> = {
 }
 
 const PANEL_BOTTOM_PADDING_PX = 120
-const LIBRARY_LIST_BOTTOM_GAP_PX = 28
+const LIBRARY_LIST_BOTTOM_GAP_PX = 0
 const LIBRARY_LIST_TOP_INSET_PX = 22
 
 type Props = {
@@ -126,6 +126,29 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
         backgroundColor: '#0A0A0A',
       }}
     >
+      <style>{`
+        [data-library-viewport='true'],
+        [data-library-plans-panel='true'] {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        [data-library-viewport='true']::-webkit-scrollbar,
+        [data-library-plans-panel='true']::-webkit-scrollbar {
+          display: none;
+          width: 0 !important;
+          height: 0 !important;
+          background: transparent;
+        }
+
+        [data-library-viewport='true']::-webkit-scrollbar-track,
+        [data-library-plans-panel='true']::-webkit-scrollbar-track,
+        [data-library-viewport='true']::-webkit-scrollbar-thumb,
+        [data-library-plans-panel='true']::-webkit-scrollbar-thumb {
+          background: transparent;
+          border: none;
+        }
+      `}</style>
       <div
         style={{
           flexShrink: 0,
@@ -245,6 +268,7 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
       </div>
 
       <div
+        data-library-viewport="true"
         ref={viewportRef}
         onScroll={handleViewportScroll}
         style={{
@@ -281,6 +305,7 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
         </section>
 
         <section
+          data-library-plans-panel="true"
           aria-label="Biblioteca de planes"
           style={{
             flex: '0 0 100%',
@@ -288,6 +313,8 @@ export default function LibrarySwipeView({ exercises, plans }: Props) {
             scrollSnapAlign: 'start',
             overflowY: 'auto',
             overflowX: 'hidden',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
             overscrollBehaviorY: 'contain',
             padding: `${LIBRARY_LIST_TOP_INSET_PX}px 20px ${PANEL_BOTTOM_PADDING_PX}px`,
             backgroundColor: '#0A0A0A',
