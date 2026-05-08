@@ -6,6 +6,7 @@ export type PlanListRow = {
   weeks: number
   created_at: string
   trainingDays: number
+  isIncomplete: boolean
 }
 
 export type ClientPick = {
@@ -23,19 +24,25 @@ export async function getCoachPlans(coachId: string): Promise<PlanListRow[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('plans')
-    .select('id, name, weeks, created_at, plan_days(id)')
+    .select('id, name, weeks, created_at, plan_days(id, plan_day_exercises(id))')
     .eq('coach_id', coachId)
     .order('created_at', { ascending: false })
 
   if (error || !data) return []
 
-  return data.map((p) => ({
-    id: p.id,
-    name: p.name,
-    weeks: p.weeks,
-    created_at: p.created_at,
-    trainingDays: (p.plan_days as { id: string }[] | null)?.length ?? 0,
-  }))
+  type PlanDay = { id: string; plan_day_exercises: { id: string }[] | null }
+
+  return data.map((p) => {
+    const days = (p.plan_days as PlanDay[] | null) ?? []
+    return {
+      id: p.id,
+      name: p.name,
+      weeks: p.weeks,
+      created_at: p.created_at,
+      trainingDays: days.length,
+      isIncomplete: days.some((d) => (d.plan_day_exercises ?? []).length === 0),
+    }
+  })
 }
 
 export async function getCoachClientsForAssign(coachId: string): Promise<ClientPick[]> {
