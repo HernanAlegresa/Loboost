@@ -39,18 +39,18 @@ export default function AppHeader(props: AppHeaderProps) {
 
     return (
       <header
-        className="shrink-0 z-50 bg-[var(--color-bg-base)] pb-4 grid grid-cols-[44px_1fr_44px] items-center gap-x-2"
+        className="shrink-0 z-50 bg-[var(--color-bg-base)] pb-4 px-5 relative flex items-center justify-between"
         style={{ paddingTop: SAFE_HEADER_PADDING_TOP }}
       >
         <button
           onClick={handleBack}
           aria-label="Volver"
-          className="flex items-center justify-center pl-5 text-[var(--color-accent)] w-11 h-11 shrink-0"
+          className="flex items-center justify-center text-[var(--color-accent)] w-11 h-11 shrink-0 z-[1]"
         >
           <ChevronLeft size={24} />
         </button>
 
-        <div className="min-w-0 text-center">
+        <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 w-[min(640px,calc(100%-8.5rem))] min-w-0 text-center px-1">
           <p className="text-[20px] font-bold text-[var(--color-text-primary)] truncate leading-[1.2]">
             {title}
           </p>
@@ -61,7 +61,7 @@ export default function AppHeader(props: AppHeaderProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-end shrink-0 pr-5">
+        <div className="flex items-center justify-end min-w-11 h-11 shrink-0 z-[1]">
           {rightSlot ?? null}
         </div>
       </header>
