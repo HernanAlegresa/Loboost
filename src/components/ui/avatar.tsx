@@ -17,7 +17,7 @@ const SIZE_CONFIG: Record<AvatarSize, { px: number; fontSize: number }> = {
 }
 
 export function getInitials(fullName: string): string {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean)
+  const parts = fullName.trim().split(/\s+/).filter((w) => w.length > 0 && /^[a-záéíóúñüA-ZÁÉÍÓÚÑÜ]/i.test(w))
   if (parts.length === 0) return '?'
   if (parts.length === 1) return parts[0][0].toUpperCase()
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
