@@ -15,6 +15,7 @@ type ExerciseChange = {
   sets: number
   repsMin: number | null
   repsMax: number | null
+  durationSeconds: number | null
   restSeconds: number | null
 }
 
@@ -106,6 +107,7 @@ export async function updateClientPlanFullAction(
             sets: ex.sets,
             reps_min: ex.repsMin,
             reps_max: ex.repsMax,
+            duration_seconds: ex.durationSeconds,
             rest_seconds: ex.restSeconds,
             order: ex.order,
           })
@@ -120,6 +122,7 @@ export async function updateClientPlanFullAction(
             sets: ex.sets,
             reps_min: ex.repsMin,
             reps_max: ex.repsMax,
+            duration_seconds: ex.durationSeconds,
             rest_seconds: ex.restSeconds,
             order: ex.order,
           })

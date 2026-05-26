@@ -54,6 +54,12 @@ export type CoachNotificationCounts = {
   pendingCount: number
 }
 
+export type CoachAssignPlanNotification = {
+  clientId: string
+  fullName: string
+  notificationKey: string
+}
+
 export function getCoachNotificationCounts(
   clients: DashboardClientSummary[]
 ): CoachNotificationCounts {
@@ -61,6 +67,44 @@ export function getCoachNotificationCounts(
     riskCount: clients.filter((c) => c.status === 'riesgo').length,
     pendingCount: clients.filter((c) => c.status === 'naranja').length,
   }
+}
+
+/** MVP notifications: roster clients that never had a plan yet (quick CTA to assign). */
+export async function getCoachAssignPlanNotifications(
+  coachId: string,
+  limit = 6
+): Promise<CoachAssignPlanNotification[]> {
+  const supabase = await createClient()
+
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, full_name, created_at')
+    .eq('coach_id', coachId)
+    .eq('role', 'client')
+    .order('created_at', { ascending: false })
+
+  if (!profiles || profiles.length === 0) return []
+
+  const clientIds = profiles.map((p) => p.id)
+  const { data: clientPlans } = await supabase
+    .from('client_plans')
+    .select('client_id')
+    .in('client_id', clientIds)
+
+  const clientsWithAnyPlan = new Set((clientPlans ?? []).map((p) => p.client_id))
+
+  const notifications: CoachAssignPlanNotification[] = []
+  for (const profile of profiles) {
+    if (clientsWithAnyPlan.has(profile.id)) continue
+    notifications.push({
+      clientId: profile.id,
+      fullName: profile.full_name ?? 'Cliente sin nombre',
+      notificationKey: `assign:${coachId}:${profile.id}`,
+    })
+    if (notifications.length >= limit) break
+  }
+
+  return notifications
 }
 
 function localISOFromDate(d: Date): string {

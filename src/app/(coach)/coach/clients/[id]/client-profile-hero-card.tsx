@@ -85,7 +85,7 @@ export default function ClientProfileHeroCard({
               El plan de este cliente ha finalizado.
             </p>
             <Link
-              href={`/coach/library/plans?assignTo=${clientId}`}
+              href={`/coach/clients/${clientId}/assign`}
               style={{
                 display: 'inline-block',
                 marginTop: 8,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Bell } from 'lucide-react'
@@ -10,6 +10,11 @@ import { COACH_HEADER_TOTAL_HEIGHT, SAFE_BOTTOM_NAV_HEIGHT } from '@/lib/ui/safe
 type Props = {
   riskCount: number
   pendingCount: number
+  assignNotifications?: Array<{
+    clientId: string
+    fullName: string
+    notificationKey: string
+  }>
 }
 
 /** Mismo velo que `clients-states-info-sheet` (detrás del panel de información). */
@@ -34,10 +39,11 @@ const NOTIF_BADGE_RIGHT_PX = -6
 const NOTIF_SECONDARY_TEXT_COLOR = 'rgba(255, 255, 255, 0.6)'
 
 type CoachNotificationItem = {
-  id: 'risk' | 'pending'
+  id: string
   mainText: string
   secondaryText: string
   color: string
+  href: string
 }
 
 function BellWithCountBadge({ count, bellColor }: { count: number; bellColor: string }) {
@@ -73,7 +79,11 @@ function BellWithCountBadge({ count, bellColor }: { count: number; bellColor: st
   )
 }
 
-export default function CoachNotificationBell({ riskCount, pendingCount }: Props) {
+export default function CoachNotificationBell({
+  riskCount,
+  pendingCount,
+  assignNotifications = [],
+}: Props) {
   const [open, setOpen] = useState(false)
   const [panelVisible, setPanelVisible] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -118,6 +128,15 @@ export default function CoachNotificationBell({ riskCount, pendingCount }: Props
     )
   }, [open])
 
+  const dedupedAssignNotifications = useMemo(() => {
+    const seen = new Set<string>()
+    return assignNotifications.filter((notification) => {
+      if (seen.has(notification.notificationKey)) return false
+      seen.add(notification.notificationKey)
+      return true
+    })
+  }, [assignNotifications])
+
   const notifications: CoachNotificationItem[] = []
 
   if (riskCount > 0) {
@@ -126,6 +145,7 @@ export default function CoachNotificationBell({ riskCount, pendingCount }: Props
       mainText: riskCount === 1 ? '1 cliente en riesgo' : `${riskCount} clientes en riesgo`,
       secondaryText: 'Revisá la lista en Clientes.',
       color: '#F25252',
+      href: '/coach/clients',
     })
   }
 
@@ -136,10 +156,22 @@ export default function CoachNotificationBell({ riskCount, pendingCount }: Props
         pendingCount === 1 ? '1 cliente pendiente' : `${pendingCount} clientes pendientes`,
       secondaryText: 'Revisá la lista en Clientes.',
       color: '#F2C94A',
+      href: '/coach/clients',
     })
   }
 
-  const totalClientsWithNotifications = riskCount + pendingCount
+  for (const assignNotification of dedupedAssignNotifications) {
+    notifications.push({
+      id: assignNotification.notificationKey,
+      mainText: `Asignar plan a ${assignNotification.fullName}`,
+      secondaryText: 'Cliente nuevo sin plan asignado.',
+      color: '#B5F23D',
+      href: `/coach/clients/${assignNotification.clientId}/assign`,
+    })
+  }
+
+  const totalClientsWithNotifications =
+    riskCount + pendingCount + dedupedAssignNotifications.length
   const bellColor = totalClientsWithNotifications > 0 ? '#F0F0F0' : '#E5E7EB'
 
   const overlay =
@@ -266,7 +298,7 @@ export default function CoachNotificationBell({ riskCount, pendingCount }: Props
                   {notifications.map((notification, index) => (
                     <Link
                       key={notification.id}
-                      href="/coach/clients"
+                      href={notification.href}
                       onClick={() => setOpen(false)}
                       style={{
                         display: 'flex',
@@ -289,7 +321,9 @@ export default function CoachNotificationBell({ riskCount, pendingCount }: Props
                           boxShadow:
                             notification.id === 'risk'
                               ? '0 0 0 4px rgba(242,82,82,0.09)'
-                              : '0 0 0 4px rgba(242,201,74,0.09)',
+                              : notification.id === 'pending'
+                                ? '0 0 0 4px rgba(242,201,74,0.09)'
+                                : '0 0 0 4px rgba(181,242,61,0.09)',
                           flexShrink: 0,
                           marginTop: 6,
                           marginLeft: 6,
@@ -343,8 +377,10 @@ export default function CoachNotificationBell({ riskCount, pendingCount }: Props
           aria-label={
             totalClientsWithNotifications > 0
               ? `${totalClientsWithNotifications} ${
-                  totalClientsWithNotifications === 1 ? 'cliente requiere' : 'clientes requieren'
-                } atención`
+                  totalClientsWithNotifications === 1
+                    ? 'notificación pendiente'
+                    : 'notificaciones pendientes'
+                }`
               : 'Notificaciones'
           }
           whileTap={{ scale: 0.88, opacity: 0.7 }}

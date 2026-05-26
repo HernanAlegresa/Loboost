@@ -12,6 +12,7 @@ import ClientProfileHeroCard from './client-profile-hero-card'
 import ClientPlanHeatmapCard from './client-plan-heatmap-card'
 import ClientProgressContent from './client-progress-content'
 import ClientSessionsList from './client-sessions-list'
+import UnassignPlanButton from './unassign-plan-button'
 
 const PROFILE_PLAN_SECTION_TOP_SPACING_PX = 10
 const PLAN_ACTIONS_TOP_PADDING_PX = 2
@@ -111,91 +112,123 @@ export default async function ClientProfilePage({
               }}
             >
               {profile.activePlan ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <p
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: '#B5F23D',
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        paddingBottom: 4,
+                      }}
+                    >
+                      Plan activo
+                    </p>
+                    <p
+                      style={{
+                        margin: 0,
+                        textAlign: 'center',
+                        fontSize: 20,
+                        fontWeight: 700,
+                        color: '#F0F0F0',
+                        lineHeight: 1.2,
+                        paddingBottom: 4,
+                      }}
+                    >
+                      {profile.activePlan.name}
+                    </p>
+                  </div>
+                  <div
                     style={{
-                      margin: 0,
-                      fontSize: 10,
-                      fontWeight: 600,
-                      color: '#B5F23D',
-                      letterSpacing: '0.08em',
-                      textTransform: 'uppercase',
-                      paddingBottom: 4,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 16,
+                      paddingTop: PLAN_ACTIONS_TOP_PADDING_PX,
+                      paddingBottom: PLAN_ACTIONS_BOTTOM_PADDING_PX,
                     }}
                   >
-                    Plan activo
-                  </p>
-                  <p
+                    <Link
+                      href={`/coach/clients/${profile.id}/plan/edit?mode=view`}
+                      style={{
+                        minHeight: 30,
+                        minWidth: 100,
+                        borderRadius: 20,
+                        color: 'rgba(255,255,255,0.8)',
+                        backgroundColor: '#111317',
+                        fontSize: 12,
+                        fontWeight: 400,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textDecoration: 'none',
+                        padding: '0 12px',
+                      }}
+                    >
+                      Ver plan
+                    </Link>
+                    <Link
+                      href={`/coach/clients/${profile.id}/plan/edit`}
+                      style={{
+                        minHeight: 30,
+                        minWidth: 100,
+                        borderRadius: 20,
+                        border: 'none',
+                        backgroundColor: '#B5F23D',
+                        color: '#0A0A0A',
+                        fontSize: 13,
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textDecoration: 'none',
+                        padding: '0 12px',
+                      }}
+                    >
+                      Editar plan
+                    </Link>
+                    <UnassignPlanButton clientPlanId={profile.activePlan.id} />
+                  </div>
+                  <ClientPlanHeatmapCard
+                    activePlan={profile.activePlan}
+                    initialWeekData={profile.currentWeekData}
+                    clientId={profile.id}
+                  />
+                </>
+              ) : (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    paddingTop: PLAN_ACTIONS_TOP_PADDING_PX,
+                    paddingBottom: PLAN_ACTIONS_BOTTOM_PADDING_PX,
+                  }}
+                >
+                  <Link
+                    href={`/coach/clients/${id}/assign`}
                     style={{
-                      margin: 0,
-                      textAlign: 'center',
-                      fontSize: 20,
+                      minHeight: 30,
+                      borderRadius: 20,
+                      border: 'none',
+                      backgroundColor: '#B5F23D',
+                      color: '#0A0A0A',
+                      fontSize: 13,
                       fontWeight: 700,
-                      color: '#F0F0F0',
-                      lineHeight: 1.2,
-                      paddingBottom: 4,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textDecoration: 'none',
+                      padding: '0 16px',
                     }}
                   >
-                    {profile.activePlan.name}
-                  </p>
+                    + Asignar plan
+                  </Link>
                 </div>
-              ) : null}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 16,
-                  paddingTop: PLAN_ACTIONS_TOP_PADDING_PX,
-                  paddingBottom: PLAN_ACTIONS_BOTTOM_PADDING_PX,
-                }}
-              >
-                <Link
-                  href={`/coach/clients/${profile.id}/plan/edit?mode=view`}
-                  style={{
-                    minHeight: 30,
-                    minWidth: 100,
-                    borderRadius: 20,
-                    color: 'rgba(255,255,255,0.8)',
-                    backgroundColor: '#111317',
-                    fontSize: 12,
-                    fontWeight: 400,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textDecoration: 'none',
-                    padding: '0 12px',
-                  }}
-                >
-                  Ver plan
-                </Link>
-                <Link
-                  href={`/coach/clients/${profile.id}/plan/edit`}
-                  style={{
-                    minHeight: 30,
-                    minWidth: 100,
-                    borderRadius: 20,
-                    border: 'none',
-                    backgroundColor: '#B5F23D',
-                    color: '#0A0A0A',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textDecoration: 'none',
-                    padding: '0 12px',
-                  }}
-                >
-                  Editar plan
-                </Link>
-              </div>
-              <ClientPlanHeatmapCard
-                activePlan={profile.activePlan}
-                initialWeekData={profile.currentWeekData}
-                clientId={profile.id}
-              />
+              )}
             </div>
           </>
         }

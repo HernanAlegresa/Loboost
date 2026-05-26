@@ -3,7 +3,7 @@ import { z } from 'zod'
 export const createPlanSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   description: z.string().optional(),
-  weeks: z.coerce.number().int().min(1).max(12),
+  weeks: z.coerce.number().int().min(1).max(60),
 })
 
 export type CreatePlanInput = z.infer<typeof createPlanSchema>
@@ -11,7 +11,7 @@ export type CreatePlanInput = z.infer<typeof createPlanSchema>
 export const updatePlanSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  weeks: z.coerce.number().int().min(1).max(12).optional(),
+  weeks: z.coerce.number().int().min(1).max(60).optional(),
 })
 
 export type UpdatePlanInput = z.infer<typeof updatePlanSchema>
@@ -56,7 +56,7 @@ export const planBuilderDaySchema = z.object({
 export type PlanBuilderDayInput = z.infer<typeof planBuilderDaySchema>
 
 export const planBuilderWeekSchema = z.object({
-  weekNumber: z.coerce.number().int().min(1).max(12),
+  weekNumber: z.coerce.number().int().min(1).max(60),
   weekName: z.string().optional(),
   weekType: z.enum(['normal', 'deload', 'peak', 'test']).default('normal'),
   days: z.array(planBuilderDaySchema).min(0),
@@ -68,7 +68,7 @@ export const planBuilderPayloadSchema = z
   .object({
     name: z.string().min(1, 'El nombre es requerido'),
     description: z.string().optional(),
-    weeks: z.coerce.number().int().min(1).max(12),
+    weeks: z.coerce.number().int().min(1).max(60),
     planWeeks: z
       .array(planBuilderWeekSchema)
       .min(1, 'Debe haber al menos una semana configurada'),
