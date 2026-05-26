@@ -17,10 +17,11 @@ Las reglas ejecutables del agente viven en:
 
 ## Cómo retomar trabajo en minutos
 
-1. Leer `docs/superpowers/handoffs/cursor-development-log.md`.
-2. Revisar `git log -10 --oneline`.
-3. Si aplica, abrir plan activo en `docs/superpowers/plans/`.
-4. Validar decisiones vigentes en `docs/decisions/`.
+1. Leer **`cursor-context-2026-05-11.md`** (handoff Cursor ↔ Claude; sección **Handoff actual** = último estado de producto).
+2. Si existe, leer `docs/superpowers/handoffs/cursor-development-log.md`.
+3. Revisar `git log -10 --oneline`.
+4. Si aplica, abrir plan activo en `docs/superpowers/plans/`.
+5. Validar decisiones vigentes en `docs/decisions/`.
 
 ## Contexto técnico rápido
 
