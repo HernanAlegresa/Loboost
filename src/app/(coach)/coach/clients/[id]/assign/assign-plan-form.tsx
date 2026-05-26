@@ -283,7 +283,8 @@ export default function AssignPlanForm({
                 <p style={{ fontSize: 12, color: '#6B7280', margin: 0 }}>
                   {plan.weeks} {plan.weeks === 1 ? 'semana' : 'semanas'}
                   {' · '}
-                  {plan.trainingDays} {plan.trainingDays === 1 ? 'día' : 'días'}
+                  {plan.weeks > 0 ? Math.round(plan.trainingDays / plan.weeks) : plan.trainingDays}{' '}
+                  {(plan.weeks > 0 ? Math.round(plan.trainingDays / plan.weeks) : plan.trainingDays) === 1 ? 'día' : 'días'} / sem
                 </p>
               </div>
             </button>

@@ -159,8 +159,8 @@ export default function PlanList({ plans }: { plans: PlanListRow[] }) {
                   </span>
                 )}
                 <p style={{ fontSize: 12, color: '#9CA3AF', margin: '5px 0 0', lineHeight: 1.45 }}>
-                  {p.weeks} {p.weeks === 1 ? 'semana' : 'semanas'} · {p.trainingDays}{' '}
-                  {p.trainingDays === 1 ? 'día' : 'días'} / semana
+                  {p.weeks} {p.weeks === 1 ? 'semana' : 'semanas'} · {p.weeks > 0 ? Math.round(p.trainingDays / p.weeks) : p.trainingDays}{' '}
+                  {(p.weeks > 0 ? Math.round(p.trainingDays / p.weeks) : p.trainingDays) === 1 ? 'día' : 'días'} / sem
                 </p>
               </div>
             </Link>
