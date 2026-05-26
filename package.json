@@ -7,6 +7,8 @@
     "dev:iphone": "scripts\\dev-iphone.bat",
     "build": "next build",
     "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -40,7 +42,6 @@
     "jest-environment-jsdom": "^30.3.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
-    "typescript": "^5",
-    "vitest": "^4.1.5"
+    "typescript": "^5"
   }
 }

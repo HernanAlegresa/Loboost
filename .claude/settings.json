@@ -1,11 +1,31 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc --noEmit*)",
-      "Bash(npx vitest run*)",
-      "Bash(npx jest*)",
-      "Bash(npx supabase gen types*)"
+      "Bash(npm run typecheck*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run test*)",
+      "Bash(npx supabase gen types*)",
+      "Bash(git *)"
     ],
     "deny": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/guard-migrations.sh"
+        }]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [{
+          "type": "command",
+          "command": "bash .claude/hooks/typecheck.sh"
+        }]
+      }
+    ]
   }
 }
