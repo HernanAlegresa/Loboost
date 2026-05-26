@@ -1710,7 +1710,9 @@ export default function ViewEditClientPlanForm({
                               >
                                 {exerciseCount > 0
                                   ? `${exerciseCount} ${exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}`
-                                  : 'Sin ejercicios'}
+                                  : !readOnly && !isLocked
+                                    ? '+ Agregar ejercicio'
+                                    : 'Sin ejercicios'}
                                 {isLocked ? ' · Sesión completada' : ''}
                               </p>
                             </span>

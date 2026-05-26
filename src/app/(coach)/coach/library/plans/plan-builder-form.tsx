@@ -2068,7 +2068,7 @@ export default function PlanBuilderForm({ exercises, mode, initialPlan }: Props)
                               >
                                 {exerciseCount > 0
                                   ? `${exerciseCount} ${exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}`
-                                  : 'Sin ejercicios'}
+                                  : '+ Agregar ejercicio'}
                               </p>
                             </span>
                           </button>
