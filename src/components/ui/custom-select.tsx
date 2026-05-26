@@ -11,6 +11,8 @@ type CustomSelectPropsBase = {
   placeholder?: string
   required?: boolean
   maxMenuHeight?: number
+  /** Borde lima en el trigger también cuando el menú está cerrado (p. ej. campo Ejercicio en plan builder). */
+  limeBorder?: boolean
 }
 
 /** FormData: valor solo interno + input hidden con `name`. */
@@ -33,7 +35,7 @@ function isControlled(props: CustomSelectProps): props is CustomSelectControlled
 }
 
 export default function CustomSelect(props: CustomSelectProps) {
-  const { options, placeholder = 'Seleccioná...', required, maxMenuHeight } = props
+  const { options, placeholder = 'Seleccioná...', required, maxMenuHeight, limeBorder } = props
   const controlled = isControlled(props)
 
   const [open, setOpen] = useState(false)
@@ -87,7 +89,7 @@ export default function CustomSelect(props: CustomSelectProps) {
           width: '100%',
           height: 44,
           backgroundColor: '#111317',
-          border: `1px solid ${open ? '#B5F23D' : '#2A2D34'}`,
+          border: `0.5px solid ${open || limeBorder ? 'rgba(181, 242, 61, 0.5)' : '#2A2D34'}`,
           borderRadius: open ? '10px 10px 0 0' : 10,
           padding: '0 14px',
           color: selected ? '#F0F0F0' : '#4B5563',
@@ -128,7 +130,7 @@ export default function CustomSelect(props: CustomSelectProps) {
               maxHeight: maxMenuHeight ?? 280,
               overflowY: 'auto',
               backgroundColor: '#111317',
-              border: '1px solid #B5F23D',
+              border: '0.5px solid rgba(181, 242, 61, 0.5)',
               borderTop: 'none',
               borderRadius: '0 0 10px 10px',
               overflowX: 'hidden',

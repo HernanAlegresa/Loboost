@@ -9,11 +9,6 @@ export type PlanListRow = {
   isIncomplete: boolean
 }
 
-export type ClientPick = {
-  id: string
-  full_name: string | null
-}
-
 export type ExercisePick = {
   id: string
   name: string
@@ -45,19 +40,6 @@ export async function getCoachPlans(coachId: string): Promise<PlanListRow[]> {
   })
 }
 
-export async function getCoachClientsForAssign(coachId: string): Promise<ClientPick[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, full_name')
-    .eq('coach_id', coachId)
-    .eq('role', 'client')
-    .order('full_name')
-
-  if (error || !data) return []
-  return data
-}
-
 export async function getCoachExercisesForPlanBuilder(coachId: string): Promise<ExercisePick[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
@@ -68,19 +50,6 @@ export async function getCoachExercisesForPlanBuilder(coachId: string): Promise<
 
   if (error || !data) return []
   return data as ExercisePick[]
-}
-
-export async function getPlanMetaForAssign(coachId: string, planId: string) {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('plans')
-    .select('id, name, weeks')
-    .eq('id', planId)
-    .eq('coach_id', coachId)
-    .single()
-
-  if (error || !data) return null
-  return data
 }
 
 export type PlanDetailRow = {
