@@ -44,7 +44,7 @@ function SafeAreaSimulatorInner() {
 
   return (
     <>
-      {/* Banda superior — muestra el área del notch/Dynamic Island */}
+      {/* Banda superior — área del notch/Dynamic Island */}
       <div
         aria-hidden
         style={{
@@ -57,18 +57,10 @@ function SafeAreaSimulatorInner() {
           borderBottom: '1px solid rgba(181, 242, 61, 0.3)',
           zIndex: 9999,
           pointerEvents: 'none',
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-          paddingBottom: 2,
         }}
-      >
-        <span style={{ fontSize: 9, color: 'rgba(181,242,61,0.6)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-          safe-area-top {SAT}
-        </span>
-      </div>
+      />
 
-      {/* Banda inferior — muestra el área del home indicator */}
+      {/* Banda inferior — área del home indicator */}
       <div
         aria-hidden
         style={{
@@ -81,16 +73,8 @@ function SafeAreaSimulatorInner() {
           borderTop: '1px solid rgba(181, 242, 61, 0.3)',
           zIndex: 9999,
           pointerEvents: 'none',
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-          paddingTop: 2,
         }}
-      >
-        <span style={{ fontSize: 9, color: 'rgba(181,242,61,0.6)', fontFamily: 'monospace', letterSpacing: '0.05em' }}>
-          safe-area-bottom {SAB}
-        </span>
-      </div>
+      />
     </>
   )
 }
