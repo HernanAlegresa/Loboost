@@ -673,7 +673,7 @@ export default function PlanTemplateViewer({ plan }: { plan: PlanDetailFull }) {
 
       {viewerStage === 'stage1' ? (
         <FlowHeaderConfig
-          title="Ver plan"
+          title="Editar plan"
           fallbackHref="/coach/library?tab=plans"
           rightSlot={pencilEditSlot}
         />
