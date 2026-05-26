@@ -44,3 +44,10 @@ next-env.d.ts
 # claude code (local-only)
 .claude/settings.local.json
 .claude/skills/
+
+# session artifacts (local-only)
+cursor-context*.md
+cursor-session*.md
+session*-prompt.md
+slice*-prompt.md
+message_claude.md
