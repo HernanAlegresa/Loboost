@@ -41,6 +41,8 @@ export default async function ClientProfilePage({
   ])
   if (timeline === null) notFound()
 
+  const planExpired = isPlanExpired(profile.activePlan?.endDate ?? null)
+
   return (
     <div
       style={{
@@ -100,7 +102,7 @@ export default async function ClientProfilePage({
                 heightCm={profile.heightCm}
                 daysPerWeek={profile.daysPerWeek}
                 injuries={profile.injuries}
-                planExpired={isPlanExpired(profile.activePlan?.endDate ?? null)}
+                planExpired={planExpired}
               />
             </div>
             <div
@@ -119,13 +121,13 @@ export default async function ClientProfilePage({
                         margin: 0,
                         fontSize: 10,
                         fontWeight: 600,
-                        color: '#B5F23D',
+                        color: planExpired ? '#6B7280' : '#B5F23D',
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
                         paddingBottom: 4,
                       }}
                     >
-                      Plan activo
+                      {planExpired ? 'Plan asignado' : 'Plan activo'}
                     </p>
                     <p
                       style={{
