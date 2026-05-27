@@ -1,0 +1,16 @@
+import type { MetadataRoute } from 'next'
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: 'LoBoost',
+    short_name: 'LoBoost',
+    description: 'Plataforma profesional para coaches de fitness',
+    start_url: '/',
+    scope: '/',
+    display: 'standalone',
+    background_color: '#0A0A0A',
+    theme_color: '#0A0A0A',
+    orientation: 'portrait-primary',
+    lang: 'es',
+  }
+}
