@@ -39,8 +39,12 @@ describe('createClientSchema', () => {
     expect(createClientSchema.safeParse(withoutInjuries).success).toBe(true)
   })
 
-  it('rejects daysPerWeek > 6', () => {
-    expect(createClientSchema.safeParse({ ...valid, daysPerWeek: '7' }).success).toBe(false)
+  it('accepts daysPerWeek = 7 (full week, matches DB constraint)', () => {
+    expect(createClientSchema.safeParse({ ...valid, daysPerWeek: '7' }).success).toBe(true)
+  })
+
+  it('rejects daysPerWeek > 7', () => {
+    expect(createClientSchema.safeParse({ ...valid, daysPerWeek: '8' }).success).toBe(false)
   })
 
   it('rejects short password', () => {

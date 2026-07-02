@@ -36,7 +36,7 @@ export const updateClientProfileSchema = z.object({
   weightKg:        z.coerce.number().min(20).max(300).optional(),
   heightCm:        z.coerce.number().min(100).max(250).optional(),
   experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
-  daysPerWeek:     z.coerce.number().int().min(1).max(6).optional(),
+  daysPerWeek:     z.coerce.number().int().min(1).max(7).optional(),
   injuries:        z.string().min(1, 'Escribí "Ninguna" si no tenés lesiones').max(500).optional(),
 })
 
